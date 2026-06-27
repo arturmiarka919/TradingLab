@@ -32,4 +32,20 @@ Najważniejsze dokumenty projektu:
 
 ## Status
 
-Projekt znajduje się na etapie budowy fundamentów.
+Aktualna wersja projektu: **v0.1.0 — Fundamenty projektu**
+
+Status wersji: **zakończona**
+
+W ramach wersji v0.1.0 przygotowano:
+
+* repozytorium Git i GitHub,
+* środowisko Python,
+* konfigurację `uv`,
+* podstawową strukturę projektu,
+* dokumentację projektową,
+* ADR-0001 i ADR-0002,
+* mapę drogową projektu,
+* narzędzia testów i jakości kodu,
+* pierwszy test techniczny.
+
+Następny etap: **v0.2.0 — Data Engine**
