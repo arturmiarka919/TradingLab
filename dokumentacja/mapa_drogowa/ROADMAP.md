@@ -33,7 +33,19 @@ Cel wersji:
 
 Status:
 
-* w trakcie realizacji.
+- zakończone.
+
+Zakres zakończony:
+
+- repozytorium Git i GitHub,
+- środowisko Python,
+- konfiguracja uv,
+- dokumentacja projektowa,
+- ADR-0001 i ADR-0002,
+- README projektu,
+- pytest,
+- ruff,
+- pierwszy test techniczny.
 
 ---
 
