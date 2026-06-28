@@ -17,7 +17,7 @@ def create_dataset(
     base_data_dir: Path,
     version: str,
 ) -> DatasetBuildResult:
-    """Build dataset artifact paths and return dataset build result."""
+    """Create dataset version directory and return dataset build result."""
 
     dataset_id = generate_dataset_id(request)
     dataset_path = build_dataset_version_path(
@@ -25,6 +25,8 @@ def create_dataset(
         dataset_id=dataset_id,
         version=version,
     )
+
+    dataset_path.mkdir(parents=True, exist_ok=False)
 
     return DatasetBuildResult(
         dataset_id=dataset_id,
