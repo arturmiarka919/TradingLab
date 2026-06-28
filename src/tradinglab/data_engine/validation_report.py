@@ -40,3 +40,11 @@ def write_validation_report(path: Path, report: ValidationReport) -> None:
     json_text = json.dumps(report_dict, ensure_ascii=False, indent=2)
 
     path.write_text(f"{json_text}\n", encoding="utf-8")
+
+
+def load_validation_report(path: Path) -> ValidationReport:
+    """Load validation report from a JSON file."""
+
+    loaded_data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+
+    return validation_report_from_dict(loaded_data)

@@ -6,6 +6,7 @@ from pathlib import Path
 from tradinglab.data_engine.models import ValidationReport
 from tradinglab.data_engine.status import DATASET_STATUS_INVALID
 from tradinglab.data_engine.validation_report import (
+    load_validation_report,
     validation_report_from_dict,
     validation_report_to_dict,
     write_validation_report,
@@ -66,3 +67,15 @@ def test_write_validation_report_writes_validation_report_json(
         json.loads(report_path.read_text(encoding="utf-8"))
         == EXPECTED_VALIDATION_REPORT_DICT
     )
+
+
+def test_load_validation_report_reads_validation_report_json(
+    tmp_path: Path,
+) -> None:
+    report_path = tmp_path / "validation_report.json"
+
+    write_validation_report(report_path, EXPECTED_VALIDATION_REPORT)
+
+    loaded_report = load_validation_report(report_path)
+
+    assert loaded_report == EXPECTED_VALIDATION_REPORT
