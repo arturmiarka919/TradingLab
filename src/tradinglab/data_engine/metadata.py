@@ -17,5 +17,27 @@ def metadata_to_dict(metadata: DatasetMetadata) -> dict[str, Any]:
     return metadata_dict
 
 
+def metadata_from_dict(data: dict[str, Any]) -> DatasetMetadata:
+    """Convert dictionary loaded from JSON-like data to dataset metadata."""
+
+    return DatasetMetadata(
+        dataset_id=str(data["dataset_id"]),
+        version=str(data["version"]),
+        provider=str(data["provider"]),
+        asset_class=str(data["asset_class"]),
+        symbol=str(data["symbol"]),
+        data_type=str(data["data_type"]),
+        price_type=str(data["price_type"]),
+        interval=str(data["interval"]),
+        requested_start=_parse_date(str(data["requested_start"])),
+        requested_end=_parse_date(str(data["requested_end"])),
+        status=str(data["status"]),
+    )
+
+
 def _format_date(value: date) -> str:
     return value.isoformat()
+
+
+def _parse_date(value: str) -> date:
+    return date.fromisoformat(value)
