@@ -128,6 +128,17 @@ def test_read_ohlcv_csv_rejects_invalid_header(tmp_path: Path) -> None:
         read_ohlcv_csv(data_path)
 
 
+def test_write_then_read_ohlcv_csv_returns_same_bars(tmp_path: Path) -> None:
+    data_path = tmp_path / "data.csv"
+    expected_bars = _build_sample_bars()
+
+    write_ohlcv_csv(data_path, expected_bars)
+
+    loaded_bars = read_ohlcv_csv(data_path)
+
+    assert loaded_bars == expected_bars
+
+
 def _build_sample_bars() -> tuple[OhlcvBar, OhlcvBar]:
     return (
         OhlcvBar(
