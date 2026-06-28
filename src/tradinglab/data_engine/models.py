@@ -1,7 +1,8 @@
 """Data models for TradingLab Data Engine."""
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 
@@ -17,6 +18,18 @@ class DatasetRequest:
     interval: str
     requested_start: date
     requested_end: date
+
+
+@dataclass(frozen=True)
+class OhlcvBar:
+    """Single OHLCV market data bar."""
+
+    timestamp: datetime
+    open: Decimal
+    high: Decimal
+    low: Decimal
+    close: Decimal
+    volume: Decimal
 
 
 @dataclass(frozen=True)

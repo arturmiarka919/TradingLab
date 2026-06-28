@@ -6,6 +6,7 @@ from tradinglab.data_engine.models import (
     DatasetBuildResult,
     DatasetMetadata,
     DatasetRequest,
+    OhlcvBar,
     ValidationReport,
 )
 
@@ -13,6 +14,7 @@ __all__ = [
     "DatasetBuildResult",
     "DatasetMetadata",
     "DatasetRequest",
+    "OhlcvBar",
     "ValidationReport",
     "create_dataset",
     "generate_dataset_id",
