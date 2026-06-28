@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from tradinglab.data_engine import DatasetBuildResult, DatasetRequest, create_dataset
+from tradinglab.data_engine import (
+    DatasetBuildResult,
+    DatasetMetadata,
+    DatasetRequest,
+    create_dataset,
+)
+from tradinglab.data_engine.metadata import load_metadata
 from tradinglab.data_engine.status import DATASET_STATUS_CREATED
 
 
@@ -39,9 +45,26 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     )
     assert result.status == DATASET_STATUS_CREATED
     assert result.dataset_path.is_dir()
+    assert result.metadata_path.is_file()
 
 
-def test_create_dataset_does_not_create_artifact_files_yet(tmp_path: Path) -> None:
+def test_create_dataset_writes_metadata_json(tmp_path: Path) -> None:
+    request = _build_dataset_request()
+
+    result = create_dataset(
+        request=request,
+        base_data_dir=tmp_path,
+        version="v001",
+    )
+
+    loaded_metadata = load_metadata(result.metadata_path)
+
+    assert loaded_metadata == _build_expected_metadata()
+
+
+def test_create_dataset_does_not_create_validation_report_file_yet(
+    tmp_path: Path,
+) -> None:
     request = _build_dataset_request()
 
     result = create_dataset(
@@ -51,7 +74,7 @@ def test_create_dataset_does_not_create_artifact_files_yet(tmp_path: Path) -> No
     )
 
     assert result.dataset_path.exists()
-    assert not result.metadata_path.exists()
+    assert result.metadata_path.exists()
     assert not result.validation_report_path.exists()
 
 
@@ -80,4 +103,20 @@ def _build_dataset_request() -> DatasetRequest:
         interval="1d",
         requested_start=date(2024, 1, 1),
         requested_end=date(2024, 12, 31),
+    )
+
+
+def _build_expected_metadata() -> DatasetMetadata:
+    return DatasetMetadata(
+        dataset_id=EXPECTED_DATASET_ID,
+        version="v001",
+        provider="polygon_massive",
+        asset_class="forex",
+        symbol="EUR/USD",
+        data_type="ohlcv",
+        price_type="provider",
+        interval="1d",
+        requested_start=date(2024, 1, 1),
+        requested_end=date(2024, 12, 31),
+        status=DATASET_STATUS_CREATED,
     )
