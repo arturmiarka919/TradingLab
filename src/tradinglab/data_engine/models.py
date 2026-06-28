@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -47,3 +48,15 @@ class ValidationReport:
     checked_rows: int
     valid_rows: int
     invalid_rows: int
+
+
+@dataclass(frozen=True)
+class DatasetBuildResult:
+    """Result describing created dataset version artifacts."""
+
+    dataset_id: str
+    version: str
+    dataset_path: Path
+    metadata_path: Path
+    validation_report_path: Path
+    status: str
