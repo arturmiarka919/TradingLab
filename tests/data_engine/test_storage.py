@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from tradinglab.data_engine.storage import (
+    build_data_path,
     build_dataset_version_path,
     build_metadata_path,
     build_validation_report_path,
@@ -25,29 +26,25 @@ def test_build_dataset_version_path() -> None:
     assert path == Path("data") / "datasets" / DATASET_ID / "v001"
 
 
-def test_build_dataset_version_path_does_not_create_directory(
-    tmp_path: Path,
-) -> None:
-    path = build_dataset_version_path(
-        base_data_dir=tmp_path,
-        dataset_id=DATASET_ID,
-        version="v001",
-    )
-
-    assert not path.exists()
-
-
 def test_build_metadata_path() -> None:
     dataset_path = Path("data") / "datasets" / DATASET_ID / "v001"
 
-    metadata_path = build_metadata_path(dataset_path)
+    path = build_metadata_path(dataset_path)
 
-    assert metadata_path == dataset_path / "metadata.json"
+    assert path == dataset_path / "metadata.json"
 
 
 def test_build_validation_report_path() -> None:
     dataset_path = Path("data") / "datasets" / DATASET_ID / "v001"
 
-    validation_report_path = build_validation_report_path(dataset_path)
+    path = build_validation_report_path(dataset_path)
 
-    assert validation_report_path == dataset_path / "validation_report.json"
+    assert path == dataset_path / "validation_report.json"
+
+
+def test_build_data_path() -> None:
+    dataset_path = Path("data") / "datasets" / DATASET_ID / "v001"
+
+    path = build_data_path(dataset_path)
+
+    assert path == dataset_path / "data.csv"

@@ -23,3 +23,9 @@ def build_validation_report_path(dataset_path: Path) -> Path:
     """Build validation report JSON path for a dataset version."""
 
     return dataset_path / "validation_report.json"
+
+
+def build_data_path(dataset_path: Path) -> Path:
+    """Build main data CSV path for a dataset version."""
+
+    return dataset_path / "data.csv"

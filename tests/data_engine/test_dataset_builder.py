@@ -22,6 +22,8 @@ EXPECTED_DATASET_ID = (
     "2024-01-01_2024-12-31"
 )
 
+EXPECTED_OHLCV_HEADER = "timestamp,open,high,low,close,volume"
+
 
 def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     tmp_path: Path,
@@ -49,6 +51,7 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     assert result.dataset_path.is_dir()
     assert result.metadata_path.is_file()
     assert result.validation_report_path.is_file()
+    assert (result.dataset_path / "data.csv").is_file()
 
 
 def test_create_dataset_writes_metadata_json(tmp_path: Path) -> None:
@@ -81,7 +84,25 @@ def test_create_dataset_writes_initial_validation_report_json(
     assert loaded_report == _build_expected_validation_report()
 
 
-def test_create_dataset_creates_only_initial_json_artifacts(
+def test_create_dataset_writes_empty_data_csv_with_ohlcv_header(
+    tmp_path: Path,
+) -> None:
+    request = _build_dataset_request()
+
+    result = create_dataset(
+        request=request,
+        base_data_dir=tmp_path,
+        version="v001",
+    )
+
+    data_path = result.dataset_path / "data.csv"
+
+    assert data_path.read_text(encoding="utf-8").splitlines() == [
+        EXPECTED_OHLCV_HEADER
+    ]
+
+
+def test_create_dataset_creates_only_initial_artifacts(
     tmp_path: Path,
 ) -> None:
     request = _build_dataset_request()
@@ -94,7 +115,7 @@ def test_create_dataset_creates_only_initial_json_artifacts(
 
     artifact_names = sorted(path.name for path in result.dataset_path.iterdir())
 
-    assert artifact_names == ["metadata.json", "validation_report.json"]
+    assert artifact_names == ["data.csv", "metadata.json", "validation_report.json"]
 
 
 def test_create_dataset_fails_when_dataset_version_already_exists(
