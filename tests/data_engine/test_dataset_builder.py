@@ -9,10 +9,12 @@ from tradinglab.data_engine import (
     DatasetBuildResult,
     DatasetMetadata,
     DatasetRequest,
+    ValidationReport,
     create_dataset,
 )
 from tradinglab.data_engine.metadata import load_metadata
 from tradinglab.data_engine.status import DATASET_STATUS_CREATED
+from tradinglab.data_engine.validation_report import load_validation_report
 
 
 EXPECTED_DATASET_ID = (
@@ -46,6 +48,7 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     assert result.status == DATASET_STATUS_CREATED
     assert result.dataset_path.is_dir()
     assert result.metadata_path.is_file()
+    assert result.validation_report_path.is_file()
 
 
 def test_create_dataset_writes_metadata_json(tmp_path: Path) -> None:
@@ -62,7 +65,7 @@ def test_create_dataset_writes_metadata_json(tmp_path: Path) -> None:
     assert loaded_metadata == _build_expected_metadata()
 
 
-def test_create_dataset_does_not_create_validation_report_file_yet(
+def test_create_dataset_writes_initial_validation_report_json(
     tmp_path: Path,
 ) -> None:
     request = _build_dataset_request()
@@ -73,9 +76,25 @@ def test_create_dataset_does_not_create_validation_report_file_yet(
         version="v001",
     )
 
-    assert result.dataset_path.exists()
-    assert result.metadata_path.exists()
-    assert not result.validation_report_path.exists()
+    loaded_report = load_validation_report(result.validation_report_path)
+
+    assert loaded_report == _build_expected_validation_report()
+
+
+def test_create_dataset_creates_only_initial_json_artifacts(
+    tmp_path: Path,
+) -> None:
+    request = _build_dataset_request()
+
+    result = create_dataset(
+        request=request,
+        base_data_dir=tmp_path,
+        version="v001",
+    )
+
+    artifact_names = sorted(path.name for path in result.dataset_path.iterdir())
+
+    assert artifact_names == ["metadata.json", "validation_report.json"]
 
 
 def test_create_dataset_fails_when_dataset_version_already_exists(
@@ -119,4 +138,17 @@ def _build_expected_metadata() -> DatasetMetadata:
         requested_start=date(2024, 1, 1),
         requested_end=date(2024, 12, 31),
         status=DATASET_STATUS_CREATED,
+    )
+
+
+def _build_expected_validation_report() -> ValidationReport:
+    return ValidationReport(
+        dataset_id=EXPECTED_DATASET_ID,
+        version="v001",
+        status=DATASET_STATUS_CREATED,
+        errors=(),
+        warnings=(),
+        checked_rows=0,
+        valid_rows=0,
+        invalid_rows=0,
     )

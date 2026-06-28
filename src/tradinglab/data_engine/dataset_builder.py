@@ -8,6 +8,7 @@ from tradinglab.data_engine.models import (
     DatasetBuildResult,
     DatasetMetadata,
     DatasetRequest,
+    ValidationReport,
 )
 from tradinglab.data_engine.status import DATASET_STATUS_CREATED
 from tradinglab.data_engine.storage import (
@@ -15,6 +16,7 @@ from tradinglab.data_engine.storage import (
     build_metadata_path,
     build_validation_report_path,
 )
+from tradinglab.data_engine.validation_report import write_validation_report
 
 
 def create_dataset(
@@ -22,7 +24,7 @@ def create_dataset(
     base_data_dir: Path,
     version: str,
 ) -> DatasetBuildResult:
-    """Create dataset version directory, write metadata and return build result."""
+    """Create dataset version directory, write artifacts and return build result."""
 
     dataset_id = generate_dataset_id(request)
     dataset_path = build_dataset_version_path(
@@ -50,7 +52,19 @@ def create_dataset(
         status=DATASET_STATUS_CREATED,
     )
 
+    validation_report = ValidationReport(
+        dataset_id=dataset_id,
+        version=version,
+        status=DATASET_STATUS_CREATED,
+        errors=(),
+        warnings=(),
+        checked_rows=0,
+        valid_rows=0,
+        invalid_rows=0,
+    )
+
     write_metadata(metadata_path, metadata)
+    write_validation_report(validation_report_path, validation_report)
 
     return DatasetBuildResult(
         dataset_id=dataset_id,
