@@ -1,7 +1,9 @@
 """Data file helpers for TradingLab Data Engine."""
 
 import csv
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 
 from tradinglab.data_engine.models import OhlcvBar
@@ -20,6 +22,22 @@ def ohlcv_bar_to_csv_row(bar: OhlcvBar) -> tuple[str, str, str, str, str, str]:
         str(bar.low),
         str(bar.close),
         str(bar.volume),
+    )
+
+
+def csv_row_to_ohlcv_bar(row: Sequence[str]) -> OhlcvBar:
+    """Convert CSV row values to OHLCV bar."""
+
+    if len(row) != len(OHLCV_HEADER):
+        raise ValueError("OHLCV CSV row must contain exactly 6 values.")
+
+    return OhlcvBar(
+        timestamp=datetime.fromisoformat(row[0]),
+        open=Decimal(row[1]),
+        high=Decimal(row[2]),
+        low=Decimal(row[3]),
+        close=Decimal(row[4]),
+        volume=Decimal(row[5]),
     )
 
 

@@ -4,9 +4,12 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from tradinglab.data_engine import OhlcvBar
 from tradinglab.data_engine.data_file import (
     OHLCV_HEADER,
+    csv_row_to_ohlcv_bar,
     ohlcv_bar_to_csv_row,
     write_empty_ohlcv_csv,
     write_ohlcv_csv,
@@ -37,6 +40,35 @@ def test_ohlcv_bar_to_csv_row_converts_values_to_strings() -> None:
         "1.1100",
         "12345.67",
     )
+
+
+def test_csv_row_to_ohlcv_bar_converts_strings_to_values() -> None:
+    row = (
+        "2024-01-02T00:00:00+00:00",
+        "1.1000",
+        "1.1200",
+        "1.0900",
+        "1.1100",
+        "12345.67",
+    )
+
+    bar = csv_row_to_ohlcv_bar(row)
+
+    assert bar == OhlcvBar(
+        timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+        open=Decimal("1.1000"),
+        high=Decimal("1.1200"),
+        low=Decimal("1.0900"),
+        close=Decimal("1.1100"),
+        volume=Decimal("12345.67"),
+    )
+
+
+def test_csv_row_to_ohlcv_bar_rejects_invalid_row_length() -> None:
+    row = ("2024-01-02T00:00:00+00:00", "1.1000")
+
+    with pytest.raises(ValueError, match="OHLCV CSV row must contain exactly 6 values."):
+        csv_row_to_ohlcv_bar(row)
 
 
 def test_write_empty_ohlcv_csv_writes_header_only(tmp_path: Path) -> None:
