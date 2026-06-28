@@ -2,15 +2,15 @@
 
 ## 1. Cel dokumentu
 
-Ten dokument opisuje projekt implementacji moduĹ‚u **Data Engine** dla etapu **v0.2.0** projektu TradingLab.
+Ten dokument opisuje projekt implementacji modułu **Data Engine** dla etapu **v0.2.0** projektu TradingLab.
 
-Dokument nie jest jeszcze opisem gotowego kodu. Jest projektem technicznym, ktĂłry ma poprzedzaÄ‡ implementacjÄ™.
+Dokument nie jest jeszcze opisem gotowego kodu. Jest projektem technicznym, który ma poprzedzać implementację.
 
 Zasada pracy:
 
 > Najpierw projektujemy, potem kodujemy.
 
-Implementacja Data Engine v0.2.0 powinna wynikaÄ‡ z tego dokumentu oraz z dokumentĂłw nadrzÄ™dnych projektu, w szczegĂłlnoĹ›ci:
+Implementacja Data Engine v0.2.0 powinna wynikać z tego dokumentu oraz z dokumentów nadrzędnych projektu, w szczególności:
 
 * `README.md`,
 * `dokumentacja/architektura/KONSTYTUCJA.md`,
@@ -22,34 +22,34 @@ Implementacja Data Engine v0.2.0 powinna wynikaÄ‡ z tego dokumentu oraz z dok
 
 ## 2. Zakres Data Engine v0.2.0
 
-Data Engine w v0.2.0 odpowiada za pierwszy minimalny cykl ĹĽycia datasetu danych rynkowych.
+Data Engine w v0.2.0 odpowiada za pierwszy minimalny cykl życia datasetu danych rynkowych.
 
 Zakres obejmuje:
 
-1. pobranie danych z jednego ĹşrĂłdĹ‚a,
+1. pobranie danych z jednego źródła,
 2. zapis surowych danych,
-3. normalizacjÄ™ danych do formatu OHLCV,
+3. normalizację danych do formatu OHLCV,
 4. zapis metadanych datasetu,
-5. walidacjÄ™ danych,
+5. walidację danych,
 6. zapis raportu walidacji,
-7. wersjonowanie datasetĂłw,
-8. odczyt zapisanych elementĂłw datasetu,
+7. wersjonowanie datasetów,
+8. odczyt zapisanych elementów datasetu,
 9. podstawowe testy automatyczne.
 
 Data Engine nie jest:
 
-* strategiÄ… tradingowÄ…,
+* strategią tradingową,
 * backtesterem,
 * traderem,
-* moduĹ‚em live tradingu,
-* rankingiem ĹşrĂłdeĹ‚ danych,
+* modułem live tradingu,
+* rankingiem źródeł danych,
 * agentem AI.
 
-Data Engine jest fundamentem danych rynkowych dla przyszĹ‚ych moduĹ‚Ăłw TradingLab.
+Data Engine jest fundamentem danych rynkowych dla przyszłych modułów TradingLab.
 
-## 3. Pierwsze ĹşrĂłdĹ‚o danych
+## 3. Pierwsze źródło danych
 
-Pierwszym ĹşrĂłdĹ‚em danych w Data Engine v0.2.0 bÄ™dzie:
+Pierwszym źródłem danych w Data Engine v0.2.0 będzie:
 
 > Polygon/Massive Forex API w planie darmowym.
 
@@ -59,58 +59,58 @@ Pierwszy instrument referencyjny:
 
 Pierwszy typ danych:
 
-> historyczne Ĺ›wiece OHLCV.
+> historyczne świece OHLCV.
 
 Pierwszy konektor referencyjny:
 
 > `PolygonForexConnector`.
 
-W v0.2.0 korzystamy z Polygon/Massive Free, poniewaĹĽ zapewnia prosty i uporzÄ…dkowany interfejs API, ktĂłry dobrze pasuje do pierwszego konektora Data Engine.
+W v0.2.0 korzystamy z Polygon/Massive Free, ponieważ zapewnia prosty i uporządkowany interfejs API, który dobrze pasuje do pierwszego konektora Data Engine.
 
 Zaakceptowane ograniczenia darmowego planu:
 
 * ograniczony zakres historii,
-* brak zaĹ‚oĹĽenia pracy real-time,
-* brak wymogu pĹ‚atnego planu,
-* brak wymogu peĹ‚nej historii danych.
+* brak założenia pracy real-time,
+* brak wymogu płatnego planu,
+* brak wymogu pełnej historii danych.
 
-Architektura Data Engine nie moĹĽe zakĹ‚adaÄ‡, ĹĽe Polygon/Massive jest jedynym ĹşrĂłdĹ‚em prawdy.
+Architektura Data Engine nie może zakładać, że Polygon/Massive jest jedynym źródłem prawdy.
 
-W przyszĹ‚oĹ›ci moĹĽliwe bÄ™dzie dodanie kolejnych ĹşrĂłdeĹ‚ danych, w szczegĂłlnoĹ›ci Dukascopy jako darmowego ĹşrĂłdĹ‚a badawczego dla dĹ‚uĹĽszej historii Forex.
+W przyszłości możliwe będzie dodanie kolejnych źródeł danych, w szczególności Dukascopy jako darmowego źródła badawczego dla dłuższej historii Forex.
 
-## 4. Dalszy rozwĂłj ĹşrĂłdeĹ‚ danych
+## 4. Dalszy rozwój źródeł danych
 
-W przyszĹ‚oĹ›ci Data Engine powinien umoĹĽliwiaÄ‡ dodawanie kolejnych providerĂłw danych bez przebudowy fundamentu systemu.
+W przyszłości Data Engine powinien umożliwiać dodawanie kolejnych providerów danych bez przebudowy fundamentu systemu.
 
-Potencjalne ĹşrĂłdĹ‚a danych na przyszĹ‚oĹ›Ä‡:
+Potencjalne źródła danych na przyszłość:
 
 * Dukascopy,
 * Twelve Data,
 * Alpha Vantage,
 * OANDA,
-* inne ĹşrĂłdĹ‚a danych Forex, akcji, indeksĂłw, krypto lub kontraktĂłw.
+* inne źródła danych Forex, akcji, indeksów, krypto lub kontraktów.
 
-Dukascopy jest kandydatem na drugie ĹşrĂłdĹ‚o danych, poniewaĹĽ moĹĽe dostarczaÄ‡ bardzo dobre darmowe dane historyczne Forex. Wymaga jednak wiÄ™kszej pracy po stronie Data Engine, szczegĂłlnie jeĹ›li dane tickowe bÄ™dÄ… agregowane do Ĺ›wiec OHLCV.
+Dukascopy jest kandydatem na drugie źródło danych, ponieważ może dostarczać bardzo dobre darmowe dane historyczne Forex. Wymaga jednak większej pracy po stronie Data Engine, szczególnie jeśli dane tickowe będą agregowane do świec OHLCV.
 
-W przyszĹ‚oĹ›ci moĹĽliwe bÄ™dzie porĂłwnywanie wielu ĹşrĂłdeĹ‚ danych oraz ich rankingowanie. Ranking ĹşrĂłdĹ‚a nie musi byÄ‡ globalny. Dla jednej strategii lepsze moĹĽe byÄ‡ jedno ĹşrĂłdĹ‚o, a dla innej strategii inne.
+W przyszłości możliwe będzie porównywanie wielu źródeł danych oraz ich rankingowanie. Ranking źródła nie musi być globalny. Dla jednej strategii lepsze może być jedno źródło, a dla innej strategii inne.
 
-Data Engine powinien wiÄ™c umoĹĽliwiaÄ‡ ocenÄ™ datasetu w kontekĹ›cie:
+Data Engine powinien więc umożliwiać ocenę datasetu w kontekście:
 
 * instrumentu,
-* interwaĹ‚u,
+* interwału,
 * okresu historycznego,
 * typu strategii,
-* jakoĹ›ci danych,
-* kompletnoĹ›ci danych,
+* jakości danych,
+* kompletności danych,
 * sposobu agregacji,
-* dostÄ™pnoĹ›ci bid/ask/spread,
-* stabilnoĹ›ci ĹşrĂłdĹ‚a.
+* dostępności bid/ask/spread,
+* stabilności źródła.
 
-W v0.2.0 ranking ĹşrĂłdeĹ‚ nie jest implementowany. Architektura powinna jednak nie zamykaÄ‡ tej moĹĽliwoĹ›ci.
+W v0.2.0 ranking źródeł nie jest implementowany. Architektura powinna jednak nie zamykać tej możliwości.
 
 ## 5. Format zapisu danych
 
-W v0.2.0 dane sÄ… zapisywane w czterech podstawowych elementach:
+W v0.2.0 dane są zapisywane w czterech podstawowych elementach:
 
 ```text
 raw/response.json
@@ -121,19 +121,19 @@ validation_report.json
 
 ### 5.1. Raw data
 
-Surowe dane sÄ… zapisywane jako:
+Surowe dane są zapisywane jako:
 
 ```text
 raw/response.json
 ```
 
-Dla pierwszego ĹşrĂłdĹ‚a, czyli Polygon/Massive, raw data oznaczajÄ… moĹĽliwie wiernie zapisanÄ… odpowiedĹş providera.
+Dla pierwszego źródła, czyli Polygon/Massive, raw data oznaczają możliwie wiernie zapisaną odpowiedź providera.
 
-Raw data sÄ… nietykalne. Nie wolno ich nadpisywaÄ‡ ani modyfikowaÄ‡ po utworzeniu wersji datasetu.
+Raw data są nietykalne. Nie wolno ich nadpisywać ani modyfikować po utworzeniu wersji datasetu.
 
 ### 5.2. Normalized data
 
-Znormalizowane Ĺ›wiece OHLCV sÄ… zapisywane jako:
+Znormalizowane świece OHLCV są zapisywane jako:
 
 ```text
 normalized/candles.csv
@@ -155,26 +155,26 @@ Kolumny:
 * `close`,
 * `volume`.
 
-Dane w `candles.csv` majÄ… byÄ‡ czystÄ… tabelÄ… Ĺ›wiec. Informacje takie jak provider, dataset_id, symbol, interwaĹ‚ i zakres dat powinny znajdowaÄ‡ siÄ™ w `metadata.json`.
+Dane w `candles.csv` mają być czystą tabelą świec. Informacje takie jak provider, dataset_id, symbol, interwał i zakres dat powinny znajdować się w `metadata.json`.
 
 ### 5.3. Volume dla Forex
 
-Dla danych Forex pole `volume` moĹĽe mieÄ‡ inne znaczenie niĹĽ wolumen gieĹ‚dowy znany z rynku akcji.
+Dla danych Forex pole `volume` może mieć inne znaczenie niż wolumen giełdowy znany z rynku akcji.
 
-W zaleĹĽnoĹ›ci od providera `volume` moĹĽe oznaczaÄ‡ miÄ™dzy innymi:
+W zależności od providera `volume` może oznaczać między innymi:
 
 * wolumen raportowany przez providera,
 * tick volume,
-* liczbÄ™ kwotowaĹ„,
-* innÄ… metrykÄ™ zaleĹĽnÄ… od ĹşrĂłdĹ‚a danych.
+* liczbę kwotowań,
+* inną metrykę zależną od źródła danych.
 
-Data Engine v0.2.0 zapisuje pole `volume` jako czÄ™Ĺ›Ä‡ standardu OHLCV, ale nie interpretuje go jeszcze jako peĹ‚nego wolumenu transakcyjnego.
+Data Engine v0.2.0 zapisuje pole `volume` jako część standardu OHLCV, ale nie interpretuje go jeszcze jako pełnego wolumenu transakcyjnego.
 
-Znaczenie pola `volume` powinno byÄ‡ w przyszĹ‚oĹ›ci doprecyzowywane na poziomie providera i metadanych datasetu.
+Znaczenie pola `volume` powinno być w przyszłości doprecyzowywane na poziomie providera i metadanych datasetu.
 
 ### 5.4. Metadane
 
-Metadane datasetu sÄ… zapisywane jako:
+Metadane datasetu są zapisywane jako:
 
 ```text
 metadata.json
@@ -188,43 +188,43 @@ Raport walidacji jest zapisywany jako:
 validation_report.json
 ```
 
-## 6. Dalszy rozwĂłj formatĂłw zapisu
+## 6. Dalszy rozwój formatów zapisu
 
 CSV jest formatem startowym dla v0.2.0. Nie jest docelowym ograniczeniem architektury.
 
-W przyszĹ‚oĹ›ci moĹĽliwe jest dodanie innych formatĂłw zapisu, w szczegĂłlnoĹ›ci:
+W przyszłości możliwe jest dodanie innych formatów zapisu, w szczególności:
 
 * Parquet,
 * Feather,
 * SQLite,
 * DuckDB,
-* innych formatĂłw analitycznych.
+* innych formatów analitycznych.
 
-Architektura Data Engine nie powinna byÄ‡ trwale zwiÄ…zana z CSV.
+Architektura Data Engine nie powinna być trwale związana z CSV.
 
-Dodanie nowego formatu zapisu nie moĹĽe uniewaĹĽniaÄ‡ datasetĂłw zapisanych wczeĹ›niej jako CSV.
+Dodanie nowego formatu zapisu nie może unieważniać datasetów zapisanych wcześniej jako CSV.
 
-## 7. Struktura katalogĂłw danych
+## 7. Struktura katalogów danych
 
-Dane Data Engine sÄ… zapisywane lokalnie w katalogu:
+Dane Data Engine są zapisywane lokalnie w katalogu:
 
 ```text
 data/datasets/
 ```
 
-KaĹĽdy dataset ma osobny katalog:
+Każdy dataset ma osobny katalog:
 
 ```text
 data/datasets/{dataset_id}/
 ```
 
-KaĹĽda wersja datasetu ma osobny podkatalog:
+Każda wersja datasetu ma osobny podkatalog:
 
 ```text
 data/datasets/{dataset_id}/v001/
 ```
 
-PrzykĹ‚adowa struktura:
+Przykładowa struktura:
 
 ```text
 data/
@@ -239,15 +239,15 @@ data/
         validation_report.json
 ```
 
-Prawdziwe dane robocze nie powinny byÄ‡ commitowane do repozytorium.
+Prawdziwe dane robocze nie powinny być commitowane do repozytorium.
 
-Do testĂłw automatycznych uĹĽywane sÄ… maĹ‚e przykĹ‚adowe datasety zapisane w:
+Do testów automatycznych używane są małe przykładowe datasety zapisane w:
 
 ```text
 tests/fixtures/data_engine/
 ```
 
-PrzykĹ‚adowa struktura danych testowych:
+Przykładowa struktura danych testowych:
 
 ```text
 tests/
@@ -264,35 +264,35 @@ tests/
 
 ## 8. Sekrety i konfiguracja
 
-API key, tokeny i inne sekrety nie mogÄ… byÄ‡ zapisane:
+API key, tokeny i inne sekrety nie mogą być zapisane:
 
 * w kodzie,
 * w dokumentacji,
 * w datasetach,
 * w plikach commitowanych do repozytorium.
 
-W v0.2.0 klucz Polygon/Massive powinien byÄ‡ przekazywany przez konfiguracjÄ™ lokalnÄ… albo zmiennÄ… Ĺ›rodowiskowÄ….
+W v0.2.0 klucz Polygon/Massive powinien być przekazywany przez konfigurację lokalną albo zmienną środowiskową.
 
-Testy automatyczne nie mogÄ… wymagaÄ‡ prawdziwego API key.
+Testy automatyczne nie mogą wymagać prawdziwego API key.
 
-Data Engine powinien byÄ‡ projektowany tak, aby konfiguracja miaĹ‚a pierwszeĹ„stwo przed wartoĹ›ciami wpisanymi na sztywno w kodzie.
+Data Engine powinien być projektowany tak, aby konfiguracja miała pierwszeństwo przed wartościami wpisanymi na sztywno w kodzie.
 
 ## 9. Status datasetu a status walidacji
 
-W projekcie rozrĂłĹĽniamy:
+W projekcie rozróżniamy:
 
 1. **status datasetu**,
 2. **status walidacji**.
 
-Status datasetu znajduje siÄ™ w `metadata.json` i opisuje etap ĹĽycia datasetu.
+Status datasetu znajduje się w `metadata.json` i opisuje etap życia datasetu.
 
-Status walidacji znajduje siÄ™ w `validation_report.json` i opisuje wynik sprawdzenia technicznej poprawnoĹ›ci danych.
+Status walidacji znajduje się w `validation_report.json` i opisuje wynik sprawdzenia technicznej poprawności danych.
 
-Status datasetu nie zastÄ™puje raportu walidacji.
+Status datasetu nie zastępuje raportu walidacji.
 
 ### 9.1. Statusy datasetu
 
-Status datasetu powinien korzystaÄ‡ ze statusĂłw zdefiniowanych w dokumentacji Data Engine:
+Status datasetu powinien korzystać ze statusów zdefiniowanych w dokumentacji Data Engine:
 
 ```text
 RAW
@@ -303,20 +303,20 @@ REJECTED
 DEPRECATED
 ```
 
-Znaczenie ogĂłlne:
+Znaczenie ogólne:
 
-* `RAW` â€” dataset zostaĹ‚ utworzony i zawiera dane ĹşrĂłdĹ‚owe,
-* `VALIDATED` â€” dataset przeszedĹ‚ proces walidacji,
-* `ACCEPTED` â€” dataset zostaĹ‚ zaakceptowany do dalszego uĹĽycia,
-* `QUARANTINED` â€” dataset wymaga uwagi, ale nie musi byÄ‡ od razu odrzucony,
-* `REJECTED` â€” dataset nie powinien byÄ‡ uĹĽywany,
-* `DEPRECATED` â€” dataset zostaĹ‚ zastÄ…piony albo uznany za przestarzaĹ‚y.
+* `RAW` — dataset został utworzony i zawiera dane źródłowe,
+* `VALIDATED` — dataset przeszedł proces walidacji,
+* `ACCEPTED` — dataset został zaakceptowany do dalszego użycia,
+* `QUARANTINED` — dataset wymaga uwagi, ale nie musi być od razu odrzucony,
+* `REJECTED` — dataset nie powinien być używany,
+* `DEPRECATED` — dataset został zastąpiony albo uznany za przestarzały.
 
-W v0.2.0 peĹ‚ny workflow akceptacji datasetu moĹĽe byÄ‡ jeszcze minimalny, ale metadane powinny byÄ‡ zgodne z tym modelem statusĂłw.
+W v0.2.0 pełny workflow akceptacji datasetu może być jeszcze minimalny, ale metadane powinny być zgodne z tym modelem statusów.
 
 ### 9.2. Statusy walidacji
 
-Raport walidacji uĹĽywa osobnych statusĂłw:
+Raport walidacji używa osobnych statusów:
 
 ```text
 valid
@@ -326,11 +326,11 @@ invalid
 
 Znaczenie:
 
-* `valid` â€” dane przeszĹ‚y walidacjÄ™ bez problemĂłw,
-* `valid_with_warnings` â€” dane sÄ… technicznie uĹĽywalne, ale majÄ… ostrzeĹĽenia,
-* `invalid` â€” dane nie powinny byÄ‡ uĹĽywane dalej bez poprawy albo ponownego utworzenia datasetu.
+* `valid` — dane przeszły walidację bez problemów,
+* `valid_with_warnings` — dane są technicznie używalne, ale mają ostrzeżenia,
+* `invalid` — dane nie powinny być używane dalej bez poprawy albo ponownego utworzenia datasetu.
 
-PrzykĹ‚ad zgodnoĹ›ci:
+Przykład zgodności:
 
 ```json
 {
@@ -350,37 +350,37 @@ oraz:
 
 ## 10. Format metadanych datasetu
 
-Metadane datasetu sÄ… zapisywane w pliku:
+Metadane datasetu są zapisywane w pliku:
 
 ```text
 metadata.json
 ```
 
-Metadane odpowiadajÄ… na pytanie:
+Metadane odpowiadają na pytanie:
 
-> Co to dokĹ‚adnie za dane i jak moĹĽna je odtworzyÄ‡?
+> Co to dokładnie za dane i jak można je odtworzyć?
 
-Metadane nie zastÄ™pujÄ… raportu walidacji.
+Metadane nie zastępują raportu walidacji.
 
-Minimalna zawartoĹ›Ä‡ `metadata.json`:
+Minimalna zawartość `metadata.json`:
 
 * wersja schematu metadanych,
 * dataset_id,
 * wersja datasetu,
 * status datasetu,
 * typ danych,
-* ĹşrĂłdĹ‚o danych,
+* źródło danych,
 * konektor,
 * instrument,
-* interwaĹ‚,
+* interwał,
 * zakres dat,
 * timezone,
-* Ĺ›cieĹĽki do plikĂłw raw, normalized i validation_report,
+* ścieżki do plików raw, normalized i validation_report,
 * data utworzenia datasetu w UTC,
 * informacje o wersji datasetu,
-* parametry ĹĽÄ…dania do providera.
+* parametry żądania do providera.
 
-PrzykĹ‚adowy format:
+Przykładowy format:
 
 ```json
 {
@@ -445,27 +445,27 @@ PrzykĹ‚adowy format:
 }
 ```
 
-W sekcji `request` nie wolno zapisywaÄ‡ API key, tokenĂłw ani innych sekretĂłw.
+W sekcji `request` nie wolno zapisywać API key, tokenów ani innych sekretów.
 
-## 11. Dalszy rozwĂłj metadanych
+## 11. Dalszy rozwój metadanych
 
 Format `metadata.json` w v0.2.0 jest minimalnym schematem startowym.
 
-W przyszĹ‚oĹ›ci metadane mogÄ… zostaÄ‡ rozszerzone miÄ™dzy innymi o:
+W przyszłości metadane mogą zostać rozszerzone między innymi o:
 
-* informacje o licencji i warunkach uĹĽycia danych,
+* informacje o licencji i warunkach użycia danych,
 * ograniczenia planu dostawcy danych,
-* hash plikĂłw raw i normalized,
-* informacje o pochodzeniu danych i przeksztaĹ‚ceniach,
-* powiÄ…zania z wczeĹ›niejszymi wersjami datasetu,
-* powiÄ…zania z datasetami ĹşrĂłdĹ‚owymi,
-* informacje o jakoĹ›ci danych w formie skrĂłconego podsumowania,
-* tagi uĹ‚atwiajÄ…ce wyszukiwanie datasetĂłw,
-* informacje potrzebne do porĂłwnywania ĹşrĂłdeĹ‚ danych,
-* dokĹ‚adniejszy opis znaczenia pola `volume`,
-* informacje o licencji i dozwolonym uĹĽyciu danych.
+* hash plików raw i normalized,
+* informacje o pochodzeniu danych i przekształceniach,
+* powiązania z wcześniejszymi wersjami datasetu,
+* powiązania z datasetami źródłowymi,
+* informacje o jakości danych w formie skróconego podsumowania,
+* tagi ułatwiające wyszukiwanie datasetów,
+* informacje potrzebne do porównywania źródeł danych,
+* dokładniejszy opis znaczenia pola `volume`,
+* informacje o licencji i dozwolonym użyciu danych.
 
-KaĹĽda istotna zmiana struktury `metadata.json` powinna byÄ‡ kontrolowana przez `metadata_schema_version`, tak aby starsze datasety pozostaĹ‚y czytelne.
+Każda istotna zmiana struktury `metadata.json` powinna być kontrolowana przez `metadata_schema_version`, tak aby starsze datasety pozostały czytelne.
 
 ## 12. Format raportu walidacji
 
@@ -477,9 +477,9 @@ validation_report.json
 
 Raport walidacji odpowiada na pytanie:
 
-> Czy dane sÄ… technicznie poprawne i jakie majÄ… problemy?
+> Czy dane są technicznie poprawne i jakie mają problemy?
 
-Minimalna zawartoĹ›Ä‡ raportu:
+Minimalna zawartość raportu:
 
 * `validation_schema_version`,
 * `dataset_id`,
@@ -499,7 +499,7 @@ valid_with_warnings
 invalid
 ```
 
-PrzykĹ‚adowy format:
+Przykładowy format:
 
 ```json
 {
@@ -539,11 +539,11 @@ PrzykĹ‚adowy format:
 }
 ```
 
-## 13. Minimalne reguĹ‚y walidacji v0.2.0
+## 13. Minimalne reguły walidacji v0.2.0
 
-W v0.2.0 walidacja sprawdza podstawowÄ… poprawnoĹ›Ä‡ technicznÄ… datasetu OHLCV.
+W v0.2.0 walidacja sprawdza podstawową poprawność techniczną datasetu OHLCV.
 
-Minimalne reguĹ‚y:
+Minimalne reguły:
 
 ```text
 V001 - normalized file exists
@@ -572,32 +572,32 @@ Walidacja OHLC oznacza co najmniej:
 * `low <= close`,
 * `low <= high`.
 
-Walidacja zgodnoĹ›ci interwaĹ‚u i brakujÄ…cych Ĺ›wiec w v0.2.0 ma charakter podstawowy.
+Walidacja zgodności interwału i brakujących świec w v0.2.0 ma charakter podstawowy.
 
-Data Engine v0.2.0 nie musi jeszcze implementowaÄ‡ peĹ‚nego kalendarza rynku Forex, obsĹ‚ugi Ĺ›wiÄ…t, DST ani szczegĂłĹ‚owych godzin handlu.
+Data Engine v0.2.0 nie musi jeszcze implementować pełnego kalendarza rynku Forex, obsługi świąt, DST ani szczegółowych godzin handlu.
 
-Dopuszczalne jest wiÄ™c, ĹĽe czÄ™Ĺ›Ä‡ wykrytych luk bÄ™dzie klasyfikowana jako ostrzeĹĽenie, a nie bĹ‚Ä…d krytyczny.
+Dopuszczalne jest więc, że część wykrytych luk będzie klasyfikowana jako ostrzeżenie, a nie błąd krytyczny.
 
-## 14. Dalszy rozwĂłj raportu walidacji
+## 14. Dalszy rozwój raportu walidacji
 
 Format `validation_report.json` w v0.2.0 jest minimalnym schematem startowym.
 
-W przyszĹ‚oĹ›ci raport walidacji moĹĽe zostaÄ‡ rozszerzony miÄ™dzy innymi o:
+W przyszłości raport walidacji może zostać rozszerzony między innymi o:
 
-* analizÄ™ luk wedĹ‚ug kalendarza rynku Forex,
-* scoring jakoĹ›ci datasetu,
-* metryki kompletnoĹ›ci danych,
+* analizę luk według kalendarza rynku Forex,
+* scoring jakości datasetu,
+* metryki kompletności danych,
 * wykrywanie anomalii cenowych,
-* porĂłwnywanie datasetĂłw miÄ™dzy providerami,
-* ocenÄ™ zgodnoĹ›ci OHLC miÄ™dzy ĹşrĂłdĹ‚ami,
-* analizÄ™ spreadu, jeĹ›li dostÄ™pne bÄ™dÄ… dane bid/ask,
-* hash plikĂłw uĹĽytych w walidacji,
-* ocenÄ™ przydatnoĹ›ci datasetu dla konkretnych typĂłw strategii,
-* raporty jakoĹ›ci czytelne dla przyszĹ‚ych agentĂłw AI.
+* porównywanie datasetów między providerami,
+* ocenę zgodności OHLC między źródłami,
+* analizę spreadu, jeśli dostępne będą dane bid/ask,
+* hash plików użytych w walidacji,
+* ocenę przydatności datasetu dla konkretnych typów strategii,
+* raporty jakości czytelne dla przyszłych agentów AI.
 
-KaĹĽda istotna zmiana struktury `validation_report.json` powinna byÄ‡ kontrolowana przez `validation_schema_version`, tak aby starsze raporty pozostaĹ‚y moĹĽliwe do odczytania.
+Każda istotna zmiana struktury `validation_report.json` powinna być kontrolowana przez `validation_schema_version`, tak aby starsze raporty pozostały możliwe do odczytania.
 
-## 15. SposĂłb generowania dataset_id
+## 15. Sposób generowania dataset_id
 
 `dataset_id` jest czytelnym, deterministycznym identyfikatorem datasetu.
 
@@ -607,7 +607,7 @@ Format:
 {provider}_{asset_class}_{symbol}_{data_type}_{price_type}_{interval}_{start}_{end}
 ```
 
-PrzykĹ‚ad:
+Przykład:
 
 ```text
 polygon_massive_forex_eurusd_ohlcv_provider_1d_2024-01-01_2024-12-31
@@ -617,43 +617,43 @@ Zasady:
 
 * `dataset_id` nie zawiera numeru wersji,
 * wersja jest zapisywana osobno jako `v001`, `v002`, `v003`,
-* wszystko zapisujemy maĹ‚ymi literami,
-* nie uĹĽywamy spacji,
-* nie uĹĽywamy znakĂłw specjalnych typu `/`,
+* wszystko zapisujemy małymi literami,
+* nie używamy spacji,
+* nie używamy znaków specjalnych typu `/`,
 * `EUR/USD` zapisujemy jako `eurusd`,
 * daty zapisujemy jako `YYYY-MM-DD`.
 
-Daty w `dataset_id` oznaczajÄ… zakres ĹĽÄ…dany od ĹşrĂłdĹ‚a danych, a nie faktyczny zakres zwrĂłconych danych.
+Daty w `dataset_id` oznaczają zakres żądany od źródła danych, a nie faktyczny zakres zwróconych danych.
 
 Faktyczny zakres danych jest zapisywany w `validation_report.json`.
 
-Pole `price_type` okreĹ›la typ ceny albo sposĂłb agregacji.
+Pole `price_type` określa typ ceny albo sposób agregacji.
 
-PrzykĹ‚adowe przyszĹ‚e wartoĹ›ci:
+Przykładowe przyszłe wartości:
 
 * `provider`,
 * `bid`,
 * `ask`,
 * `mid`.
 
-W v0.2.0 dla Polygon/Massive Free uĹĽywamy:
+W v0.2.0 dla Polygon/Massive Free używamy:
 
 ```text
 price_type = provider
 ```
 
-Oznacza to, ĹĽe przyjmujemy gotowe bary zwrĂłcone przez providera.
+Oznacza to, że przyjmujemy gotowe bary zwrócone przez providera.
 
-W przyszĹ‚oĹ›ci mechanizm `dataset_id` moĹĽe zostaÄ‡ rozszerzony o fingerprint albo hash parametrĂłw pobrania, jeĹ›li pojawi siÄ™ potrzeba rozrĂłĹĽniania datasetĂłw o podobnym opisie, ale rĂłĹĽnej konfiguracji ĹşrĂłdĹ‚owej.
+W przyszłości mechanizm `dataset_id` może zostać rozszerzony o fingerprint albo hash parametrów pobrania, jeśli pojawi się potrzeba rozróżniania datasetów o podobnym opisie, ale różnej konfiguracji źródłowej.
 
-## 16. Wersjonowanie datasetĂłw
+## 16. Wersjonowanie datasetów
 
-KaĹĽdy dataset posiada:
+Każdy dataset posiada:
 
 * `dataset_id`,
-* jednÄ… lub wiÄ™cej wersji.
+* jedną lub więcej wersji.
 
-Wersje sÄ… zapisywane jako:
+Wersje są zapisywane jako:
 
 ```text
 v001
@@ -661,7 +661,7 @@ v002
 v003
 ```
 
-PrzykĹ‚ad:
+Przykład:
 
 ```text
 data/datasets/{dataset_id}/v001/
@@ -675,15 +675,15 @@ Pierwsza wersja datasetu ma numer:
 v001
 ```
 
-Kolejne wersje tworzone sÄ… przez znalezienie nastÄ™pnego wolnego numeru wersji.
+Kolejne wersje tworzone są przez znalezienie następnego wolnego numeru wersji.
 
-IstniejÄ…cych wersji nie nadpisujemy.
+Istniejących wersji nie nadpisujemy.
 
 ## 17. Kiedy powstaje nowy dataset
 
-Nowy `dataset_id` powstaje, gdy zmienia siÄ™ toĹĽsamoĹ›Ä‡ datasetu.
+Nowy `dataset_id` powstaje, gdy zmienia się tożsamość datasetu.
 
-Elementy toĹĽsamoĹ›ci datasetu:
+Elementy tożsamości datasetu:
 
 * provider,
 * asset_class,
@@ -694,7 +694,7 @@ Elementy toĹĽsamoĹ›ci datasetu:
 * requested_start,
 * requested_end.
 
-Zmiana interwaĹ‚u z `1d` na `1h` tworzy nowy dataset.
+Zmiana interwału z `1d` na `1h` tworzy nowy dataset.
 
 Zmiana zakresu dat tworzy nowy dataset.
 
@@ -702,21 +702,21 @@ Zmiana providera tworzy nowy dataset.
 
 ## 18. Kiedy powstaje nowa wersja datasetu
 
-Nowa wersja tego samego datasetu powstaje wtedy, gdy przy tych samych parametrach toĹĽsamoĹ›ci ponownie tworzymy pakiet danych.
+Nowa wersja tego samego datasetu powstaje wtedy, gdy przy tych samych parametrach tożsamości ponownie tworzymy pakiet danych.
 
-Nowa wersja moĹĽe powstaÄ‡ miÄ™dzy innymi przez:
+Nowa wersja może powstać między innymi przez:
 
 * ponowne pobranie danych,
-* zmianÄ™ wersji konektora,
-* zmianÄ™ logiki normalizacji,
-* zmianÄ™ schematu metadanych,
-* zmianÄ™ schematu raportu walidacji,
-* naprawÄ™ bĹ‚Ä™du w przetwarzaniu,
-* rÄ™czne przebudowanie datasetu.
+* zmianę wersji konektora,
+* zmianę logiki normalizacji,
+* zmianę schematu metadanych,
+* zmianę schematu raportu walidacji,
+* naprawę błędu w przetwarzaniu,
+* ręczne przebudowanie datasetu.
 
-KaĹĽda wersja datasetu powinna zawieraÄ‡ w `metadata.json` sekcjÄ™ `version_info` z numerem wersji, powodem utworzenia wersji oraz opcjonalnym wskazaniem poprzedniej wersji.
+Każda wersja datasetu powinna zawierać w `metadata.json` sekcję `version_info` z numerem wersji, powodem utworzenia wersji oraz opcjonalnym wskazaniem poprzedniej wersji.
 
-PrzykĹ‚ad:
+Przykład:
 
 ```json
 {
@@ -728,7 +728,7 @@ PrzykĹ‚ad:
 }
 ```
 
-PrzykĹ‚adowe wartoĹ›ci `created_reason`:
+Przykładowe wartości `created_reason`:
 
 ```text
 initial_creation
@@ -740,11 +740,11 @@ validation_schema_change
 manual_rebuild
 ```
 
-Po utworzeniu wersji datasetu nie modyfikujemy jej zawartoĹ›ci. JeĹ›li konieczna jest zmiana danych, metadanych, normalizacji lub raportu walidacji, tworzona jest nowa wersja datasetu.
+Po utworzeniu wersji datasetu nie modyfikujemy jej zawartości. Jeśli konieczna jest zmiana danych, metadanych, normalizacji lub raportu walidacji, tworzona jest nowa wersja datasetu.
 
 W v0.2.0 nie tworzymy katalogu `latest`.
 
-Odczyt datasetu powinien wskazywaÄ‡ konkretny:
+Odczyt datasetu powinien wskazywać konkretny:
 
 ```text
 dataset_id + version
@@ -762,13 +762,13 @@ Minimalny publiczny interfejs Data Engine w v0.2.0 obejmuje:
 
 ### 19.1. create_dataset
 
-Tworzy nowÄ… wersjÄ™ datasetu na podstawie ĹĽÄ…dania danych.
+Tworzy nową wersję datasetu na podstawie żądania danych.
 
 Odpowiada za:
 
-* pobranie danych ze ĹşrĂłdĹ‚a,
+* pobranie danych ze źródła,
 * zapis raw data,
-* normalizacjÄ™ OHLCV,
+* normalizację OHLCV,
 * zapis `metadata.json`,
 * wykonanie walidacji,
 * zapis `validation_report.json`.
@@ -779,7 +779,7 @@ Logika:
 create_dataset(request) -> dataset_reference
 ```
 
-Request powinien zawieraÄ‡ co najmniej:
+Request powinien zawierać co najmniej:
 
 * provider,
 * asset_class,
@@ -790,7 +790,7 @@ Request powinien zawieraÄ‡ co najmniej:
 * requested_start,
 * requested_end.
 
-Wynik powinien zawieraÄ‡ co najmniej:
+Wynik powinien zawierać co najmniej:
 
 * dataset_id,
 * version,
@@ -800,7 +800,7 @@ Wynik powinien zawieraÄ‡ co najmniej:
 
 ### 19.2. validate_dataset
 
-Wykonuje walidacjÄ™ istniejÄ…cej wersji datasetu i zapisuje `validation_report.json`.
+Wykonuje walidację istniejącej wersji datasetu i zapisuje `validation_report.json`.
 
 ### 19.3. load_metadata
 
@@ -821,41 +821,41 @@ W v0.2.0 Data Engine nie posiada jeszcze funkcji:
 * `update_dataset`,
 * `overwrite_dataset`,
 * `get_latest_valid_dataset`,
-* porĂłwnywania ĹşrĂłdeĹ‚,
-* rankingu datasetĂłw,
-* rankingu providerĂłw,
-* obsĹ‚ugi wielu providerĂłw naraz,
-* obsĹ‚ugi wielu instrumentĂłw naraz,
-* obsĹ‚ugi live tradingu,
-* obsĹ‚ugi strategii,
-* obsĹ‚ugi backtestingu,
-* obsĹ‚ugi agentĂłw AI.
+* porównywania źródeł,
+* rankingu datasetów,
+* rankingu providerów,
+* obsługi wielu providerów naraz,
+* obsługi wielu instrumentów naraz,
+* obsługi live tradingu,
+* obsługi strategii,
+* obsługi backtestingu,
+* obsługi agentów AI.
 
-## 21. Dalszy rozwĂłj interfejsu Data Engine
+## 21. Dalszy rozwój interfejsu Data Engine
 
 Minimalny interfejs Data Engine w v0.2.0 jest interfejsem startowym.
 
-W przyszĹ‚oĹ›ci Data Engine moĹĽe zostaÄ‡ rozszerzony miÄ™dzy innymi o:
+W przyszłości Data Engine może zostać rozszerzony między innymi o:
 
-* obsĹ‚ugÄ™ wielu providerĂłw danych,
-* obsĹ‚ugÄ™ Dukascopy jako drugiego ĹşrĂłdĹ‚a,
-* pobieranie wielu instrumentĂłw,
-* pobieranie wielu interwaĹ‚Ăłw,
-* aktualizowanie datasetĂłw przez tworzenie nowych wersji,
-* pobieranie brakujÄ…cych zakresĂłw danych,
-* Ĺ‚Ä…czenie datasetĂłw,
-* porĂłwnywanie datasetĂłw miÄ™dzy ĹşrĂłdĹ‚ami,
-* ranking jakoĹ›ci ĹşrĂłdeĹ‚ danych,
-* ocenÄ™ przydatnoĹ›ci datasetu dla konkretnej strategii,
-* obsĹ‚ugÄ™ formatĂłw innych niĹĽ CSV,
+* obsługę wielu providerów danych,
+* obsługę Dukascopy jako drugiego źródła,
+* pobieranie wielu instrumentów,
+* pobieranie wielu interwałów,
+* aktualizowanie datasetów przez tworzenie nowych wersji,
+* pobieranie brakujących zakresów danych,
+* łączenie datasetów,
+* porównywanie datasetów między źródłami,
+* ranking jakości źródeł danych,
+* ocenę przydatności datasetu dla konkretnej strategii,
+* obsługę formatów innych niż CSV,
 * cache danych,
 * interfejs CLI,
-* interfejs dla przyszĹ‚ych moduĹ‚Ăłw badawczych,
-* interfejs dla przyszĹ‚ych agentĂłw AI.
+* interfejs dla przyszłych modułów badawczych,
+* interfejs dla przyszłych agentów AI.
 
-Rozszerzenia interfejsu powinny byÄ‡ dodawane stopniowo i dopiero po wczeĹ›niejszym zaprojektowaniu.
+Rozszerzenia interfejsu powinny być dodawane stopniowo i dopiero po wcześniejszym zaprojektowaniu.
 
-Publiczny interfejs Data Engine powinien operowaÄ‡ na pojÄ™ciach domenowych, takich jak:
+Publiczny interfejs Data Engine powinien operować na pojęciach domenowych, takich jak:
 
 * dataset,
 * dataset_id,
@@ -865,34 +865,34 @@ Publiczny interfejs Data Engine powinien operowaÄ‡ na pojÄ™ciach domenowyc
 * interval,
 * time_range.
 
-Publiczny interfejs nie powinien byÄ‡ projektowany pod szczegĂłĹ‚y konkretnego API.
+Publiczny interfejs nie powinien być projektowany pod szczegóły konkretnego API.
 
-SzczegĂłĹ‚y providera powinny byÄ‡ ukryte w konektorach.
+Szczegóły providera powinny być ukryte w konektorach.
 
-## 22. KompatybilnoĹ›Ä‡ wsteczna
+## 22. Kompatybilność wsteczna
 
-RozwĂłj Data Engine powinien zachowywaÄ‡ kompatybilnoĹ›Ä‡ wstecznÄ….
+Rozwój Data Engine powinien zachowywać kompatybilność wsteczną.
 
-Nowe funkcje nie mogÄ…:
+Nowe funkcje nie mogą:
 
-* uniewaĹĽniaÄ‡ istniejÄ…cych datasetĂłw,
-* zmieniaÄ‡ znaczenia wczeĹ›niejszych wersji,
-* wymuszaÄ‡ modyfikacji danych juĹĽ zapisanych,
-* nadpisywaÄ‡ istniejÄ…cych wersji datasetĂłw,
-* zmieniaÄ‡ znaczenia istniejÄ…cych operacji publicznego interfejsu.
+* unieważniać istniejących datasetów,
+* zmieniać znaczenia wcześniejszych wersji,
+* wymuszać modyfikacji danych już zapisanych,
+* nadpisywać istniejących wersji datasetów,
+* zmieniać znaczenia istniejących operacji publicznego interfejsu.
 
-W szczegĂłlnoĹ›ci:
+W szczególności:
 
-* istniejÄ…ce datasety i ich wersje muszÄ… pozostaÄ‡ moĹĽliwe do odczytania,
-* stare `metadata.json` i `validation_report.json` muszÄ… pozostaÄ‡ interpretowalne przez wersjÄ™ schematu,
-* dodanie nowego providera nie moĹĽe zmieniaÄ‡ znaczenia datasetĂłw z wczeĹ›niejszych providerĂłw,
-* dodanie nowego formatu zapisu nie moĹĽe uniewaĹĽniaÄ‡ datasetĂłw zapisanych jako CSV,
-* dodanie funkcji typu `get_latest_valid_dataset` nie moĹĽe zastÄ…piÄ‡ moĹĽliwoĹ›ci jawnego odczytu przez `dataset_id + version`,
-* nowe funkcje nie powinny nadpisywaÄ‡ ani modyfikowaÄ‡ istniejÄ…cych wersji datasetĂłw.
+* istniejące datasety i ich wersje muszą pozostać możliwe do odczytania,
+* stare `metadata.json` i `validation_report.json` muszą pozostać interpretowalne przez wersję schematu,
+* dodanie nowego providera nie może zmieniać znaczenia datasetów z wcześniejszych providerów,
+* dodanie nowego formatu zapisu nie może unieważniać datasetów zapisanych jako CSV,
+* dodanie funkcji typu `get_latest_valid_dataset` nie może zastąpić możliwości jawnego odczytu przez `dataset_id + version`,
+* nowe funkcje nie powinny nadpisywać ani modyfikować istniejących wersji datasetów.
 
-JeĹĽeli w przyszĹ‚oĹ›ci konieczna bÄ™dzie zmiana niekompatybilna wstecznie, musi zostaÄ‡ wczeĹ›niej opisana w dokumentacji albo ADR oraz powinna mieÄ‡ jasnÄ… Ĺ›cieĹĽkÄ™ migracji.
+Jeżeli w przyszłości konieczna będzie zmiana niekompatybilna wstecznie, musi zostać wcześniej opisana w dokumentacji albo ADR oraz powinna mieć jasną ścieżkę migracji.
 
-## 23. Minimalna struktura moduĹ‚Ăłw w src/tradinglab
+## 23. Minimalna struktura modułów w src/tradinglab
 
 Minimalna struktura kodu Data Engine:
 
@@ -916,93 +916,93 @@ src/
         polygon_forex.py
 ```
 
-OdpowiedzialnoĹ›ci:
+Odpowiedzialności:
 
-| Plik / katalog                | OdpowiedzialnoĹ›Ä‡                                            |
+| Plik / katalog                | Odpowiedzialność                                            |
 | ----------------------------- | ----------------------------------------------------------- |
-| `data_engine/`                | gĹ‚Ăłwny moduĹ‚ Data Engine                                    |
+| `data_engine/`                | główny moduł Data Engine                                    |
 | `engine.py`                   | publiczny interfejs Data Engine                             |
-| `models.py`                   | modele requestĂłw, referencji datasetu, metadanych i raportu |
+| `models.py`                   | modele requestów, referencji datasetu, metadanych i raportu |
 | `dataset_id.py`               | generowanie `dataset_id`                                    |
-| `storage.py`                  | zapis i odczyt plikĂłw datasetu                              |
+| `storage.py`                  | zapis i odczyt plików datasetu                              |
 | `validation.py`               | walidacja `candles.csv` i tworzenie raportu                 |
 | `connectors/base.py`          | bazowy interfejs konektora danych                           |
 | `connectors/polygon_forex.py` | pierwszy konektor Polygon/Massive Forex                     |
-| `main.py`                     | na razie moĹĽe pozostaÄ‡ minimalny                            |
+| `main.py`                     | na razie może pozostać minimalny                            |
 
-W v0.2.0 nie tworzymy jeszcze moduĹ‚Ăłw:
+W v0.2.0 nie tworzymy jeszcze modułów:
 
 * strategii,
 * backtestingu,
-* agentĂłw AI,
-* rankingu ĹşrĂłdeĹ‚,
+* agentów AI,
+* rankingu źródeł,
 * live tradingu,
-* brokerĂłw,
-* egzekucji zleceĹ„.
+* brokerów,
+* egzekucji zleceń.
 
 ## 24. Zasady stabilnego rozwoju struktury kodu
 
-Struktura Data Engine ma wspieraÄ‡ stabilny rozwĂłj projektu.
+Struktura Data Engine ma wspierać stabilny rozwój projektu.
 
-Nowe funkcje powinny byÄ‡ dodawane przez rozszerzanie architektury, a nie przez zmianÄ™ znaczenia wczeĹ›niej dziaĹ‚ajÄ…cych elementĂłw.
+Nowe funkcje powinny być dodawane przez rozszerzanie architektury, a nie przez zmianę znaczenia wcześniej działających elementów.
 
-W szczegĂłlnoĹ›ci:
+W szczególności:
 
-* dodanie nowego providera nie powinno wymagaÄ‡ przebudowy istniejÄ…cego konektora Polygon/Massive,
-* dodanie Dukascopy nie powinno zmieniaÄ‡ dziaĹ‚ania datasetĂłw utworzonych z Polygon/Massive,
-* dodanie nowego formatu zapisu, np. Parquet, nie powinno uniewaĹĽniaÄ‡ CSV,
-* dodanie nowych reguĹ‚ walidacji nie powinno psuÄ‡ odczytu starszych raportĂłw walidacji,
-* dodanie nowych pĂłl w `metadata.json` nie powinno uniemoĹĽliwiaÄ‡ odczytu starszych metadanych,
-* stare datasety powinny pozostaÄ‡ odczytywalne przez `dataset_id + version`,
-* istniejÄ…ce wersje datasetĂłw nie powinny byÄ‡ modyfikowane ani nadpisywane,
-* publiczny interfejs Data Engine powinien byÄ‡ moĹĽliwie stabilny.
+* dodanie nowego providera nie powinno wymagać przebudowy istniejącego konektora Polygon/Massive,
+* dodanie Dukascopy nie powinno zmieniać działania datasetów utworzonych z Polygon/Massive,
+* dodanie nowego formatu zapisu, np. Parquet, nie powinno unieważniać CSV,
+* dodanie nowych reguł walidacji nie powinno psuć odczytu starszych raportów walidacji,
+* dodanie nowych pól w `metadata.json` nie powinno uniemożliwiać odczytu starszych metadanych,
+* stare datasety powinny pozostać odczytywalne przez `dataset_id + version`,
+* istniejące wersje datasetów nie powinny być modyfikowane ani nadpisywane,
+* publiczny interfejs Data Engine powinien być możliwie stabilny.
 
-Data Engine powinien mieÄ‡ wyraĹşnie oddzielone:
+Data Engine powinien mieć wyraźnie oddzielone:
 
 * publiczny interfejs,
 * modele danych,
-* konektory providerĂłw,
-* zapis i odczyt plikĂłw,
-* walidacjÄ™,
-* logikÄ™ generowania `dataset_id`.
+* konektory providerów,
+* zapis i odczyt plików,
+* walidację,
+* logikę generowania `dataset_id`.
 
-RozszerzalnoĹ›Ä‡ nie oznacza tworzenia nadmiarowych moduĹ‚Ăłw na zapas.
+Rozszerzalność nie oznacza tworzenia nadmiarowych modułów na zapas.
 
-W v0.2.0 struktura kodu ma pozostaÄ‡ minimalna. Nowe warstwy, katalogi i abstrakcje dodajemy dopiero wtedy, gdy wynikajÄ… z realnych potrzeb projektu.
+W v0.2.0 struktura kodu ma pozostać minimalna. Nowe warstwy, katalogi i abstrakcje dodajemy dopiero wtedy, gdy wynikają z realnych potrzeb projektu.
 
-## 25. Minimalny zakres testĂłw v0.2.0
+## 25. Minimalny zakres testów v0.2.0
 
-Testy Data Engine w v0.2.0 majÄ… dziaĹ‚aÄ‡ lokalnie i powtarzalnie.
+Testy Data Engine w v0.2.0 mają działać lokalnie i powtarzalnie.
 
-Testy automatyczne nie mogÄ… wymagaÄ‡:
+Testy automatyczne nie mogą wymagać:
 
 * prawdziwego API key,
 * internetu,
-* dostÄ™pnoĹ›ci zewnÄ™trznego providera,
-* limitĂłw API,
+* dostępności zewnętrznego providera,
+* limitów API,
 * prawdziwego katalogu roboczego `data/datasets/`.
 
-Do testĂłw uĹĽywane sÄ…:
+Do testów używane są:
 
-* lokalne dane przykĹ‚adowe,
+* lokalne dane przykładowe,
 * fixtures,
 * katalogi tymczasowe tworzone przez pytest.
 
-Minimalny zakres testĂłw obejmuje:
+Minimalny zakres testów obejmuje:
 
 * generowanie `dataset_id`,
-* tworzenie struktury katalogĂłw datasetu,
+* tworzenie struktury katalogów datasetu,
 * zapis i odczyt raw data,
 * zapis i odczyt normalized candles,
 * zapis i odczyt `metadata.json`,
 * zapis i odczyt `validation_report.json`,
-* walidacjÄ™ poprawnego pliku `candles.csv`,
-* walidacjÄ™ bĹ‚Ä™dnego pliku `candles.csv`,
+* walidację poprawnego pliku `candles.csv`,
+* walidację błędnego pliku `candles.csv`,
 * tworzenie kolejnych wersji `v001`, `v002` bez nadpisywania,
 * odczyt datasetu przez jawne wskazanie `dataset_id` i `version`,
-* podstawowÄ… obsĹ‚ugÄ™ bĹ‚Ä™dnych ĹĽÄ…daĹ„ wejĹ›ciowych.
+* podstawową obsługę błędnych żądań wejściowych.
 
-## 26. Proponowana struktura testĂłw
+## 26. Proponowana struktura testów
 
 ```text
 tests/
@@ -1025,7 +1025,7 @@ tests/
         validation_report.json
 ```
 
-## 27. PrzykĹ‚adowe testy v0.2.0
+## 27. Przykładowe testy v0.2.0
 
 ### 27.1. Test generowania dataset_id
 
@@ -1050,7 +1050,7 @@ polygon_massive_forex_eurusd_ohlcv_provider_1d_2024-01-01_2024-12-31
 
 ### 27.2. Test zapisu struktury datasetu
 
-Po utworzeniu datasetu powinny istnieÄ‡:
+Po utworzeniu datasetu powinny istnieć:
 
 ```text
 raw/response.json
@@ -1061,7 +1061,7 @@ validation_report.json
 
 ### 27.3. Test metadanych
 
-`metadata.json` powinien zawieraÄ‡ co najmniej:
+`metadata.json` powinien zawierać co najmniej:
 
 ```text
 metadata_schema_version
@@ -1082,9 +1082,9 @@ data_format
 version_info
 ```
 
-### 27.4. Test walidacji poprawnych Ĺ›wiec
+### 27.4. Test walidacji poprawnych świec
 
-Poprawny plik `candles.csv` powinien otrzymaÄ‡ status:
+Poprawny plik `candles.csv` powinien otrzymać status:
 
 ```text
 valid
@@ -1096,51 +1096,51 @@ albo:
 valid_with_warnings
 ```
 
-### 27.5. Test walidacji bĹ‚Ä™dnych Ĺ›wiec
+### 27.5. Test walidacji błędnych świec
 
-Dla bĹ‚Ä™dnego pliku, na przykĹ‚ad z sytuacjÄ…:
+Dla błędnego pliku, na przykład z sytuacją:
 
 ```text
 high < low
 ```
 
-raport powinien otrzymaÄ‡ status:
+raport powinien otrzymać status:
 
 ```text
 invalid
 ```
 
-oraz zawieraÄ‡ bĹ‚Ä…d walidacji.
+oraz zawierać błąd walidacji.
 
 ### 27.6. Test wersjonowania
 
-Tworzenie tego samego datasetu po raz pierwszy powinno utworzyÄ‡:
+Tworzenie tego samego datasetu po raz pierwszy powinno utworzyć:
 
 ```text
 v001
 ```
 
-Ponowne utworzenie tego samego datasetu powinno utworzyÄ‡:
+Ponowne utworzenie tego samego datasetu powinno utworzyć:
 
 ```text
 v002
 ```
 
-Test powinien potwierdzaÄ‡, ĹĽe `v001` nadal istnieje i nie zostaĹ‚a zmodyfikowana.
+Test powinien potwierdzać, że `v001` nadal istnieje i nie została zmodyfikowana.
 
 ### 27.7. Test odczytu konkretnej wersji
 
-Data Engine powinien pozwalaÄ‡ na odczyt konkretnej wersji przez:
+Data Engine powinien pozwalać na odczyt konkretnej wersji przez:
 
 ```text
 dataset_id + version
 ```
 
-bez uĹĽywania katalogu `latest`.
+bez używania katalogu `latest`.
 
-### 27.8. Test braku sekretĂłw w metadanych
+### 27.8. Test braku sekretów w metadanych
 
-Test powinien potwierdzaÄ‡, ĹĽe `metadata.json` nie zawiera API key, tokenĂłw ani innych sekretĂłw.
+Test powinien potwierdzać, że `metadata.json` nie zawiera API key, tokenów ani innych sekretów.
 
 ## 28. Czego nie testujemy w v0.2.0
 
@@ -1148,76 +1148,76 @@ W v0.2.0 nie testujemy jeszcze:
 
 * prawdziwego API Polygon/Massive,
 * Dukascopy,
-* porĂłwnywania ĹşrĂłdeĹ‚,
-* rankingu jakoĹ›ci datasetĂłw,
+* porównywania źródeł,
+* rankingu jakości datasetów,
 * backtestingu,
 * strategii,
-* agentĂłw AI,
-* wielu instrumentĂłw naraz,
+* agentów AI,
+* wielu instrumentów naraz,
 * real-time,
-* duĹĽych plikĂłw danych.
+* dużych plików danych.
 
-## 29. Dalszy rozwĂłj testĂłw
+## 29. Dalszy rozwój testów
 
-Zakres testĂłw Data Engine powinien rosnÄ…Ä‡ razem z funkcjonalnoĹ›ciÄ….
+Zakres testów Data Engine powinien rosnąć razem z funkcjonalnością.
 
-KaĹĽda nowa publiczna funkcja, nowy provider, nowy format zapisu, nowa reguĹ‚a walidacji albo zmiana schematu metadanych powinna otrzymaÄ‡ test automatyczny.
+Każda nowa publiczna funkcja, nowy provider, nowy format zapisu, nowa reguła walidacji albo zmiana schematu metadanych powinna otrzymać test automatyczny.
 
-Testy powinny chroniÄ‡:
+Testy powinny chronić:
 
-* kompatybilnoĹ›Ä‡ wstecznÄ…,
-* odczyt wczeĹ›niej utworzonych datasetĂłw,
-* brak nadpisywania istniejÄ…cych wersji,
-* stabilnoĹ›Ä‡ publicznego interfejsu,
-* powtarzalnoĹ›Ä‡ dziaĹ‚ania Data Engine,
-* brak przypadkowego uĹĽycia zewnÄ™trznych API w testach offline,
-* brak zapisywania sekretĂłw do datasetĂłw.
+* kompatybilność wsteczną,
+* odczyt wcześniej utworzonych datasetów,
+* brak nadpisywania istniejących wersji,
+* stabilność publicznego interfejsu,
+* powtarzalność działania Data Engine,
+* brak przypadkowego użycia zewnętrznych API w testach offline,
+* brak zapisywania sekretów do datasetów.
 
-FunkcjonalnoĹ›Ä‡ Data Engine uznajemy za gotowÄ… dopiero wtedy, gdy przechodzi testy automatyczne.
+Funkcjonalność Data Engine uznajemy za gotową dopiero wtedy, gdy przechodzi testy automatyczne.
 
 ## 30. ADR dla Data Engine v0.2.0
 
-Decyzje opisane w tym dokumencie majÄ… znaczenie architektoniczne.
+Decyzje opisane w tym dokumencie mają znaczenie architektoniczne.
 
-Dlatego dla Data Engine v0.2.0 powinien zostaÄ‡ utworzony osobny ADR, na przykĹ‚ad:
+Dlatego dla Data Engine v0.2.0 powinien zostać utworzony osobny ADR, na przykład:
 
 ```text
 dokumentacja/decyzje/ADR-0003-data-engine-v0-2-implementacja.md
 ```
 
-ADR powinien krĂłtko opisywaÄ‡ najwaĹĽniejsze decyzje:
+ADR powinien krótko opisywać najważniejsze decyzje:
 
-* wybĂłr Polygon/Massive Free jako pierwszego ĹşrĂłdĹ‚a danych,
+* wybór Polygon/Massive Free jako pierwszego źródła danych,
 * EUR/USD jako pierwszy instrument referencyjny,
 * raw JSON i normalized CSV jako formaty startowe,
 * `metadata.json` i `validation_report.json`,
-* strukturÄ™ `data/datasets/{dataset_id}/v001/`,
+* strukturę `data/datasets/{dataset_id}/v001/`,
 * deterministyczny `dataset_id`,
 * wersjonowanie bez nadpisywania,
 * testy offline,
-* zasadÄ™ kompatybilnoĹ›ci wstecznej.
+* zasadę kompatybilności wstecznej.
 
-PeĹ‚ne szczegĂłĹ‚y techniczne pozostajÄ… w tym dokumencie implementacyjnym.
+Pełne szczegóły techniczne pozostają w tym dokumencie implementacyjnym.
 
 ## 31. Podsumowanie decyzji v0.2.0
 
-W v0.2.0 Data Engine implementuje maĹ‚y, stabilny fundament:
+W v0.2.0 Data Engine implementuje mały, stabilny fundament:
 
-* jedno ĹşrĂłdĹ‚o danych,
+* jedno źródło danych,
 * jeden instrument referencyjny,
 * jeden typ danych,
 * prosty format zapisu,
 * metadane,
-* walidacjÄ™,
+* walidację,
 * wersjonowanie,
 * testy offline.
 
-Decyzje gĹ‚Ăłwne:
+Decyzje główne:
 
 ```text
-ĹąrĂłdĹ‚o danych: Polygon/Massive Free
+Źródło danych: Polygon/Massive Free
 Instrument: EUR/USD
-Typ danych: historyczne Ĺ›wiece OHLCV
+Typ danych: historyczne świece OHLCV
 Raw data: raw/response.json
 Normalized data: normalized/candles.csv
 Metadane: metadata.json
@@ -1226,4 +1226,4 @@ Struktura: data/datasets/{dataset_id}/v001/
 Testy: offline, fixtures, katalog tymczasowy
 ```
 
-Data Engine v0.2.0 ma byÄ‡ maĹ‚ym krokiem, ale zaprojektowanym tak, aby w przyszĹ‚oĹ›ci moĹĽliwy byĹ‚ rozwĂłj bez rozwalania wczeĹ›niejszych, dziaĹ‚ajÄ…cych wersji.
+Data Engine v0.2.0 ma być małym krokiem, ale zaprojektowanym tak, aby w przyszłości możliwy był rozwój bez rozwalania wcześniejszych, działających wersji.
