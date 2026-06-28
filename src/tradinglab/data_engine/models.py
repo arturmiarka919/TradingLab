@@ -16,3 +16,20 @@ class DatasetRequest:
     interval: str
     requested_start: date
     requested_end: date
+
+
+@dataclass(frozen=True)
+class DatasetMetadata:
+    """Metadata describing a stored dataset version."""
+
+    dataset_id: str
+    version: str
+    provider: str
+    asset_class: str
+    symbol: str
+    data_type: str
+    price_type: str
+    interval: str
+    requested_start: date
+    requested_end: date
+    status: str
