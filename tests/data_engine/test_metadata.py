@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from tradinglab.data_engine.metadata import (
+    load_metadata,
     metadata_from_dict,
     metadata_to_dict,
     write_metadata,
@@ -76,5 +77,15 @@ def test_write_metadata_can_be_read_back_as_dataset_metadata(tmp_path: Path) -> 
 
     loaded_data = json.loads(metadata_path.read_text(encoding="utf-8"))
     loaded_metadata = metadata_from_dict(loaded_data)
+
+    assert loaded_metadata == EXPECTED_METADATA
+
+
+def test_load_metadata_reads_metadata_json(tmp_path: Path) -> None:
+    metadata_path = tmp_path / "metadata.json"
+
+    write_metadata(metadata_path, EXPECTED_METADATA)
+
+    loaded_metadata = load_metadata(metadata_path)
 
     assert loaded_metadata == EXPECTED_METADATA

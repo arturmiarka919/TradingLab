@@ -46,6 +46,14 @@ def write_metadata(path: Path, metadata: DatasetMetadata) -> None:
     path.write_text(f"{json_text}\n", encoding="utf-8")
 
 
+def load_metadata(path: Path) -> DatasetMetadata:
+    """Load dataset metadata from a JSON file."""
+
+    loaded_data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+
+    return metadata_from_dict(loaded_data)
+
+
 def _format_date(value: date) -> str:
     return value.isoformat()
 
