@@ -1,5 +1,11 @@
 # Data Engine
 
+## Dokument implementacyjny
+
+Szczegółowy projekt implementacji Data Engine v0.2.0 znajduje się w dokumencie:
+
+- [DATA_ENGINE_IMPLEMENTACJA_V0_2.md](DATA_ENGINE_IMPLEMENTACJA_V0_2.md)
+
 ## Status dokumentu
 
 Dokument architektoniczny dla etapu:
