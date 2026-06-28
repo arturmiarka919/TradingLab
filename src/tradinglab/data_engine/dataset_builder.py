@@ -1,8 +1,8 @@
 """Dataset build orchestration helpers for TradingLab Data Engine."""
 
-import csv
 from pathlib import Path
 
+from tradinglab.data_engine.data_file import write_empty_ohlcv_csv
 from tradinglab.data_engine.dataset_id import generate_dataset_id
 from tradinglab.data_engine.metadata import write_metadata
 from tradinglab.data_engine.models import (
@@ -19,9 +19,6 @@ from tradinglab.data_engine.storage import (
     build_validation_report_path,
 )
 from tradinglab.data_engine.validation_report import write_validation_report
-
-
-OHLCV_HEADER = ["timestamp", "open", "high", "low", "close", "volume"]
 
 
 def create_dataset(
@@ -71,7 +68,7 @@ def create_dataset(
 
     write_metadata(metadata_path, metadata)
     write_validation_report(validation_report_path, validation_report)
-    _write_empty_ohlcv_csv(data_path)
+    write_empty_ohlcv_csv(data_path)
 
     return DatasetBuildResult(
         dataset_id=dataset_id,
@@ -82,11 +79,3 @@ def create_dataset(
         validation_report_path=validation_report_path,
         status=DATASET_STATUS_CREATED,
     )
-
-
-def _write_empty_ohlcv_csv(path: Path) -> None:
-    """Write empty OHLCV CSV file with header only."""
-
-    with path.open("w", encoding="utf-8", newline="") as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerow(OHLCV_HEADER)
