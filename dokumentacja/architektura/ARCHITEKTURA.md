@@ -24,6 +24,9 @@ Każdy moduł posiada jasno określoną odpowiedzialność i komunikuje się z p
 
 ### Data Engine
 Odpowiada za pobieranie, przechowywanie oraz przygotowanie danych rynkowych.
+Szczegółowy opis modułu znajduje się w dokumencie:
+
+[Data Engine](DATA_ENGINE.md)
 
 ### Research Engine
 Odpowiada za zarządzanie hipotezami, eksperymentami i wynikami badań.

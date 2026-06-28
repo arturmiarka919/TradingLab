@@ -19,6 +19,7 @@ Najważniejsze dokumenty projektu:
 * [Konstytucja projektu](dokumentacja/architektura/KONSTYTUCJA.md)
 * [Architektura systemu](dokumentacja/architektura/ARCHITEKTURA.md)
 * [Proces badawczy](dokumentacja/badania/PROCES_BADAWCZY.md)
+* [Data Engine](dokumentacja/architektura/DATA_ENGINE.md)
 * [Mapa drogowa](dokumentacja/mapa_drogowa/ROADMAP.md)
 * [ADR-0001 — Fundamenty projektu](dokumentacja/decyzje/ADR-0001-fundamenty-projektu.md)
 
