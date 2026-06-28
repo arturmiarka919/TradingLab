@@ -3,8 +3,23 @@
 import csv
 from pathlib import Path
 
+from tradinglab.data_engine.models import OhlcvBar
+
 
 OHLCV_HEADER = ("timestamp", "open", "high", "low", "close", "volume")
+
+
+def ohlcv_bar_to_csv_row(bar: OhlcvBar) -> tuple[str, str, str, str, str, str]:
+    """Convert OHLCV bar to CSV row values."""
+
+    return (
+        bar.timestamp.isoformat(),
+        str(bar.open),
+        str(bar.high),
+        str(bar.low),
+        str(bar.close),
+        str(bar.volume),
+    )
 
 
 def write_empty_ohlcv_csv(path: Path) -> None:
