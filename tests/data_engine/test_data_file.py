@@ -9,6 +9,7 @@ from tradinglab.data_engine.data_file import (
     OHLCV_HEADER,
     ohlcv_bar_to_csv_row,
     write_empty_ohlcv_csv,
+    write_ohlcv_csv,
 )
 
 
@@ -45,4 +46,34 @@ def test_write_empty_ohlcv_csv_writes_header_only(tmp_path: Path) -> None:
 
     assert data_path.read_text(encoding="utf-8").splitlines() == [
         "timestamp,open,high,low,close,volume"
+    ]
+
+
+def test_write_ohlcv_csv_writes_header_and_bars(tmp_path: Path) -> None:
+    data_path = tmp_path / "data.csv"
+    bars = (
+        OhlcvBar(
+            timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+            open=Decimal("1.1000"),
+            high=Decimal("1.1200"),
+            low=Decimal("1.0900"),
+            close=Decimal("1.1100"),
+            volume=Decimal("12345.67"),
+        ),
+        OhlcvBar(
+            timestamp=datetime(2024, 1, 3, 0, 0, tzinfo=UTC),
+            open=Decimal("1.1100"),
+            high=Decimal("1.1300"),
+            low=Decimal("1.1000"),
+            close=Decimal("1.1250"),
+            volume=Decimal("23456.78"),
+        ),
+    )
+
+    write_ohlcv_csv(data_path, bars)
+
+    assert data_path.read_text(encoding="utf-8").splitlines() == [
+        "timestamp,open,high,low,close,volume",
+        "2024-01-02T00:00:00+00:00,1.1000,1.1200,1.0900,1.1100,12345.67",
+        "2024-01-03T00:00:00+00:00,1.1100,1.1300,1.1000,1.1250,23456.78",
     ]
