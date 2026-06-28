@@ -2,6 +2,8 @@
 
 from dataclasses import asdict
 from datetime import date
+import json
+from pathlib import Path
 from typing import Any
 
 from tradinglab.data_engine.models import DatasetMetadata
@@ -33,6 +35,15 @@ def metadata_from_dict(data: dict[str, Any]) -> DatasetMetadata:
         requested_end=_parse_date(str(data["requested_end"])),
         status=str(data["status"]),
     )
+
+
+def write_metadata(path: Path, metadata: DatasetMetadata) -> None:
+    """Write dataset metadata to a JSON file."""
+
+    metadata_dict = metadata_to_dict(metadata)
+    json_text = json.dumps(metadata_dict, ensure_ascii=False, indent=2)
+
+    path.write_text(f"{json_text}\n", encoding="utf-8")
 
 
 def _format_date(value: date) -> str:
