@@ -54,3 +54,16 @@ def write_ohlcv_csv(path: Path, bars: Iterable[OhlcvBar]) -> None:
         writer = csv.writer(csv_file)
         writer.writerow(OHLCV_HEADER)
         writer.writerows(ohlcv_bar_to_csv_row(bar) for bar in bars)
+
+
+def read_ohlcv_csv(path: Path) -> tuple[OhlcvBar, ...]:
+    """Read OHLCV CSV file and return bars."""
+
+    with path.open("r", encoding="utf-8", newline="") as csv_file:
+        reader = csv.reader(csv_file)
+        header = next(reader, None)
+
+        if tuple(header or ()) != OHLCV_HEADER:
+            raise ValueError("OHLCV CSV header does not match expected header.")
+
+        return tuple(csv_row_to_ohlcv_bar(row) for row in reader)
