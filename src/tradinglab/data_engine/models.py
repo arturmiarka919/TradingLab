@@ -7,7 +7,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class DatasetRequest:
-    """Request describing a market data dataset."""
+    """Input parameters describing requested market data."""
 
     provider: str
     asset_class: str
@@ -21,7 +21,7 @@ class DatasetRequest:
 
 @dataclass(frozen=True)
 class DatasetMetadata:
-    """Metadata describing a stored dataset version."""
+    """Metadata describing a dataset version."""
 
     dataset_id: str
     version: str
@@ -57,6 +57,7 @@ class DatasetBuildResult:
     dataset_id: str
     version: str
     dataset_path: Path
+    data_path: Path
     metadata_path: Path
     validation_report_path: Path
     status: str

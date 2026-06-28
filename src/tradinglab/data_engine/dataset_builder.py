@@ -77,6 +77,7 @@ def create_dataset(
         dataset_id=dataset_id,
         version=version,
         dataset_path=dataset_path,
+        data_path=data_path,
         metadata_path=metadata_path,
         validation_report_path=validation_report_path,
         status=DATASET_STATUS_CREATED,

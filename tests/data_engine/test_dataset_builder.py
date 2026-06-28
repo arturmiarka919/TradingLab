@@ -42,6 +42,7 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     assert result.dataset_id == EXPECTED_DATASET_ID
     assert result.version == "v001"
     assert result.dataset_path == expected_dataset_path
+    assert result.data_path == expected_dataset_path / "data.csv"
     assert result.metadata_path == expected_dataset_path / "metadata.json"
     assert (
         result.validation_report_path
@@ -49,9 +50,9 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     )
     assert result.status == DATASET_STATUS_CREATED
     assert result.dataset_path.is_dir()
+    assert result.data_path.is_file()
     assert result.metadata_path.is_file()
     assert result.validation_report_path.is_file()
-    assert (result.dataset_path / "data.csv").is_file()
 
 
 def test_create_dataset_writes_metadata_json(tmp_path: Path) -> None:
@@ -95,9 +96,7 @@ def test_create_dataset_writes_empty_data_csv_with_ohlcv_header(
         version="v001",
     )
 
-    data_path = result.dataset_path / "data.csv"
-
-    assert data_path.read_text(encoding="utf-8").splitlines() == [
+    assert result.data_path.read_text(encoding="utf-8").splitlines() == [
         EXPECTED_OHLCV_HEADER
     ]
 
