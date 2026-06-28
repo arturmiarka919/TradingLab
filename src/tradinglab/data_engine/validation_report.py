@@ -1,6 +1,8 @@
 """Validation report helpers for TradingLab Data Engine."""
 
 from dataclasses import asdict
+import json
+from pathlib import Path
 from typing import Any
 
 from tradinglab.data_engine.models import ValidationReport
@@ -29,3 +31,12 @@ def validation_report_from_dict(data: dict[str, Any]) -> ValidationReport:
         valid_rows=int(data["valid_rows"]),
         invalid_rows=int(data["invalid_rows"]),
     )
+
+
+def write_validation_report(path: Path, report: ValidationReport) -> None:
+    """Write validation report to a JSON file."""
+
+    report_dict = validation_report_to_dict(report)
+    json_text = json.dumps(report_dict, ensure_ascii=False, indent=2)
+
+    path.write_text(f"{json_text}\n", encoding="utf-8")

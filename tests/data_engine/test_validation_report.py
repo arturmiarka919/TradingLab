@@ -1,10 +1,14 @@
 """Tests for Data Engine validation report helpers."""
 
+import json
+from pathlib import Path
+
 from tradinglab.data_engine.models import ValidationReport
 from tradinglab.data_engine.status import DATASET_STATUS_INVALID
 from tradinglab.data_engine.validation_report import (
     validation_report_from_dict,
     validation_report_to_dict,
+    write_validation_report,
 )
 
 
@@ -48,3 +52,17 @@ def test_validation_report_from_dict_deserializes_validation_report() -> None:
     report = validation_report_from_dict(EXPECTED_VALIDATION_REPORT_DICT)
 
     assert report == EXPECTED_VALIDATION_REPORT
+
+
+def test_write_validation_report_writes_validation_report_json(
+    tmp_path: Path,
+) -> None:
+    report_path = tmp_path / "validation_report.json"
+
+    write_validation_report(report_path, EXPECTED_VALIDATION_REPORT)
+
+    assert report_path.exists()
+    assert (
+        json.loads(report_path.read_text(encoding="utf-8"))
+        == EXPECTED_VALIDATION_REPORT_DICT
+    )
