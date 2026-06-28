@@ -33,3 +33,17 @@ class DatasetMetadata:
     requested_start: date
     requested_end: date
     status: str
+
+
+@dataclass(frozen=True)
+class ValidationReport:
+    """Validation results for a dataset version."""
+
+    dataset_id: str
+    version: str
+    status: str
+    errors: tuple[str, ...]
+    warnings: tuple[str, ...]
+    checked_rows: int
+    valid_rows: int
+    invalid_rows: int
