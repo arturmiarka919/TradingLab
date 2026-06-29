@@ -63,6 +63,75 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_invalid_header(
     )
 
 
+def test_validate_ohlcv_csv_returns_invalid_report_for_negative_volume(
+    tmp_path: Path,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(
+        data_path,
+        (
+            OhlcvBar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+                open=Decimal("1.1000"),
+                high=Decimal("1.1200"),
+                low=Decimal("1.0900"),
+                close=Decimal("1.1100"),
+                volume=Decimal("-1.00"),
+            ),
+        ),
+    )
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report == ValidationReport(
+        dataset_id="dataset_1",
+        version="v001",
+        status=DATASET_STATUS_INVALID,
+        errors=("Row 2: volume must be greater than or equal to 0.",),
+        warnings=(),
+        checked_rows=1,
+        valid_rows=0,
+        invalid_rows=1,
+    )
+
+
+def test_validate_ohlcv_csv_returns_invalid_report_for_wrong_price_range(
+    tmp_path: Path,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(
+        data_path,
+        (
+            OhlcvBar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+                open=Decimal("1.1000"),
+                high=Decimal("1.0900"),
+                low=Decimal("1.1200"),
+                close=Decimal("1.1100"),
+                volume=Decimal("12345.67"),
+            ),
+        ),
+    )
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report.status == DATASET_STATUS_INVALID
+    assert report.checked_rows == 1
+    assert report.valid_rows == 0
+    assert report.invalid_rows == 1
+    assert "Row 2: high must be greater than or equal to low." in report.errors
+
+
 def _build_sample_bars() -> tuple[OhlcvBar, OhlcvBar]:
     return (
         OhlcvBar(
