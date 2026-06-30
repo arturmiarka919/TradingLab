@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from tradinglab.data_engine import OhlcvBar, ValidationReport
 from tradinglab.data_engine.data_file import write_ohlcv_csv
 from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
@@ -63,7 +65,7 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_invalid_header(
     )
 
 
-def test_validate_ohlcv_csv_returns_invalid_report_for_negative_volume(
+def test_validate_ohlcv_csv_allows_zero_volume_and_flat_candle(
     tmp_path: Path,
 ) -> None:
     data_path = tmp_path / "data.csv"
@@ -71,13 +73,12 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_negative_volume(
     write_ohlcv_csv(
         data_path,
         (
-            OhlcvBar(
-                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
-                open=Decimal("1.1000"),
-                high=Decimal("1.1200"),
-                low=Decimal("1.0900"),
-                close=Decimal("1.1100"),
-                volume=Decimal("-1.00"),
+            _build_bar(
+                open_value="1.1000",
+                high_value="1.1000",
+                low_value="1.1000",
+                close_value="1.1000",
+                volume_value="0",
             ),
         ),
     )
@@ -91,16 +92,109 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_negative_volume(
     assert report == ValidationReport(
         dataset_id="dataset_1",
         version="v001",
-        status=DATASET_STATUS_INVALID,
-        errors=("Row 2: volume must be greater than or equal to 0.",),
+        status=DATASET_STATUS_VALIDATED,
+        errors=(),
         warnings=(),
         checked_rows=1,
-        valid_rows=0,
-        invalid_rows=1,
+        valid_rows=1,
+        invalid_rows=0,
     )
 
 
-def test_validate_ohlcv_csv_returns_invalid_report_for_wrong_price_range(
+@pytest.mark.parametrize(
+    ("overrides", "expected_error"),
+    [
+        (
+            {"open_value": "0"},
+            "Row 2: open must be greater than 0.",
+        ),
+        (
+            {"high_value": "0"},
+            "Row 2: high must be greater than 0.",
+        ),
+        (
+            {"low_value": "0"},
+            "Row 2: low must be greater than 0.",
+        ),
+        (
+            {"close_value": "0"},
+            "Row 2: close must be greater than 0.",
+        ),
+        (
+            {"volume_value": "-1.00"},
+            "Row 2: volume must be greater than or equal to 0.",
+        ),
+        (
+            {
+                "high_value": "1.0900",
+                "low_value": "1.1000",
+            },
+            "Row 2: high must be greater than or equal to low.",
+        ),
+        (
+            {
+                "open_value": "1.1100",
+                "high_value": "1.1000",
+                "low_value": "1.0800",
+                "close_value": "1.0900",
+            },
+            "Row 2: high must be greater than or equal to open.",
+        ),
+        (
+            {
+                "open_value": "1.0900",
+                "high_value": "1.1000",
+                "low_value": "1.0800",
+                "close_value": "1.1100",
+            },
+            "Row 2: high must be greater than or equal to close.",
+        ),
+        (
+            {
+                "open_value": "1.0900",
+                "high_value": "1.1200",
+                "low_value": "1.1000",
+                "close_value": "1.1100",
+            },
+            "Row 2: low must be less than or equal to open.",
+        ),
+        (
+            {
+                "open_value": "1.1100",
+                "high_value": "1.1200",
+                "low_value": "1.1000",
+                "close_value": "1.0900",
+            },
+            "Row 2: low must be less than or equal to close.",
+        ),
+    ],
+)
+def test_validate_ohlcv_csv_returns_invalid_report_for_candle_quality_error(
+    tmp_path: Path,
+    overrides: dict[str, str],
+    expected_error: str,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(
+        data_path,
+        (_build_bar(**overrides),),
+    )
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report.status == DATASET_STATUS_INVALID
+    assert expected_error in report.errors
+    assert report.checked_rows == 1
+    assert report.valid_rows == 0
+    assert report.invalid_rows == 1
+
+
+def test_validate_ohlcv_csv_counts_valid_and_invalid_rows_in_same_file(
     tmp_path: Path,
 ) -> None:
     data_path = tmp_path / "data.csv"
@@ -108,13 +202,15 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_wrong_price_range(
     write_ohlcv_csv(
         data_path,
         (
-            OhlcvBar(
+            _build_bar(
                 timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
-                open=Decimal("1.1000"),
-                high=Decimal("1.0900"),
-                low=Decimal("1.1200"),
-                close=Decimal("1.1100"),
-                volume=Decimal("12345.67"),
+            ),
+            _build_bar(
+                timestamp=datetime(2024, 1, 3, 0, 0, tzinfo=UTC),
+                open_value="1.1100",
+                high_value="1.1000",
+                low_value="1.0800",
+                close_value="1.0900",
             ),
         ),
     )
@@ -126,28 +222,52 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_wrong_price_range(
     )
 
     assert report.status == DATASET_STATUS_INVALID
-    assert report.checked_rows == 1
-    assert report.valid_rows == 0
+    assert report.errors == (
+        "Row 3: high must be greater than or equal to open.",
+    )
+    assert report.checked_rows == 2
+    assert report.valid_rows == 1
     assert report.invalid_rows == 1
-    assert "Row 2: high must be greater than or equal to low." in report.errors
 
 
 def _build_sample_bars() -> tuple[OhlcvBar, OhlcvBar]:
     return (
-        OhlcvBar(
+        _build_bar(
             timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
-            open=Decimal("1.1000"),
-            high=Decimal("1.1200"),
-            low=Decimal("1.0900"),
-            close=Decimal("1.1100"),
-            volume=Decimal("12345.67"),
+            open_value="1.1000",
+            high_value="1.1200",
+            low_value="1.0900",
+            close_value="1.1100",
+            volume_value="12345.67",
         ),
-        OhlcvBar(
+        _build_bar(
             timestamp=datetime(2024, 1, 3, 0, 0, tzinfo=UTC),
-            open=Decimal("1.1100"),
-            high=Decimal("1.1300"),
-            low=Decimal("1.1000"),
-            close=Decimal("1.1250"),
-            volume=Decimal("23456.78"),
+            open_value="1.1100",
+            high_value="1.1300",
+            low_value="1.1000",
+            close_value="1.1250",
+            volume_value="23456.78",
         ),
+    )
+
+
+def _build_bar(
+    *,
+    timestamp: datetime | None = None,
+    open_value: str = "1.1000",
+    high_value: str = "1.1200",
+    low_value: str = "1.0900",
+    close_value: str = "1.1100",
+    volume_value: str = "12345.67",
+) -> OhlcvBar:
+    if timestamp is None:
+        timestamp = datetime(2024, 1, 2, 0, 0, tzinfo=UTC)
+
+    return OhlcvBar(
+        timestamp=timestamp,
+        open=Decimal(open_value),
+        high=Decimal(high_value),
+        low=Decimal(low_value),
+        close=Decimal(close_value),
+        volume=Decimal(volume_value),
     )
