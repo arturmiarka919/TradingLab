@@ -65,6 +65,31 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_invalid_header(
     )
 
 
+def test_validate_ohlcv_csv_returns_invalid_report_for_empty_dataset(
+    tmp_path: Path,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(data_path, ())
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report == ValidationReport(
+        dataset_id="dataset_1",
+        version="v001",
+        status=DATASET_STATUS_INVALID,
+        errors=("OHLCV CSV must contain at least one data row.",),
+        warnings=(),
+        checked_rows=0,
+        valid_rows=0,
+        invalid_rows=0,
+    )
+
+
 def test_validate_ohlcv_csv_allows_zero_volume_and_flat_candle(
     tmp_path: Path,
 ) -> None:

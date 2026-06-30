@@ -33,6 +33,19 @@ def validate_ohlcv_csv(
         )
 
     checked_rows = len(bars)
+
+    if checked_rows == 0:
+        return ValidationReport(
+            dataset_id=dataset_id,
+            version=version,
+            status=DATASET_STATUS_INVALID,
+            errors=("OHLCV CSV must contain at least one data row.",),
+            warnings=(),
+            checked_rows=0,
+            valid_rows=0,
+            invalid_rows=0,
+        )
+
     errors: list[str] = []
     invalid_rows = 0
     previous_timestamp: datetime | None = None
