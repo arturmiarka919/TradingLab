@@ -230,6 +230,149 @@ def test_validate_ohlcv_csv_counts_valid_and_invalid_rows_in_same_file(
     assert report.invalid_rows == 1
 
 
+def test_validate_ohlcv_csv_rejects_duplicate_timestamps(
+    tmp_path: Path,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(
+        data_path,
+        (
+            _build_bar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+            ),
+            _build_bar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+            ),
+        ),
+    )
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report.status == DATASET_STATUS_INVALID
+    assert report.errors == (
+        "Row 3: timestamp must be unique.",
+        "Row 3: timestamp must be greater than previous row timestamp.",
+    )
+    assert report.checked_rows == 2
+    assert report.valid_rows == 1
+    assert report.invalid_rows == 1
+
+
+def test_validate_ohlcv_csv_rejects_non_increasing_timestamps(
+    tmp_path: Path,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(
+        data_path,
+        (
+            _build_bar(
+                timestamp=datetime(2024, 1, 3, 0, 0, tzinfo=UTC),
+            ),
+            _build_bar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+            ),
+        ),
+    )
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report == ValidationReport(
+        dataset_id="dataset_1",
+        version="v001",
+        status=DATASET_STATUS_INVALID,
+        errors=(
+            "Row 3: timestamp must be greater than previous row timestamp.",
+        ),
+        warnings=(),
+        checked_rows=2,
+        valid_rows=1,
+        invalid_rows=1,
+    )
+
+
+def test_validate_ohlcv_csv_counts_timestamp_and_candle_errors_once_per_row(
+    tmp_path: Path,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(
+        data_path,
+        (
+            _build_bar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+            ),
+            _build_bar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+                open_value="1.1100",
+                high_value="1.1000",
+                low_value="1.0800",
+                close_value="1.0900",
+            ),
+        ),
+    )
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report.status == DATASET_STATUS_INVALID
+    assert report.errors == (
+        "Row 3: high must be greater than or equal to open.",
+        "Row 3: timestamp must be unique.",
+        "Row 3: timestamp must be greater than previous row timestamp.",
+    )
+    assert report.checked_rows == 2
+    assert report.valid_rows == 1
+    assert report.invalid_rows == 1
+
+
+def test_validate_ohlcv_csv_counts_non_increasing_timestamp_row_as_invalid(
+    tmp_path: Path,
+) -> None:
+    data_path = tmp_path / "data.csv"
+
+    write_ohlcv_csv(
+        data_path,
+        (
+            _build_bar(
+                timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+            ),
+            _build_bar(
+                timestamp=datetime(2024, 1, 1, 0, 0, tzinfo=UTC),
+            ),
+            _build_bar(
+                timestamp=datetime(2024, 1, 3, 0, 0, tzinfo=UTC),
+            ),
+        ),
+    )
+
+    report = validate_ohlcv_csv(
+        data_path=data_path,
+        dataset_id="dataset_1",
+        version="v001",
+    )
+
+    assert report.status == DATASET_STATUS_INVALID
+    assert report.errors == (
+        "Row 3: timestamp must be greater than previous row timestamp.",
+    )
+    assert report.checked_rows == 3
+    assert report.valid_rows == 2
+    assert report.invalid_rows == 1
+
+
 def _build_sample_bars() -> tuple[OhlcvBar, OhlcvBar]:
     return (
         _build_bar(

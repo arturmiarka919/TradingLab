@@ -1,5 +1,6 @@
 """OHLCV data validation helpers for TradingLab Data Engine."""
 
+from datetime import datetime
 from pathlib import Path
 
 from tradinglab.data_engine.data_file import read_ohlcv_csv
@@ -34,16 +35,31 @@ def validate_ohlcv_csv(
     checked_rows = len(bars)
     errors: list[str] = []
     invalid_rows = 0
+    previous_timestamp: datetime | None = None
+    seen_timestamps: set[datetime] = set()
 
     for csv_row_number, bar in enumerate(bars, start=2):
-        row_errors = _validate_ohlcv_bar(
-            bar=bar,
-            csv_row_number=csv_row_number,
+        row_errors = list(
+            _validate_ohlcv_bar(
+                bar=bar,
+                csv_row_number=csv_row_number,
+            )
+        )
+        row_errors.extend(
+            _validate_ohlcv_timestamp(
+                bar=bar,
+                csv_row_number=csv_row_number,
+                previous_timestamp=previous_timestamp,
+                seen_timestamps=seen_timestamps,
+            )
         )
 
         if row_errors:
             invalid_rows += 1
             errors.extend(row_errors)
+
+        seen_timestamps.add(bar.timestamp)
+        previous_timestamp = bar.timestamp
 
     valid_rows = checked_rows - invalid_rows
     status = DATASET_STATUS_INVALID if errors else DATASET_STATUS_VALIDATED
@@ -108,6 +124,28 @@ def _validate_ohlcv_bar(
     if bar.low > bar.close:
         errors.append(
             f"Row {csv_row_number}: low must be less than or equal to close."
+        )
+
+    return tuple(errors)
+
+
+def _validate_ohlcv_timestamp(
+    bar: OhlcvBar,
+    csv_row_number: int,
+    previous_timestamp: datetime | None,
+    seen_timestamps: set[datetime],
+) -> tuple[str, ...]:
+    """Validate single OHLCV timestamp and return row errors."""
+
+    errors: list[str] = []
+
+    if bar.timestamp in seen_timestamps:
+        errors.append(f"Row {csv_row_number}: timestamp must be unique.")
+
+    if previous_timestamp is not None and bar.timestamp <= previous_timestamp:
+        errors.append(
+            f"Row {csv_row_number}: "
+            "timestamp must be greater than previous row timestamp."
         )
 
     return tuple(errors)
