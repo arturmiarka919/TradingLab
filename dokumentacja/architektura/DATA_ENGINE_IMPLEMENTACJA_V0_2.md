@@ -1002,6 +1002,27 @@ Minimalny zakres testów obejmuje:
 * odczyt datasetu przez jawne wskazanie `dataset_id` i `version`,
 * podstawową obsługę błędnych żądań wejściowych.
 
+### 25.1. Pakiety testów dla małych obszarów Data Engine
+
+Testy Data Engine powinny być domykane pakietami dla małych, konkretnych obszarów funkcjonalnych.
+
+Przykładowe obszary:
+
+* generowanie `dataset_id`,
+* modele danych,
+* zapis i odczyt plików,
+* metadane datasetu,
+* raport walidacji,
+* walidacja OHLCV,
+* wersjonowanie datasetów,
+* tworzenie sample datasetu,
+* publiczny interfejs Data Engine.
+
+Dla każdego obszaru należy najpierw określić przewidywalne scenariusze testowe, a następnie zaimplementować komplet testów dla tego zakresu.
+
+Nie należy uznawać obszaru za zakończony wyłącznie dlatego, że działa jeden poprawny przykład. Obszar jest zakończony dopiero wtedy, gdy posiada testy dla poprawnego przebiegu, błędów, przypadków granicznych oraz liczników, statusów lub raportów, jeśli dany obszar je generuje.
+
+
 ## 26. Proponowana struktura testów
 
 ```text

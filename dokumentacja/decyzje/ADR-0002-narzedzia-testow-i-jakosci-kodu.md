@@ -42,6 +42,25 @@ Ręczne sprawdzenie działania nie zastępuje testu automatycznego.
 
 Jeżeli dany przypadek może zostać sensownie powtórzony automatycznie, powinien zostać zapisany jako test.
 
+### Pakiet testów dla małego obszaru
+
+Restrykcyjne testowanie nie oznacza testowania całego projektu naraz.
+
+Prace powinny być prowadzone małymi, zamkniętymi obszarami funkcjonalnymi. Dla każdego takiego obszaru przed uznaniem go za domknięty należy przygotować spójny pakiet testów.
+
+Pakiet testów powinien wynikać z krótkiej listy scenariuszy ustalonej przed albo w trakcie implementacji danego obszaru. Lista powinna obejmować znane przypadki poprawne, błędne, graniczne, mieszane oraz regresyjne.
+
+Obszar funkcjonalny może zostać uznany za domknięty dopiero wtedy, gdy:
+
+* jego zakres jest jasno określony,
+* znane scenariusze testowe dla tego zakresu są zapisane jako testy automatyczne,
+* testy przechodzą lokalnie,
+* kontrola jakości kodu przechodzi lokalnie,
+* zmiany są zapisane w małym, zrozumiałym commicie.
+
+Nie należy przechodzić do kolejnego obszaru, jeżeli poprzedni ma oczywiste, nieopisane albo nieprzetestowane przypadki błędów.
+
+
 
 ## Uzasadnienie
 
