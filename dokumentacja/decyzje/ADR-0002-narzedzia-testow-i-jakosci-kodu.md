@@ -24,6 +24,25 @@ Projekt TradingLab będzie używał następujących narzędzi developerskich:
 
 Narzędzia zostały dodane jako zależności developerskie projektu przy użyciu `uv`.
 
+### Standard restrykcyjnego testowania
+
+Projekt przyjmuje zasadę, że testy nie mogą ograniczać się do sprawdzenia poprawnego scenariusza działania.
+
+Dla każdej istotnej funkcjonalności należy przygotować testy adekwatne do etapu rozwoju modułu, obejmujące:
+
+* poprawny przebieg działania,
+* błędne dane wejściowe,
+* przypadki graniczne,
+* zachowanie dla danych pustych lub niekompletnych,
+* zachowanie liczników, statusów i raportów,
+* przypadki mieszane, w których część danych jest poprawna, a część błędna,
+* przypadki regresji wykryte w trakcie pracy.
+
+Ręczne sprawdzenie działania nie zastępuje testu automatycznego.
+
+Jeżeli dany przypadek może zostać sensownie powtórzony automatycznie, powinien zostać zapisany jako test.
+
+
 ## Uzasadnienie
 
 ### pytest

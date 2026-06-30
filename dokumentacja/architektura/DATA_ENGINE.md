@@ -233,6 +233,26 @@ Raport walidacji powinien zawierać konkretne wyniki reguł walidacyjnych, a nie
 
 Raport walidacji powinien być możliwy do odczytania przez człowieka oraz w przyszłości przez kontrolowanego agenta AI.
 
+### 7.4.1. Standard testowania walidacji danych
+
+Walidacja danych w Data Engine musi być testowana restrykcyjnie.
+
+Nie wystarczy sprawdzić, że poprawny dataset otrzymuje status `validated`.
+
+Każdy walidator danych powinien posiadać testy obejmujące co najmniej:
+
+* poprawny dataset,
+* błędną strukturę pliku,
+* błędne wartości pól,
+* niespójności logiczne danych,
+* przypadki graniczne,
+* dane puste lub niekompletne,
+* dataset zawierający jednocześnie poprawne i błędne rekordy,
+* poprawność pól raportu walidacji, w szczególności statusu, listy błędów, ostrzeżeń oraz liczników sprawdzonych, poprawnych i błędnych rekordów.
+
+Dla danych OHLCV oznacza to między innymi testowanie poprawności relacji `open`, `high`, `low`, `close`, poprawności wolumenu, kolejności czasu oraz duplikatów timestampów.
+
+
 ---
 
 ### 7.5. Dataset status

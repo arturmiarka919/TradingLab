@@ -77,3 +77,28 @@ System będzie odpowiedzialny za:
 * Projekt ma być rozwijalny bez przebudowy fundamentów.
 * Każda istotna decyzja systemu musi być możliwa do prześledzenia.
 * Te same dane i ta sama konfiguracja muszą zawsze prowadzić do identycznych wyników.
+
+---
+
+## 5. Standard testowania i jakości
+
+Testy są bramką jakości projektu.
+
+Żadna istotna funkcjonalność nie jest uznawana za domkniętą wyłącznie dlatego, że działa dla poprawnego przykładu.
+
+Każdy moduł, walidator, parser, konektor, silnik obliczeniowy i element raportowania powinien posiadać restrykcyjne testy adekwatne do swojego etapu rozwoju.
+
+Testy powinny obejmować wszystkie znane, uzasadnione i przewidywalne scenariusze na danym etapie, w szczególności:
+
+* scenariusz poprawny,
+* scenariusze błędne,
+* przypadki graniczne,
+* dane puste lub niekompletne,
+* dane niespójne logicznie,
+* zachowanie statusów, liczników i raportów,
+* przypadki mieszane, w których część danych jest poprawna, a część błędna,
+* przypadki regresji wykryte podczas rozwoju projektu.
+
+Ręczne sprawdzenie działania nie zastępuje testu automatycznego, jeśli dany przypadek można sensownie przetestować automatycznie.
+
+Brak testu dla oczywistego scenariusza błędu jest traktowany jako dług techniczny.
