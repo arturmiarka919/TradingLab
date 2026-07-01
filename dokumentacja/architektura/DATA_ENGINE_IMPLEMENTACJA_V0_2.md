@@ -1174,14 +1174,14 @@ Macierz scenariuszy dla raportu walidacji:
 | VALIDATION_REPORT-005 | Odczyt `validation_report.json` przez `load_validation_report` | Funkcja zwraca poprawny obiekt `ValidationReport` | pokryte testem |
 | VALIDATION_REPORT-006 | Model `ValidationReport` opisuje poprawny dataset | Model przechowuje status, błędy, ostrzeżenia i liczniki | pokryte testem |
 | VALIDATION_REPORT-007 | Model `ValidationReport` opisuje niepoprawny dataset | Model przechowuje status `invalid`, błędy, ostrzeżenia i liczniki | pokryte testem |
-| VALIDATION_REPORT-008 | Brak wymaganego pola w danych wejściowych | Błąd brakującego pola jest przekazywany do warstwy wywołującej | do pokrycia testem |
-| VALIDATION_REPORT-009 | Niepoprawny JSON w pliku `validation_report.json` | Odczyt kończy się błędem parsowania JSON | do pokrycia testem |
-| VALIDATION_REPORT-010 | Próba odczytu nieistniejącego pliku `validation_report.json` | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej | do pokrycia testem |
-| VALIDATION_REPORT-011 | Wartości tekstowe przekazane jako typy nietekstowe | Pola tekstowe oraz elementy `errors` i `warnings` są normalizowane do `str` zgodnie z obecną logiką | do pokrycia testem |
-| VALIDATION_REPORT-012 | Liczniki przekazane jako wartości tekstowe | `checked_rows`, `valid_rows` i `invalid_rows` są konwertowane do `int` | do pokrycia testem |
-| VALIDATION_REPORT-013 | Niepoprawna wartość licznika | Odczyt kończy się błędem konwersji licznika | do pokrycia testem |
-| VALIDATION_REPORT-014 | Zapis raportu z polskimi albo niestandardowymi znakami | Plik JSON zachowuje znaki dzięki zapisowi UTF-8 i `ensure_ascii=False` | do pokrycia testem |
-| VALIDATION_REPORT-015 | Zapis raportu kończy plik znakiem nowej linii | Plik kończy się pojedynczym znakiem nowej linii | do pokrycia testem |
+| VALIDATION_REPORT-008 | Brak wymaganego pola w danych wejściowych | Błąd brakującego pola jest przekazywany do warstwy wywołującej | pokryte testem |
+| VALIDATION_REPORT-009 | Niepoprawny JSON w pliku `validation_report.json` | Odczyt kończy się błędem parsowania JSON | pokryte testem |
+| VALIDATION_REPORT-010 | Próba odczytu nieistniejącego pliku `validation_report.json` | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej | pokryte testem |
+| VALIDATION_REPORT-011 | Wartości tekstowe przekazane jako typy nietekstowe | Pola tekstowe oraz elementy `errors` i `warnings` są normalizowane do `str` zgodnie z obecną logiką | pokryte testem |
+| VALIDATION_REPORT-012 | Liczniki przekazane jako wartości tekstowe | `checked_rows`, `valid_rows` i `invalid_rows` są konwertowane do `int` | pokryte testem |
+| VALIDATION_REPORT-013 | Niepoprawna wartość licznika | Odczyt kończy się błędem konwersji licznika | pokryte testem |
+| VALIDATION_REPORT-014 | Zapis raportu z polskimi albo niestandardowymi znakami | Plik JSON zachowuje znaki dzięki zapisowi UTF-8 i `ensure_ascii=False` | pokryte testem |
+| VALIDATION_REPORT-015 | Zapis raportu kończy plik znakiem nowej linii | Plik kończy się pojedynczym znakiem nowej linii | pokryte testem |
 | VALIDATION_REPORT-016 | Próba modyfikacji istniejącego obiektu `ValidationReport` | Obiekt pozostaje niemutowalny | do pokrycia testem |
 
 Na obecnym etapie obszar raportu walidacji nie jest jeszcze domknięty dla zakresu v0.2.0.
