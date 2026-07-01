@@ -1316,13 +1316,13 @@ Macierz scenariuszy dla ścieżek storage:
 | STORAGE-002 | Zbudowanie ścieżki `metadata.json` | Funkcja zwraca ścieżkę `{dataset_path}/metadata.json` | pokryte testem |
 | STORAGE-003 | Zbudowanie ścieżki `validation_report.json` | Funkcja zwraca ścieżkę `{dataset_path}/validation_report.json` | pokryte testem |
 | STORAGE-004 | Zbudowanie ścieżki `data.csv` | Funkcja zwraca ścieżkę `{dataset_path}/data.csv` | pokryte testem |
-| STORAGE-005 | Helpery storage nie tworzą katalogów ani plików | Samo zbudowanie ścieżek nie powoduje efektów ubocznych w systemie plików | do pokrycia testem |
-| STORAGE-006 | Obsługa niestandardowego katalogu bazowego | Ścieżka wersji datasetu jest budowana względem przekazanego `base_data_dir` | do pokrycia testem |
-| STORAGE-007 | Obsługa niestandardowej wersji datasetu | Ścieżka wersji datasetu zawiera dokładnie przekazany numer wersji, np. `v002` | do pokrycia testem |
-| STORAGE-008 | Spójność nazw artefaktów storage z `DatasetBuildResult` | Nazwy plików storage pozostają zgodne z `data.csv`, `metadata.json` i `validation_report.json` | do pokrycia testem |
-| STORAGE-009 | Brak obsługi docelowych ścieżek `raw/` i `normalized/` w obecnym storage | Obecna warstwa storage nie deklaruje jeszcze helperów dla `raw/response.json` i `normalized/candles.csv` | do pokrycia testem |
+| STORAGE-005 | Helpery storage nie tworzą katalogów ani plików | Samo zbudowanie ścieżek nie powoduje efektów ubocznych w systemie plików | pokryte testem |
+| STORAGE-006 | Obsługa niestandardowego katalogu bazowego | Ścieżka wersji datasetu jest budowana względem przekazanego `base_data_dir` | pokryte testem |
+| STORAGE-007 | Obsługa niestandardowej wersji datasetu | Ścieżka wersji datasetu zawiera dokładnie przekazany numer wersji, np. `v002` | pokryte testem |
+| STORAGE-008 | Spójność nazw artefaktów storage z `DatasetBuildResult` | Nazwy plików storage pozostają zgodne z `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
+| STORAGE-009 | Brak obsługi docelowych ścieżek `raw/` i `normalized/` w obecnym storage | Obecna warstwa storage nie deklaruje jeszcze helperów dla `raw/response.json` i `normalized/candles.csv` | pokryte testem |
 
-Na obecnym etapie obszar ścieżek storage nie jest jeszcze domknięty dla zakresu v0.2.0.
+Na obecnym etapie obszar ścieżek storage można uznać za domknięty dla zakresu v0.2.0.
 
 Przyszłe rozszerzenia mogą obejmować helpery dla `raw/response.json`, `normalized/candles.csv`, katalogów pośrednich, formatów innych niż CSV oraz walidację bezpieczeństwa ścieżek. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej minimalnej warstwy storage.
 
