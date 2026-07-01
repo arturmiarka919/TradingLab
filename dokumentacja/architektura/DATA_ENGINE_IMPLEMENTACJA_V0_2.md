@@ -1260,6 +1260,41 @@ Na obecnym etapie obszar przykładowego datasetu można uznać za domknięty dla
 
 Przyszłe rozszerzenia mogą obejmować większe sample datasety, różne klasy aktywów, różne interwały, scenariusze celowo niepoprawnych danych demonstracyjnych oraz osobne komendy CLI dla generowania danych przykładowych. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy przykładowego datasetu.
 
+### 25.8. Macierz scenariuszy identyfikatora datasetu
+
+Warstwa identyfikatora datasetu jest małym, ale krytycznym obszarem Data Engine.
+
+Ten obszar odpowiada za:
+
+* wygenerowanie deterministycznego `dataset_id` na podstawie `DatasetRequest`,
+* zachowanie stałej kolejności pól identyfikujących dataset,
+* normalizację providera, klasy aktywa, typu danych, typu ceny i interwału,
+* normalizację symbolu instrumentu,
+* zapis dat żądanego zakresu danych w formacie ISO `YYYY-MM-DD`,
+* niedodawanie wersji datasetu do `dataset_id`,
+* tworzenie identyfikatora bez spacji i znaków specjalnych niebezpiecznych dla ścieżek plików.
+
+Macierz scenariuszy dla identyfikatora datasetu:
+
+| ID | Scenariusz | Oczekiwany wynik | Status |
+| ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
+| DATASET_ID-001 | Wygenerowanie `dataset_id` dla standardowego requestu EUR/USD OHLCV 1d | Funkcja zwraca oczekiwany identyfikator `polygon_massive_forex_eurusd_ohlcv_provider_1d_2024-01-01_2024-12-31` | pokryte testem |
+| DATASET_ID-002 | Normalizacja wariantów symbolu EUR/USD | Różne zapisy symbolu, np. `EUR/USD`, `EUR USD`, `eur-usd`, dają ten sam `dataset_id` | pokryte testem |
+| DATASET_ID-003 | Normalizacja typowych pól tekstowych | Spacje i wielkość liter w polach tekstowych nie zmieniają finalnego `dataset_id` | pokryte testem |
+| DATASET_ID-004 | Deterministyczność generowania identyfikatora | Dwa wywołania dla tego samego requestu zwracają ten sam wynik | pokryte testem |
+| DATASET_ID-005 | Brak spacji i ukośników w `dataset_id` | Wynik nie zawiera spacji ani znaków `/` | pokryte testem |
+| DATASET_ID-006 | Normalizacja znaków specjalnych w polach tekstowych innych niż symbol | Znaki specjalne są zamieniane na bezpieczne separatory `_` zgodnie z obecną logiką | do pokrycia testem |
+| DATASET_ID-007 | Usuwanie nadmiarowych separatorów `_` w polach tekstowych | Wielokrotne separatory są redukowane do pojedynczego `_`, a początkowe i końcowe `_` są usuwane | do pokrycia testem |
+| DATASET_ID-008 | Normalizacja symbolu z wieloma znakami specjalnymi | Symbol zachowuje tylko litery i cyfry, np. warianty EUR/USD nadal dają `eurusd` | do pokrycia testem |
+| DATASET_ID-009 | Daty w `dataset_id` pochodzą z `requested_start` i `requested_end` | Identyfikator zawiera daty żądanego zakresu w formacie `YYYY-MM-DD` | do pokrycia testem |
+| DATASET_ID-010 | Zmiana wersji datasetu nie wpływa na `dataset_id` | `dataset_id` nie zawiera `v001`, `v002` ani innego numeru wersji | do pokrycia testem |
+| DATASET_ID-011 | Zmiana pola tożsamości datasetu zmienia `dataset_id` | Zmiana providera, symbolu, typu ceny, interwału albo zakresu dat daje inny identyfikator | do pokrycia testem |
+| DATASET_ID-012 | Wynik pozostaje zgodny ze strukturą katalogów datasetu | `dataset_id` może być bezpiecznie użyty jako element ścieżki `data/datasets/{dataset_id}/{version}` | do pokrycia testem |
+
+Na obecnym etapie obszar identyfikatora datasetu nie jest jeszcze domknięty dla zakresu v0.2.0.
+
+Przyszłe rozszerzenia mogą obejmować walidację pustych pól po normalizacji, obsługę znaków spoza ASCII, jawne ograniczenie długości identyfikatora, dodatkowy fingerprint parametrów źródłowych oraz migrację starszych identyfikatorów, jeśli format `dataset_id` zostanie kiedyś rozszerzony. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy identyfikatora datasetu.
+
 ## 26. Proponowana struktura testów
 
 ```text
