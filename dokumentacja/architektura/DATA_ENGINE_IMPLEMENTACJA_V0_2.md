@@ -1188,6 +1188,40 @@ Na obecnym etapie obszar raportu walidacji można uznać za domknięty dla zakre
 
 Przyszłe rozszerzenia mogą obejmować docelowe rozdzielenie statusów datasetu od statusów walidacji, dodanie `validation_schema_version`, `validated_at_utc`, szczegółowej sekcji `summary`, listy `checks` oraz bardziej rozbudowanej struktury błędów i ostrzeżeń. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy zapisu i odczytu raportu walidacji.
 
+### 25.6. Macierz scenariuszy budowania datasetu
+
+Warstwa budowania datasetu jest obszarem spinającym podstawowe artefakty Data Engine.
+
+Ten obszar odpowiada za:
+
+* utworzenie katalogu konkretnej wersji datasetu,
+* wygenerowanie deterministycznego `dataset_id` na podstawie `DatasetRequest`,
+* zbudowanie ścieżek do `data.csv`, `metadata.json` i `validation_report.json`,
+* zapis początkowego pliku `metadata.json`,
+* zapis początkowego pliku `validation_report.json`,
+* zapis pustego pliku `data.csv` z nagłówkiem OHLCV,
+* zwrócenie obiektu `DatasetBuildResult`,
+* zabezpieczenie przed nadpisaniem istniejącej wersji datasetu.
+
+Macierz scenariuszy dla budowania datasetu:
+
+| ID | Scenariusz | Oczekiwany wynik | Status |
+| ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
+| DATASET_BUILDER-001 | Utworzenie datasetu na podstawie poprawnego `DatasetRequest` | Funkcja zwraca `DatasetBuildResult` i tworzy katalog wersji datasetu | pokryte testem |
+| DATASET_BUILDER-002 | Zbudowanie ścieżek artefaktów datasetu | Wynik zawiera ścieżki do `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
+| DATASET_BUILDER-003 | Zapis początkowego `metadata.json` | Plik metadata istnieje i zawiera oczekiwane dane ze statusem `created` | pokryte testem |
+| DATASET_BUILDER-004 | Zapis początkowego `validation_report.json` | Plik raportu walidacji istnieje i zawiera status `created` oraz zerowe liczniki | pokryte testem |
+| DATASET_BUILDER-005 | Zapis pustego `data.csv` | Plik danych istnieje i zawiera wyłącznie nagłówek OHLCV | pokryte testem |
+| DATASET_BUILDER-006 | Utworzenie tylko początkowych artefaktów datasetu | Katalog wersji zawiera wyłącznie `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
+| DATASET_BUILDER-007 | Próba utworzenia istniejącej wersji datasetu | Funkcja kończy się błędem i nie nadpisuje istniejącego katalogu wersji | pokryte testem |
+| DATASET_BUILDER-008 | Utworzenie datasetu w nieistniejącym katalogu bazowym | Funkcja tworzy brakujące katalogi nadrzędne | do pokrycia testem |
+| DATASET_BUILDER-009 | Utworzenie nowej wersji dla istniejącego `dataset_id` | Funkcja tworzy nowy katalog wersji bez naruszania poprzedniej wersji | do pokrycia testem |
+| DATASET_BUILDER-010 | Spójność statusu `created` między wynikiem, metadata i raportem walidacji | `DatasetBuildResult`, `metadata.json` i `validation_report.json` mają status `created` | do pokrycia testem |
+
+Na obecnym etapie obszar budowania datasetu nie jest jeszcze domknięty dla zakresu v0.2.0.
+
+Przyszłe rozszerzenia mogą obejmować obsługę częściowo utworzonych datasetów po błędzie zapisu, transakcyjność tworzenia artefaktów, dodatkowe klasy datasetów, walidację parametrów wejściowych oraz osobne strategie nadpisywania lub inkrementacji wersji. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy budowania datasetu.
+
 
 ## 26. Proponowana struktura testów
 
