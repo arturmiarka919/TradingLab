@@ -132,6 +132,85 @@ def test_create_dataset_fails_when_dataset_version_already_exists(
         )
 
 
+def test_create_dataset_creates_missing_base_directories(
+    tmp_path: Path,
+) -> None:
+    request = _build_dataset_request()
+    base_data_dir = tmp_path / "missing" / "data"
+
+    assert not base_data_dir.exists()
+
+    result = create_dataset(
+        request=request,
+        base_data_dir=base_data_dir,
+        version="v001",
+    )
+
+    expected_dataset_path = base_data_dir / "datasets" / EXPECTED_DATASET_ID / "v001"
+
+    assert base_data_dir.is_dir()
+    assert result.dataset_path == expected_dataset_path
+    assert result.dataset_path.is_dir()
+    assert result.data_path.is_file()
+    assert result.metadata_path.is_file()
+    assert result.validation_report_path.is_file()
+
+
+def test_create_dataset_creates_new_version_without_changing_existing_version(
+    tmp_path: Path,
+) -> None:
+    request = _build_dataset_request()
+
+    first_result = create_dataset(
+        request=request,
+        base_data_dir=tmp_path,
+        version="v001",
+    )
+    second_result = create_dataset(
+        request=request,
+        base_data_dir=tmp_path,
+        version="v002",
+    )
+
+    assert first_result.dataset_id == second_result.dataset_id
+    assert first_result.version == "v001"
+    assert second_result.version == "v002"
+    assert first_result.dataset_path != second_result.dataset_path
+    assert first_result.dataset_path.is_dir()
+    assert second_result.dataset_path.is_dir()
+    assert first_result.data_path.is_file()
+    assert first_result.metadata_path.is_file()
+    assert first_result.validation_report_path.is_file()
+    assert second_result.data_path.is_file()
+    assert second_result.metadata_path.is_file()
+    assert second_result.validation_report_path.is_file()
+
+    first_metadata = load_metadata(first_result.metadata_path)
+    second_metadata = load_metadata(second_result.metadata_path)
+
+    assert first_metadata.version == "v001"
+    assert second_metadata.version == "v002"
+
+
+def test_create_dataset_keeps_created_status_consistent_across_artifacts(
+    tmp_path: Path,
+) -> None:
+    request = _build_dataset_request()
+
+    result = create_dataset(
+        request=request,
+        base_data_dir=tmp_path,
+        version="v001",
+    )
+
+    loaded_metadata = load_metadata(result.metadata_path)
+    loaded_report = load_validation_report(result.validation_report_path)
+
+    assert result.status == DATASET_STATUS_CREATED
+    assert loaded_metadata.status == DATASET_STATUS_CREATED
+    assert loaded_report.status == DATASET_STATUS_CREATED
+
+
 def _build_dataset_request() -> DatasetRequest:
     return DatasetRequest(
         provider="polygon_massive",
