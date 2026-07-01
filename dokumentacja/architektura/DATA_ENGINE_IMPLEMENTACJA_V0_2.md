@@ -1147,6 +1147,47 @@ Na obecnym etapie obszar metadata datasetu można uznać za domknięty dla zakre
 
 Przyszłe rozszerzenia mogą obejmować walidację dozwolonych wartości pól, osobne schematy metadata dla różnych klas aktywów, jawne wersjonowanie schematu metadata, dodatkowe pola techniczne oraz kontrolę zgodności `dataset_id` z zawartością metadata. Nie należą one jednak do obecnego zakresu warstwy metadata datasetu.
 
+### 25.5. Macierz scenariuszy raportu walidacji
+
+Warstwa raportu walidacji jest osobnym, małym obszarem funkcjonalnym Data Engine.
+
+Ten obszar odpowiada za:
+
+* reprezentację raportu walidacji w modelu `ValidationReport`,
+* konwersję `ValidationReport` do słownika gotowego do zapisu JSON,
+* konwersję słownika odczytanego z JSON do `ValidationReport`,
+* zapis pliku `validation_report.json`,
+* odczyt pliku `validation_report.json`,
+* przekazywanie błędów brakujących pól, błędów JSON, błędów wejścia/wyjścia i błędów konwersji liczników do warstwy wywołującej,
+* normalizację pól tekstowych do `str` zgodnie z obecną logiką,
+* zachowanie znaków spoza ASCII przy zapisie JSON,
+* zachowanie spójności danych w cyklu zapis → odczyt.
+
+Macierz scenariuszy dla raportu walidacji:
+
+| ID | Scenariusz | Oczekiwany wynik | Status |
+| ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
+| VALIDATION_REPORT-001 | Konwersja `ValidationReport` do słownika | Wszystkie pola są zapisane w oczekiwanym formacie | pokryte testem |
+| VALIDATION_REPORT-002 | Konwersja słownika do `ValidationReport` | Wszystkie pola są poprawnie odtworzone z danych wejściowych | pokryte testem |
+| VALIDATION_REPORT-003 | Zapis `validation_report.json` | Plik JSON zostaje utworzony i zawiera oczekiwane dane | pokryte testem |
+| VALIDATION_REPORT-004 | Cykl zapis → odczyt przez JSON i `validation_report_from_dict` | Odtworzony raport jest równy raportowi wejściowemu | pokryte testem |
+| VALIDATION_REPORT-005 | Odczyt `validation_report.json` przez `load_validation_report` | Funkcja zwraca poprawny obiekt `ValidationReport` | pokryte testem |
+| VALIDATION_REPORT-006 | Model `ValidationReport` opisuje poprawny dataset | Model przechowuje status, błędy, ostrzeżenia i liczniki | pokryte testem |
+| VALIDATION_REPORT-007 | Model `ValidationReport` opisuje niepoprawny dataset | Model przechowuje status `invalid`, błędy, ostrzeżenia i liczniki | pokryte testem |
+| VALIDATION_REPORT-008 | Brak wymaganego pola w danych wejściowych | Błąd brakującego pola jest przekazywany do warstwy wywołującej | do pokrycia testem |
+| VALIDATION_REPORT-009 | Niepoprawny JSON w pliku `validation_report.json` | Odczyt kończy się błędem parsowania JSON | do pokrycia testem |
+| VALIDATION_REPORT-010 | Próba odczytu nieistniejącego pliku `validation_report.json` | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej | do pokrycia testem |
+| VALIDATION_REPORT-011 | Wartości tekstowe przekazane jako typy nietekstowe | Pola tekstowe oraz elementy `errors` i `warnings` są normalizowane do `str` zgodnie z obecną logiką | do pokrycia testem |
+| VALIDATION_REPORT-012 | Liczniki przekazane jako wartości tekstowe | `checked_rows`, `valid_rows` i `invalid_rows` są konwertowane do `int` | do pokrycia testem |
+| VALIDATION_REPORT-013 | Niepoprawna wartość licznika | Odczyt kończy się błędem konwersji licznika | do pokrycia testem |
+| VALIDATION_REPORT-014 | Zapis raportu z polskimi albo niestandardowymi znakami | Plik JSON zachowuje znaki dzięki zapisowi UTF-8 i `ensure_ascii=False` | do pokrycia testem |
+| VALIDATION_REPORT-015 | Zapis raportu kończy plik znakiem nowej linii | Plik kończy się pojedynczym znakiem nowej linii | do pokrycia testem |
+| VALIDATION_REPORT-016 | Próba modyfikacji istniejącego obiektu `ValidationReport` | Obiekt pozostaje niemutowalny | do pokrycia testem |
+
+Na obecnym etapie obszar raportu walidacji nie jest jeszcze domknięty dla zakresu v0.2.0.
+
+Przyszłe rozszerzenia mogą obejmować docelowe rozdzielenie statusów datasetu od statusów walidacji, dodanie `validation_schema_version`, `validated_at_utc`, szczegółowej sekcji `summary`, listy `checks` oraz bardziej rozbudowanej struktury błędów i ostrzeżeń. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy zapisu i odczytu raportu walidacji.
+
 
 ## 26. Proponowana struktura testów
 
