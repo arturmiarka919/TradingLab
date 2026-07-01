@@ -1022,6 +1022,49 @@ Dla każdego obszaru należy najpierw określić przewidywalne scenariusze testo
 
 Nie należy uznawać obszaru za zakończony wyłącznie dlatego, że działa jeden poprawny przykład. Obszar jest zakończony dopiero wtedy, gdy posiada testy dla poprawnego przebiegu, błędów, przypadków granicznych oraz liczników, statusów lub raportów, jeśli dany obszar je generuje.
 
+### 25.2. Macierz scenariuszy walidatora OHLCV
+
+Walidator OHLCV jest domykany jako mały, osobny obszar funkcjonalny Data Engine.
+
+Na obecnym etapie walidator odpowiada za sprawdzenie:
+
+* czy plik CSV da się odczytać jako OHLCV,
+* czy dataset zawiera co najmniej jeden rekord danych,
+* czy wartości `open`, `high`, `low`, `close` i `volume` są logicznie poprawne,
+* czy relacje między `open`, `high`, `low` i `close` są spójne,
+* czy timestampy są unikalne,
+* czy timestampy idą rosnąco,
+* czy raport walidacji poprawnie pokazuje status, błędy i liczniki.
+
+Macierz scenariuszy dla walidatora OHLCV:
+
+| ID        | Scenariusz                                                           | Oczekiwany wynik                                                 | Status                      |
+| --------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
+| OHLCV-001 | Poprawny dataset z dwoma świecami                                    | `validated`, brak błędów, poprawne liczniki                      | pokryte testem              |
+| OHLCV-002 | Niepoprawny nagłówek CSV                                             | `invalid`, błąd struktury pliku                                  | pokryte testem              |
+| OHLCV-003 | Poprawny nagłówek CSV, ale zero rekordów danych                      | `invalid`, błąd pustego datasetu                                 | pokryte testem              |
+| OHLCV-004 | `volume = 0` oraz świeca płaska `open = high = low = close`          | `validated`                                                      | pokryte testem              |
+| OHLCV-005 | `open <= 0`                                                          | `invalid`                                                        | pokryte testem              |
+| OHLCV-006 | `high <= 0`                                                          | `invalid`                                                        | pokryte testem              |
+| OHLCV-007 | `low <= 0`                                                           | `invalid`                                                        | pokryte testem              |
+| OHLCV-008 | `close <= 0`                                                         | `invalid`                                                        | pokryte testem              |
+| OHLCV-009 | `volume < 0`                                                         | `invalid`                                                        | pokryte testem              |
+| OHLCV-010 | `high < low`                                                         | `invalid`                                                        | pokryte testem              |
+| OHLCV-011 | `high < open`                                                        | `invalid`                                                        | pokryte testem              |
+| OHLCV-012 | `high < close`                                                       | `invalid`                                                        | pokryte testem              |
+| OHLCV-013 | `low > open`                                                         | `invalid`                                                        | pokryte testem              |
+| OHLCV-014 | `low > close`                                                        | `invalid`                                                        | pokryte testem              |
+| OHLCV-015 | Duplikat timestampu                                                  | `invalid`                                                        | pokryte testem              |
+| OHLCV-016 | Timestamp mniejszy lub równy timestampowi z poprzedniego wiersza     | `invalid`                                                        | pokryte testem              |
+| OHLCV-017 | Jeden plik zawiera rekord poprawny i rekord błędny                   | `invalid`, poprawne `checked_rows`, `valid_rows`, `invalid_rows` | pokryte testem              |
+| OHLCV-018 | Jeden rekord zawiera jednocześnie błąd świecy i błąd timestampu      | rekord liczony jako jeden błędny wiersz                          | pokryte testem              |
+| OHLCV-019 | Dataset z trzema rekordami, gdzie tylko środkowy ma błędny timestamp | `invalid`, tylko jeden rekord liczony jako błędny                | pokryte testem              |
+| OHLCV-020 | Sample dataset generowany skryptem projektu                          | `validated`, brak błędów                                         | sprawdzane testem i ręcznie |
+
+Na obecnym etapie walidator OHLCV można uznać za domknięty dla zakresu v0.2.0.
+
+Przyszłe rozszerzenia mogą obejmować osobne reguły dla interwału świec, stref czasowych, luk w danych, sesji rynkowych albo specyficznych wymagań dla różnych klas instrumentów. Nie należą one jednak do obecnego zakresu walidatora OHLCV.
+
 
 ## 26. Proponowana struktura testów
 
