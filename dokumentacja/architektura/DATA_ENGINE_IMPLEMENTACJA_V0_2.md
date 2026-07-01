@@ -1078,32 +1078,33 @@ Ten obszar odpowiada za:
 * zapis pliku CSV z rekordami danych,
 * odczyt pliku CSV do obiektów `OhlcvBar`,
 * wykrywanie podstawowych błędów struktury pliku,
+* przekazywanie błędów wejścia/wyjścia i błędów konwersji danych do warstwy wywołującej,
 * zachowanie spójności danych w cyklu zapis → odczyt.
 
 Macierz scenariuszy dla zapisu i odczytu OHLCV CSV:
 
-| ID           | Scenariusz                                                         | Oczekiwany wynik                                                          | Status                   |
-| ------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------- | ------------------------ |
-| DATAFILE-001 | Oczekiwany nagłówek OHLCV CSV                                      | Nagłówek zawiera wymagane kolumny w ustalonej kolejności                  | pokryte testem           |
-| DATAFILE-002 | Konwersja `OhlcvBar` do wiersza CSV                                | Wartości świecy są zapisane jako tekst w oczekiwanym formacie             | pokryte testem           |
-| DATAFILE-003 | Konwersja wiersza CSV do `OhlcvBar`                                | Tekstowe wartości są poprawnie konwertowane na `datetime` i `Decimal`     | pokryte testem           |
-| DATAFILE-004 | Wiersz CSV ma błędną liczbę kolumn                                 | Odczyt pojedynczego wiersza kończy się błędem                             | pokryte testem           |
-| DATAFILE-005 | Zapis pustego OHLCV CSV                                            | Plik zawiera sam nagłówek bez rekordów danych                             | pokryte testem           |
-| DATAFILE-006 | Zapis OHLCV CSV z rekordami danych                                 | Plik zawiera nagłówek i wszystkie przekazane rekordy                      | pokryte testem           |
-| DATAFILE-007 | Odczyt OHLCV CSV z nagłówkiem i rekordami                          | Funkcja zwraca listę obiektów `OhlcvBar`                                  | pokryte testem           |
-| DATAFILE-008 | Odczyt pliku z niepoprawnym nagłówkiem                             | Odczyt kończy się błędem struktury pliku                                  | pokryte testem           |
-| DATAFILE-009 | Cykl zapis → odczyt dla OHLCV CSV                                  | Odczytane świece są identyczne z zapisanymi świecami                      | pokryte testem           |
-| DATAFILE-010 | Próba odczytu nieistniejącego pliku                                | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej             | do sprawdzenia           |
-| DATAFILE-011 | Fizycznie pusty plik bez nagłówka                                  | Odczyt powinien zakończyć się błędem nagłówka albo błędem struktury pliku | do sprawdzenia           |
-| DATAFILE-012 | Wiersz danych z brakującą kolumną                                  | Odczyt powinien zakończyć się błędem długości wiersza                     | do sprawdzenia           |
-| DATAFILE-013 | Wiersz danych z dodatkową kolumną                                  | Odczyt powinien zakończyć się błędem długości wiersza                     | do sprawdzenia           |
-| DATAFILE-014 | Nieparsowalny timestamp                                            | Odczyt powinien zakończyć się błędem konwersji danych                     | do sprawdzenia           |
-| DATAFILE-015 | Nieparsowalna wartość `open`, `high`, `low`, `close` albo `volume` | Odczyt powinien zakończyć się błędem konwersji danych                     | do sprawdzenia           |
-| DATAFILE-016 | Zachowanie dokładnych wartości `Decimal` w cyklu zapis → odczyt    | Wartości po odczycie są równe wartościom przed zapisem                    | częściowo pokryte testem |
+| ID           | Scenariusz                                                         | Oczekiwany wynik                                                          | Status         |
+| ------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------- | -------------- |
+| DATAFILE-001 | Oczekiwany nagłówek OHLCV CSV                                      | Nagłówek zawiera wymagane kolumny w ustalonej kolejności                  | pokryte testem |
+| DATAFILE-002 | Konwersja `OhlcvBar` do wiersza CSV                                | Wartości świecy są zapisane jako tekst w oczekiwanym formacie             | pokryte testem |
+| DATAFILE-003 | Konwersja wiersza CSV do `OhlcvBar`                                | Tekstowe wartości są poprawnie konwertowane na `datetime` i `Decimal`     | pokryte testem |
+| DATAFILE-004 | Wiersz CSV ma błędną liczbę kolumn                                 | Odczyt pojedynczego wiersza kończy się błędem                             | pokryte testem |
+| DATAFILE-005 | Zapis pustego OHLCV CSV                                            | Plik zawiera sam nagłówek bez rekordów danych                             | pokryte testem |
+| DATAFILE-006 | Zapis OHLCV CSV z rekordami danych                                 | Plik zawiera nagłówek i wszystkie przekazane rekordy                      | pokryte testem |
+| DATAFILE-007 | Odczyt OHLCV CSV z nagłówkiem i rekordami                          | Funkcja zwraca listę obiektów `OhlcvBar`                                  | pokryte testem |
+| DATAFILE-008 | Odczyt pliku z niepoprawnym nagłówkiem                             | Odczyt kończy się błędem struktury pliku                                  | pokryte testem |
+| DATAFILE-009 | Cykl zapis → odczyt dla OHLCV CSV                                  | Odczytane świece są identyczne z zapisanymi świecami                      | pokryte testem |
+| DATAFILE-010 | Próba odczytu nieistniejącego pliku                                | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej             | pokryte testem |
+| DATAFILE-011 | Fizycznie pusty plik bez nagłówka                                  | Odczyt kończy się błędem nagłówka albo błędem struktury pliku             | pokryte testem |
+| DATAFILE-012 | Wiersz danych z brakującą kolumną                                  | Odczyt kończy się błędem długości wiersza                                 | pokryte testem |
+| DATAFILE-013 | Wiersz danych z dodatkową kolumną                                  | Odczyt kończy się błędem długości wiersza                                 | pokryte testem |
+| DATAFILE-014 | Nieparsowalny timestamp                                            | Odczyt kończy się błędem konwersji danych                                 | pokryte testem |
+| DATAFILE-015 | Nieparsowalna wartość `open`, `high`, `low`, `close` albo `volume` | Odczyt kończy się błędem konwersji danych                                 | pokryte testem |
+| DATAFILE-016 | Zachowanie dokładnych wartości `Decimal` w cyklu zapis → odczyt    | Wartości po odczycie są równe wartościom przed zapisem                    | pokryte testem |
 
-Na obecnym etapie obszar zapisu i odczytu OHLCV CSV jest częściowo pokryty testami, ale nie powinien zostać jeszcze uznany za domknięty.
+Na obecnym etapie obszar zapisu i odczytu OHLCV CSV można uznać za domknięty dla zakresu v0.2.0.
 
-Następny krok dla tego obszaru powinien polegać na przeglądzie scenariuszy oznaczonych jako `do sprawdzenia` oraz decyzji, które z nich wymagają dopisania testów automatycznych w zakresie v0.2.0.
+Przyszłe rozszerzenia mogą obejmować obsługę innych formatów plików, innych separatorów CSV, wymuszonego kodowania, kompresji danych albo dodatkowych formatów timestampów. Nie należą one jednak do obecnego zakresu warstwy zapisu i odczytu OHLCV CSV.
 
 
 ## 26. Proponowana struktura testów
