@@ -1214,11 +1214,11 @@ Macierz scenariuszy dla budowania datasetu:
 | DATASET_BUILDER-005 | Zapis pustego `data.csv` | Plik danych istnieje i zawiera wyłącznie nagłówek OHLCV | pokryte testem |
 | DATASET_BUILDER-006 | Utworzenie tylko początkowych artefaktów datasetu | Katalog wersji zawiera wyłącznie `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
 | DATASET_BUILDER-007 | Próba utworzenia istniejącej wersji datasetu | Funkcja kończy się błędem i nie nadpisuje istniejącego katalogu wersji | pokryte testem |
-| DATASET_BUILDER-008 | Utworzenie datasetu w nieistniejącym katalogu bazowym | Funkcja tworzy brakujące katalogi nadrzędne | do pokrycia testem |
-| DATASET_BUILDER-009 | Utworzenie nowej wersji dla istniejącego `dataset_id` | Funkcja tworzy nowy katalog wersji bez naruszania poprzedniej wersji | do pokrycia testem |
-| DATASET_BUILDER-010 | Spójność statusu `created` między wynikiem, metadata i raportem walidacji | `DatasetBuildResult`, `metadata.json` i `validation_report.json` mają status `created` | do pokrycia testem |
+| DATASET_BUILDER-008 | Utworzenie datasetu w nieistniejącym katalogu bazowym | Funkcja tworzy brakujące katalogi nadrzędne | pokryte testem |
+| DATASET_BUILDER-009 | Utworzenie nowej wersji dla istniejącego `dataset_id` | Funkcja tworzy nowy katalog wersji bez naruszania poprzedniej wersji | pokryte testem |
+| DATASET_BUILDER-010 | Spójność statusu `created` między wynikiem, metadata i raportem walidacji | `DatasetBuildResult`, `metadata.json` i `validation_report.json` mają status `created` | pokryte testem |
 
-Na obecnym etapie obszar budowania datasetu nie jest jeszcze domknięty dla zakresu v0.2.0.
+Na obecnym etapie obszar budowania datasetu można uznać za domknięty dla zakresu v0.2.0.
 
 Przyszłe rozszerzenia mogą obejmować obsługę częściowo utworzonych datasetów po błędzie zapisu, transakcyjność tworzenia artefaktów, dodatkowe klasy datasetów, walidację parametrów wejściowych oraz osobne strategie nadpisywania lub inkrementacji wersji. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy budowania datasetu.
 
