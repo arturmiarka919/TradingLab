@@ -1247,16 +1247,16 @@ Macierz scenariuszy dla przykładowego datasetu:
 | SAMPLE_DATASET-003 | Zapis metadata i raportu walidacji po walidacji | Metadata, raport walidacji i wynik mają status `validated` | pokryte testem |
 | SAMPLE_DATASET-004 | Raport walidacji dla przykładowych świec | Raport ma 2 sprawdzone wiersze, 2 poprawne wiersze, 0 błędnych wierszy oraz brak błędów i ostrzeżeń | pokryte testem |
 | SAMPLE_DATASET-005 | Uruchomienie skryptu `scripts/create_sample_dataset.py` | Skrypt kończy się sukcesem, wypisuje ścieżki artefaktów i tworzy katalog `data/datasets` | pokryte testem |
-| SAMPLE_DATASET-006 | Deterministyczny `DatasetRequest` przykładowego datasetu | Request ma oczekiwane pola providera, instrumentu, typu danych, interwału i zakresu dat | do pokrycia testem |
-| SAMPLE_DATASET-007 | Deterministyczne przykładowe świece OHLCV | Funkcja zwraca oczekiwane wartości timestampów, cen i wolumenów | do pokrycia testem |
-| SAMPLE_DATASET-008 | Domyślna wersja przykładowego datasetu | Dataset jest tworzony z wersją `v001` | do pokrycia testem |
-| SAMPLE_DATASET-009 | Utworzenie przykładowego datasetu z niestandardową wersją | Dataset, metadata i raport walidacji używają przekazanej wersji, np. `v002` | do pokrycia testem |
-| SAMPLE_DATASET-010 | Próba ponownego utworzenia datasetu bez `overwrite` | Funkcja kończy się błędem istniejącej wersji i nie nadpisuje danych | do pokrycia testem |
-| SAMPLE_DATASET-011 | Ponowne utworzenie datasetu z `overwrite=True` | Istniejąca wersja datasetu zostaje usunięta i odtworzona z poprawnymi artefaktami | do pokrycia testem |
-| SAMPLE_DATASET-012 | Spójność pól metadata z przykładowym requestem | `metadata.json` zachowuje pola z `build_sample_dataset_request` i status po walidacji | do pokrycia testem |
-| SAMPLE_DATASET-013 | Spójność ścieżek i statusu wyniku | `DatasetBuildResult` wskazuje istniejące artefakty i ma status raportu walidacji | do pokrycia testem |
+| SAMPLE_DATASET-006 | Deterministyczny `DatasetRequest` przykładowego datasetu | Request ma oczekiwane pola providera, instrumentu, typu danych, interwału i zakresu dat | pokryte testem |
+| SAMPLE_DATASET-007 | Deterministyczne przykładowe świece OHLCV | Funkcja zwraca oczekiwane wartości timestampów, cen i wolumenów | pokryte testem |
+| SAMPLE_DATASET-008 | Domyślna wersja przykładowego datasetu | Dataset jest tworzony z wersją `v001` | pokryte testem |
+| SAMPLE_DATASET-009 | Utworzenie przykładowego datasetu z niestandardową wersją | Dataset, metadata i raport walidacji używają przekazanej wersji, np. `v002` | pokryte testem |
+| SAMPLE_DATASET-010 | Próba ponownego utworzenia datasetu bez `overwrite` | Funkcja kończy się błędem istniejącej wersji i nie nadpisuje danych | pokryte testem |
+| SAMPLE_DATASET-011 | Ponowne utworzenie datasetu z `overwrite=True` | Istniejąca wersja datasetu zostaje usunięta i odtworzona z poprawnymi artefaktami | pokryte testem |
+| SAMPLE_DATASET-012 | Spójność pól metadata z przykładowym requestem | `metadata.json` zachowuje pola z `build_sample_dataset_request` i status po walidacji | pokryte testem |
+| SAMPLE_DATASET-013 | Spójność ścieżek i statusu wyniku | `DatasetBuildResult` wskazuje istniejące artefakty i ma status raportu walidacji | pokryte testem |
 
-Na obecnym etapie obszar przykładowego datasetu nie jest jeszcze domknięty dla zakresu v0.2.0.
+Na obecnym etapie obszar przykładowego datasetu można uznać za domknięty dla zakresu v0.2.0.
 
 Przyszłe rozszerzenia mogą obejmować większe sample datasety, różne klasy aktywów, różne interwały, scenariusze celowo niepoprawnych danych demonstracyjnych oraz osobne komendy CLI dla generowania danych przykładowych. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy przykładowego datasetu.
 
