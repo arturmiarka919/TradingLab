@@ -1118,31 +1118,34 @@ Ten obszar odpowiada za:
 * zapis pliku `metadata.json`,
 * odczyt pliku `metadata.json`,
 * serializację i deserializację pól daty,
+* przekazywanie błędów brakujących pól, błędów JSON, błędów wejścia/wyjścia i błędów parsowania dat do warstwy wywołującej,
+* normalizację pól tekstowych do `str` zgodnie z obecną logiką,
+* zachowanie znaków spoza ASCII przy zapisie JSON,
 * zachowanie spójności danych w cyklu zapis → odczyt.
 
 Macierz scenariuszy dla metadata datasetu:
 
-| ID           | Scenariusz                                                       | Oczekiwany wynik                                                    | Status         |
-| ------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------- | -------------- |
-| METADATA-001 | Konwersja `DatasetMetadata` do słownika                          | Wszystkie pola są zapisane w oczekiwanym formacie                   | pokryte testem |
-| METADATA-002 | Konwersja słownika do `DatasetMetadata`                          | Wszystkie pola są poprawnie odtworzone z danych wejściowych         | pokryte testem |
-| METADATA-003 | Zapis `metadata.json`                                            | Plik JSON zostaje utworzony i zawiera oczekiwane dane               | pokryte testem |
-| METADATA-004 | Cykl zapis → odczyt przez JSON i `metadata_from_dict`             | Odtworzone metadata są równe metadata wejściowym                    | pokryte testem |
-| METADATA-005 | Odczyt `metadata.json` przez `load_metadata`                     | Funkcja zwraca poprawny obiekt `DatasetMetadata`                    | pokryte testem |
-| METADATA-006 | Model `DatasetMetadata` opisuje wersję datasetu EUR/USD          | Model przechowuje podstawowe pola datasetu                          | pokryte testem |
-| METADATA-007 | Brak wymaganego pola w danych wejściowych                        | Błąd brakującego pola jest przekazywany do warstwy wywołującej      | do sprawdzenia |
-| METADATA-008 | Niepoprawny format daty `requested_start`                        | Odczyt kończy się błędem parsowania daty                            | do sprawdzenia |
-| METADATA-009 | Niepoprawny format daty `requested_end`                          | Odczyt kończy się błędem parsowania daty                            | do sprawdzenia |
-| METADATA-010 | Niepoprawny JSON w pliku `metadata.json`                         | Odczyt kończy się błędem parsowania JSON                            | do sprawdzenia |
-| METADATA-011 | Próba odczytu nieistniejącego pliku `metadata.json`              | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej       | do sprawdzenia |
-| METADATA-012 | Wartości tekstowe przekazane jako typy nietekstowe               | Pola tekstowe są normalizowane do `str` zgodnie z obecną logiką     | do sprawdzenia |
-| METADATA-013 | Zapis metadata z polskimi albo niestandardowymi znakami          | Plik JSON zachowuje znaki dzięki zapisowi UTF-8 i `ensure_ascii=False` | do sprawdzenia |
-| METADATA-014 | Zapis metadata kończy plik znakiem nowej linii                   | Plik kończy się pojedynczym znakiem nowej linii                     | do sprawdzenia |
-| METADATA-015 | Próba modyfikacji istniejącego obiektu `DatasetMetadata`         | Obiekt pozostaje niemutowalny                                       | do sprawdzenia |
+| ID           | Scenariusz                                                       | Oczekiwany wynik                                                       | Status         |
+| ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
+| METADATA-001 | Konwersja `DatasetMetadata` do słownika                          | Wszystkie pola są zapisane w oczekiwanym formacie                      | pokryte testem |
+| METADATA-002 | Konwersja słownika do `DatasetMetadata`                          | Wszystkie pola są poprawnie odtworzone z danych wejściowych            | pokryte testem |
+| METADATA-003 | Zapis `metadata.json`                                            | Plik JSON zostaje utworzony i zawiera oczekiwane dane                  | pokryte testem |
+| METADATA-004 | Cykl zapis → odczyt przez JSON i `metadata_from_dict`             | Odtworzone metadata są równe metadata wejściowym                       | pokryte testem |
+| METADATA-005 | Odczyt `metadata.json` przez `load_metadata`                     | Funkcja zwraca poprawny obiekt `DatasetMetadata`                       | pokryte testem |
+| METADATA-006 | Model `DatasetMetadata` opisuje wersję datasetu EUR/USD          | Model przechowuje podstawowe pola datasetu                             | pokryte testem |
+| METADATA-007 | Brak wymaganego pola w danych wejściowych                        | Błąd brakującego pola jest przekazywany do warstwy wywołującej         | pokryte testem |
+| METADATA-008 | Niepoprawny format daty `requested_start`                        | Odczyt kończy się błędem parsowania daty                               | pokryte testem |
+| METADATA-009 | Niepoprawny format daty `requested_end`                          | Odczyt kończy się błędem parsowania daty                               | pokryte testem |
+| METADATA-010 | Niepoprawny JSON w pliku `metadata.json`                         | Odczyt kończy się błędem parsowania JSON                               | pokryte testem |
+| METADATA-011 | Próba odczytu nieistniejącego pliku `metadata.json`              | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej          | pokryte testem |
+| METADATA-012 | Wartości tekstowe przekazane jako typy nietekstowe               | Pola tekstowe są normalizowane do `str` zgodnie z obecną logiką        | pokryte testem |
+| METADATA-013 | Zapis metadata z polskimi albo niestandardowymi znakami          | Plik JSON zachowuje znaki dzięki zapisowi UTF-8 i `ensure_ascii=False` | pokryte testem |
+| METADATA-014 | Zapis metadata kończy plik znakiem nowej linii                   | Plik kończy się pojedynczym znakiem nowej linii                        | pokryte testem |
+| METADATA-015 | Próba modyfikacji istniejącego obiektu `DatasetMetadata`         | Obiekt pozostaje niemutowalny                                          | pokryte testem |
 
-Na obecnym etapie obszar metadata datasetu jest częściowo pokryty testami, ale nie powinien zostać jeszcze uznany za domknięty.
+Na obecnym etapie obszar metadata datasetu można uznać za domknięty dla zakresu v0.2.0.
 
-Następny krok dla tego obszaru powinien polegać na przeglądzie scenariuszy oznaczonych jako `do sprawdzenia` oraz decyzji, które z nich wymagają dopisania testów automatycznych w zakresie v0.2.0.
+Przyszłe rozszerzenia mogą obejmować walidację dozwolonych wartości pól, osobne schematy metadata dla różnych klas aktywów, jawne wersjonowanie schematu metadata, dodatkowe pola techniczne oraz kontrolę zgodności `dataset_id` z zawartością metadata. Nie należą one jednak do obecnego zakresu warstwy metadata datasetu.
 
 
 ## 26. Proponowana struktura testów
