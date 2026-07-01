@@ -1106,6 +1106,44 @@ Na obecnym etapie obszar zapisu i odczytu OHLCV CSV można uznać za domknięty 
 
 Przyszłe rozszerzenia mogą obejmować obsługę innych formatów plików, innych separatorów CSV, wymuszonego kodowania, kompresji danych albo dodatkowych formatów timestampów. Nie należą one jednak do obecnego zakresu warstwy zapisu i odczytu OHLCV CSV.
 
+### 25.4. Macierz scenariuszy metadata datasetu
+
+Warstwa metadata datasetu jest osobnym, małym obszarem funkcjonalnym Data Engine.
+
+Ten obszar odpowiada za:
+
+* reprezentację metadata datasetu w modelu `DatasetMetadata`,
+* konwersję `DatasetMetadata` do słownika gotowego do zapisu JSON,
+* konwersję słownika odczytanego z JSON do `DatasetMetadata`,
+* zapis pliku `metadata.json`,
+* odczyt pliku `metadata.json`,
+* serializację i deserializację pól daty,
+* zachowanie spójności danych w cyklu zapis → odczyt.
+
+Macierz scenariuszy dla metadata datasetu:
+
+| ID           | Scenariusz                                                       | Oczekiwany wynik                                                    | Status         |
+| ------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------- | -------------- |
+| METADATA-001 | Konwersja `DatasetMetadata` do słownika                          | Wszystkie pola są zapisane w oczekiwanym formacie                   | pokryte testem |
+| METADATA-002 | Konwersja słownika do `DatasetMetadata`                          | Wszystkie pola są poprawnie odtworzone z danych wejściowych         | pokryte testem |
+| METADATA-003 | Zapis `metadata.json`                                            | Plik JSON zostaje utworzony i zawiera oczekiwane dane               | pokryte testem |
+| METADATA-004 | Cykl zapis → odczyt przez JSON i `metadata_from_dict`             | Odtworzone metadata są równe metadata wejściowym                    | pokryte testem |
+| METADATA-005 | Odczyt `metadata.json` przez `load_metadata`                     | Funkcja zwraca poprawny obiekt `DatasetMetadata`                    | pokryte testem |
+| METADATA-006 | Model `DatasetMetadata` opisuje wersję datasetu EUR/USD          | Model przechowuje podstawowe pola datasetu                          | pokryte testem |
+| METADATA-007 | Brak wymaganego pola w danych wejściowych                        | Błąd brakującego pola jest przekazywany do warstwy wywołującej      | do sprawdzenia |
+| METADATA-008 | Niepoprawny format daty `requested_start`                        | Odczyt kończy się błędem parsowania daty                            | do sprawdzenia |
+| METADATA-009 | Niepoprawny format daty `requested_end`                          | Odczyt kończy się błędem parsowania daty                            | do sprawdzenia |
+| METADATA-010 | Niepoprawny JSON w pliku `metadata.json`                         | Odczyt kończy się błędem parsowania JSON                            | do sprawdzenia |
+| METADATA-011 | Próba odczytu nieistniejącego pliku `metadata.json`              | Błąd wejścia/wyjścia jest przekazywany do warstwy wywołującej       | do sprawdzenia |
+| METADATA-012 | Wartości tekstowe przekazane jako typy nietekstowe               | Pola tekstowe są normalizowane do `str` zgodnie z obecną logiką     | do sprawdzenia |
+| METADATA-013 | Zapis metadata z polskimi albo niestandardowymi znakami          | Plik JSON zachowuje znaki dzięki zapisowi UTF-8 i `ensure_ascii=False` | do sprawdzenia |
+| METADATA-014 | Zapis metadata kończy plik znakiem nowej linii                   | Plik kończy się pojedynczym znakiem nowej linii                     | do sprawdzenia |
+| METADATA-015 | Próba modyfikacji istniejącego obiektu `DatasetMetadata`         | Obiekt pozostaje niemutowalny                                       | do sprawdzenia |
+
+Na obecnym etapie obszar metadata datasetu jest częściowo pokryty testami, ale nie powinien zostać jeszcze uznany za domknięty.
+
+Następny krok dla tego obszaru powinien polegać na przeglądzie scenariuszy oznaczonych jako `do sprawdzenia` oraz decyzji, które z nich wymagają dopisania testów automatycznych w zakresie v0.2.0.
+
 
 ## 26. Proponowana struktura testów
 
