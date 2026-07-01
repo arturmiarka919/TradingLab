@@ -1283,15 +1283,15 @@ Macierz scenariuszy dla identyfikatora datasetu:
 | DATASET_ID-003 | Normalizacja typowych pól tekstowych | Spacje i wielkość liter w polach tekstowych nie zmieniają finalnego `dataset_id` | pokryte testem |
 | DATASET_ID-004 | Deterministyczność generowania identyfikatora | Dwa wywołania dla tego samego requestu zwracają ten sam wynik | pokryte testem |
 | DATASET_ID-005 | Brak spacji i ukośników w `dataset_id` | Wynik nie zawiera spacji ani znaków `/` | pokryte testem |
-| DATASET_ID-006 | Normalizacja znaków specjalnych w polach tekstowych innych niż symbol | Znaki specjalne są zamieniane na bezpieczne separatory `_` zgodnie z obecną logiką | do pokrycia testem |
-| DATASET_ID-007 | Usuwanie nadmiarowych separatorów `_` w polach tekstowych | Wielokrotne separatory są redukowane do pojedynczego `_`, a początkowe i końcowe `_` są usuwane | do pokrycia testem |
-| DATASET_ID-008 | Normalizacja symbolu z wieloma znakami specjalnymi | Symbol zachowuje tylko litery i cyfry, np. warianty EUR/USD nadal dają `eurusd` | do pokrycia testem |
-| DATASET_ID-009 | Daty w `dataset_id` pochodzą z `requested_start` i `requested_end` | Identyfikator zawiera daty żądanego zakresu w formacie `YYYY-MM-DD` | do pokrycia testem |
-| DATASET_ID-010 | Zmiana wersji datasetu nie wpływa na `dataset_id` | `dataset_id` nie zawiera `v001`, `v002` ani innego numeru wersji | do pokrycia testem |
-| DATASET_ID-011 | Zmiana pola tożsamości datasetu zmienia `dataset_id` | Zmiana providera, symbolu, typu ceny, interwału albo zakresu dat daje inny identyfikator | do pokrycia testem |
-| DATASET_ID-012 | Wynik pozostaje zgodny ze strukturą katalogów datasetu | `dataset_id` może być bezpiecznie użyty jako element ścieżki `data/datasets/{dataset_id}/{version}` | do pokrycia testem |
+| DATASET_ID-006 | Normalizacja znaków specjalnych w polach tekstowych innych niż symbol | Znaki specjalne są zamieniane na bezpieczne separatory `_` zgodnie z obecną logiką | pokryte testem |
+| DATASET_ID-007 | Usuwanie nadmiarowych separatorów `_` w polach tekstowych | Wielokrotne separatory są redukowane do pojedynczego `_`, a początkowe i końcowe `_` są usuwane | pokryte testem |
+| DATASET_ID-008 | Normalizacja symbolu z wieloma znakami specjalnymi | Symbol zachowuje tylko litery i cyfry, np. warianty EUR/USD nadal dają `eurusd` | pokryte testem |
+| DATASET_ID-009 | Daty w `dataset_id` pochodzą z `requested_start` i `requested_end` | Identyfikator zawiera daty żądanego zakresu w formacie `YYYY-MM-DD` | pokryte testem |
+| DATASET_ID-010 | Zmiana wersji datasetu nie wpływa na `dataset_id` | `dataset_id` nie zawiera `v001`, `v002` ani innego numeru wersji | pokryte testem |
+| DATASET_ID-011 | Zmiana pola tożsamości datasetu zmienia `dataset_id` | Zmiana providera, symbolu, typu ceny, interwału albo zakresu dat daje inny identyfikator | pokryte testem |
+| DATASET_ID-012 | Wynik pozostaje zgodny ze strukturą katalogów datasetu | `dataset_id` może być bezpiecznie użyty jako element ścieżki `data/datasets/{dataset_id}/{version}` | pokryte testem |
 
-Na obecnym etapie obszar identyfikatora datasetu nie jest jeszcze domknięty dla zakresu v0.2.0.
+Na obecnym etapie obszar identyfikatora datasetu można uznać za domknięty dla zakresu v0.2.0.
 
 Przyszłe rozszerzenia mogą obejmować walidację pustych pól po normalizacji, obsługę znaków spoza ASCII, jawne ograniczenie długości identyfikatora, dodatkowy fingerprint parametrów źródłowych oraz migrację starszych identyfikatorów, jeśli format `dataset_id` zostanie kiedyś rozszerzony. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy identyfikatora datasetu.
 
