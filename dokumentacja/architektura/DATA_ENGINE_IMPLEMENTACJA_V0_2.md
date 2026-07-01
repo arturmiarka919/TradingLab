@@ -1182,9 +1182,9 @@ Macierz scenariuszy dla raportu walidacji:
 | VALIDATION_REPORT-013 | Niepoprawna wartość licznika | Odczyt kończy się błędem konwersji licznika | pokryte testem |
 | VALIDATION_REPORT-014 | Zapis raportu z polskimi albo niestandardowymi znakami | Plik JSON zachowuje znaki dzięki zapisowi UTF-8 i `ensure_ascii=False` | pokryte testem |
 | VALIDATION_REPORT-015 | Zapis raportu kończy plik znakiem nowej linii | Plik kończy się pojedynczym znakiem nowej linii | pokryte testem |
-| VALIDATION_REPORT-016 | Próba modyfikacji istniejącego obiektu `ValidationReport` | Obiekt pozostaje niemutowalny | do pokrycia testem |
+| VALIDATION_REPORT-016 | Próba modyfikacji istniejącego obiektu `ValidationReport` | Obiekt pozostaje niemutowalny | pokryte testem |
 
-Na obecnym etapie obszar raportu walidacji nie jest jeszcze domknięty dla zakresu v0.2.0.
+Na obecnym etapie obszar raportu walidacji można uznać za domknięty dla zakresu v0.2.0.
 
 Przyszłe rozszerzenia mogą obejmować docelowe rozdzielenie statusów datasetu od statusów walidacji, dodanie `validation_schema_version`, `validated_at_utc`, szczegółowej sekcji `summary`, listy `checks` oraz bardziej rozbudowanej struktury błędów i ostrzeżeń. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy zapisu i odczytu raportu walidacji.
 
