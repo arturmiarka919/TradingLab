@@ -1,5 +1,9 @@
 """Tests for Data Engine validation report model."""
 
+from dataclasses import FrozenInstanceError
+
+import pytest
+
 from tradinglab.data_engine.models import ValidationReport
 from tradinglab.data_engine.status import (
     DATASET_STATUS_INVALID,
@@ -51,3 +55,22 @@ def test_validation_report_can_describe_invalid_dataset() -> None:
     assert report.checked_rows == 252
     assert report.valid_rows == 251
     assert report.invalid_rows == 1
+
+
+def test_validation_report_is_immutable() -> None:
+    report = ValidationReport(
+        dataset_id=(
+            "polygon_massive_forex_eurusd_ohlcv_provider_1d_"
+            "2024-01-01_2024-12-31"
+        ),
+        version="v001",
+        status=DATASET_STATUS_VALIDATED,
+        errors=(),
+        warnings=(),
+        checked_rows=252,
+        valid_rows=252,
+        invalid_rows=0,
+    )
+
+    with pytest.raises(FrozenInstanceError):
+        report.status = DATASET_STATUS_INVALID
