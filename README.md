@@ -20,6 +20,7 @@ Najważniejsze dokumenty projektu:
 * [Architektura systemu](dokumentacja/architektura/ARCHITEKTURA.md)
 * [Proces badawczy](dokumentacja/badania/PROCES_BADAWCZY.md)
 * [Data Engine](dokumentacja/architektura/DATA_ENGINE.md)
+* [Praca na wielu komputerach](dokumentacja/procesy/PRACA_NA_WIELU_KOMPUTERACH.md)
 * [Mapa drogowa](dokumentacja/mapa_drogowa/ROADMAP.md)
 * [ADR-0001 — Fundamenty projektu](dokumentacja/decyzje/ADR-0001-fundamenty-projektu.md)
 
