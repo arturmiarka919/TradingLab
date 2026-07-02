@@ -177,16 +177,31 @@ Dopiero po wyjaśnieniu rozjazdu można kontynuować pracę.
 
 ## Edycja dokumentacji i plików z polskimi znakami
 
-Dokumentację projektową oraz inne pliki tekstowe zawierające polskie znaki należy edytować w VS Code.
+Dokumentację projektową oraz inne pliki tekstowe zawierające polskie znaki należy edytować ręcznie w VS Code.
 
-Nie należy tworzyć długich plików dokumentacji przez `Set-Content`, `Add-Content` ani wielolinijkowe here-stringi w PowerShellu, jeżeli plik zawiera polskie znaki.
+PowerShell może służyć do:
 
-Bezpieczna procedura edycji dokumentacji:
+1. przejścia do katalogu projektu,
+2. sprawdzenia stanu repozytorium,
+3. utworzenia folderu,
+4. otwarcia pliku w VS Code,
+5. uruchomienia testów i kontroli Git.
 
-1. Otworzyć plik w VS Code komendą `code`.
-2. Wkleić treść bezpośrednio w edytorze.
-3. Zapisać plik w kodowaniu UTF-8.
-4. Sprawdzić diff przed commitem.
+PowerShell nie powinien służyć do wklejania długiej treści dokumentacji zawierającej polskie znaki.
+
+Nie należy tworzyć ani aktualizować długich plików dokumentacji przez:
+
+```powershell
+Set-Content
+Add-Content
+Out-File
+```
+
+Nie należy też wklejać długich wielolinijkowych here-stringów w PowerShellu, jeżeli tekst zawiera polskie znaki.
+
+### Bezpieczny sposób tworzenia nowego dokumentu
+
+Jeżeli trzeba utworzyć nowy plik dokumentacji, asystent powinien podać komendę PowerShell tylko do otwarcia pliku w VS Code.
 
 Przykład:
 
@@ -194,7 +209,51 @@ Przykład:
 code dokumentacja\procesy\PRACA_NA_WIELU_KOMPUTERACH.md
 ```
 
-Jeżeli nowy plik dokumentacji ma zostać utworzony, PowerShell może służyć do utworzenia folderu, ale sama treść dokumentu powinna zostać wklejona i zapisana w VS Code.
+Następnie asystent powinien podać pełną treść dokumentu jako blok tekstowy do ręcznego wklejenia w VS Code.
+
+Użytkownik wkleja treść w VS Code i zapisuje plik przez `Ctrl + S`.
+
+### Bezpieczny sposób aktualizowania istniejącego dokumentu
+
+Jeżeli trzeba zaktualizować istniejący dokument, asystent powinien podać:
+
+1. komendę PowerShell otwierającą konkretny plik w VS Code,
+2. dokładną informację, który fragment znaleźć,
+3. dokładną informację, czy fragment trzeba podmienić, wkleić przed nim, wkleić po nim albo dopisać na końcu,
+4. pełny blok tekstu do ręcznego wklejenia,
+5. komendy kontrolne po zapisaniu pliku.
+
+Przykład instrukcji:
+
+```text
+Otwórz plik w VS Code.
+Znajdź nagłówek „## Pliki ignorowane”.
+Bezpośrednio przed tym nagłówkiem wklej poniższy blok.
+Zapisz plik przez Ctrl + S.
+```
+
+Dopiero po ręcznym zapisaniu pliku w VS Code należy wykonać kontrolę:
+
+```powershell
+git status
+uv run pytest
+uv run ruff check .
+git diff --stat
+git diff --check
+git diff
+```
+
+### Zasada dla asystenta
+
+Asystent prowadzący projekt TradingLab nie powinien podawać użytkownikowi długich komend PowerShell, które zapisują treść dokumentacji bezpośrednio do pliku, jeżeli dokumentacja zawiera polskie znaki.
+
+Zamiast tego asystent powinien używać schematu:
+
+1. otwórz plik komendą `code`,
+2. znajdź konkretny fragment,
+3. wklej albo podmień konkretny blok w VS Code,
+4. zapisz plik,
+5. sprawdź testy, ruff i diff.
 
 ## Pliki ignorowane
 
