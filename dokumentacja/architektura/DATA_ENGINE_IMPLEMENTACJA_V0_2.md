@@ -319,6 +319,7 @@ W v0.2.0 pełny workflow akceptacji datasetu może być jeszcze minimalny, ale m
 Raport walidacji używa osobnych statusów:
 
 ```text
+not_validated
 valid
 valid_with_warnings
 invalid
@@ -326,9 +327,14 @@ invalid
 
 Znaczenie:
 
+* `not_validated` — raport walidacji został utworzony technicznie, ale właściwa walidacja datasetu nie została jeszcze wykonana,
 * `valid` — dane przeszły walidację bez problemów,
 * `valid_with_warnings` — dane są technicznie używalne, ale mają ostrzeżenia,
 * `invalid` — dane nie powinny być używane dalej bez poprawy albo ponownego utworzenia datasetu.
+
+`not_validated` jest statusem przejściowym potrzebnym w sytuacji, gdy proces budowania datasetu tworzy początkowy `validation_report.json` przed wykonaniem właściwej walidacji.
+
+Nie wolno używać statusu `invalid` jako zamiennika dla stanu „jeszcze nie walidowano”.
 
 Przykład zgodności:
 
@@ -494,6 +500,7 @@ Minimalna zawartość raportu:
 Minimalne statusy walidacji:
 
 ```text
+not_validated
 valid
 valid_with_warnings
 invalid
@@ -1325,6 +1332,75 @@ Macierz scenariuszy dla ścieżek storage:
 Na obecnym etapie obszar ścieżek storage można uznać za domknięty dla zakresu v0.2.0.
 
 Przyszłe rozszerzenia mogą obejmować helpery dla `raw/response.json`, `normalized/candles.csv`, katalogów pośrednich, formatów innych niż CSV oraz walidację bezpieczeństwa ścieżek. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej minimalnej warstwy storage.
+
+### 25.10. Macierz scenariuszy statusów Data Engine
+
+Statusy Data Engine są osobnym obszarem, ponieważ w projekcie występują dwa różne pojęcia:
+
+1. status życia datasetu,
+2. status wyniku walidacji.
+
+Status życia datasetu jest zapisywany w `metadata.json`.
+
+Status wyniku walidacji jest zapisywany w `validation_report.json`.
+
+`DatasetBuildResult.status` oznacza status życia datasetu, a nie status wyniku walidacji.
+
+Docelowe statusy życia datasetu:
+
+```text
+RAW
+VALIDATED
+ACCEPTED
+QUARANTINED
+REJECTED
+DEPRECATED
+```
+
+Docelowe statusy walidacji:
+
+```text
+not_validated
+valid
+valid_with_warnings
+invalid
+```
+
+Tymczasowe stare statusy implementacyjne:
+
+```text
+created
+validated
+invalid
+```
+
+Stare statusy implementacyjne pozostają tylko jako `legacy`, żeby refaktor można było wykonać mikro-krokami bez jednorazowego przepinania buildera, walidatora, modeli i testów.
+
+Nie wolno traktować ich jako docelowego modelu statusów.
+
+Macierz scenariuszy dla statusów Data Engine:
+
+| ID | Scenariusz | Oczekiwany wynik | Status |
+| --- | --- | --- | --- |
+| STATUS-001 | Kod posiada osobne stałe statusów życia datasetu | Dostępne są stałe `DATASET_LIFECYCLE_STATUS_*` | pokryte testem |
+| STATUS-002 | Kod posiada osobne stałe statusów walidacji | Dostępne są stałe `VALIDATION_STATUS_*`, w tym `VALIDATION_STATUS_NOT_VALIDATED` | pokryte testem |
+| STATUS-003 | Statusy życia datasetu są unikalne | Lista `DATASET_LIFECYCLE_STATUSES` nie zawiera duplikatów | pokryte testem |
+| STATUS-004 | Statusy walidacji są unikalne | Lista `VALIDATION_STATUSES` nie zawiera duplikatów | pokryte testem |
+| STATUS-005 | Statusy życia datasetu i statusy walidacji nie mieszają się | Zbiory `DATASET_LIFECYCLE_STATUSES` i `VALIDATION_STATUSES` są rozłączne | pokryte testem |
+| STATUS-006 | Stare statusy implementacyjne pozostają tymczasowo dostępne | `created`, `validated`, `invalid` są dostępne jako legacy | pokryte testem |
+| STATUS-007 | `metadata.status` używa statusu życia datasetu | `metadata.json` korzysta z `RAW`, `VALIDATED`, `ACCEPTED`, `QUARANTINED`, `REJECTED` albo `DEPRECATED` | do przepięcia |
+| STATUS-008 | `validation_report.status` używa statusu walidacji | `validation_report.json` korzysta z `not_validated`, `valid`, `valid_with_warnings` albo `invalid` | do przepięcia |
+| STATUS-009 | `DatasetBuildResult.status` oznacza status życia datasetu | Wynik budowania datasetu nie używa statusu walidacji jako statusu datasetu | do przepięcia |
+| STATUS-010 | Legacy statusy zostają usunięte albo jawnie utrzymane czasowo | Po przepięciu modeli, walidatora i buildera stare stałe nie są używane jako model docelowy | do domknięcia |
+
+Obszar statusów nie jest jeszcze domknięty.
+
+Za domknięty można go uznać dopiero wtedy, gdy:
+
+1. kod używa rozdzielonych statusów we właściwych miejscach,
+2. stare legacy stałe zostaną usunięte albo jawnie oznaczone jako pozostawione czasowo,
+3. testy pokrywają osobno statusy datasetu i statusy walidacji,
+4. dokumentacja opisuje finalny stan.
 
 ## 26. Proponowana struktura testów
 

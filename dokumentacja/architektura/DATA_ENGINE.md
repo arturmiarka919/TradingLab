@@ -269,6 +269,43 @@ Raport walidacji odpowiada na pytanie:
 
 > Jakie dokładnie problemy zostały wykryte?
 
+Status datasetu powinien być zapisywany w metadanych datasetu.
+
+Docelowe statusy datasetu:
+
+```text
+RAW
+VALIDATED
+ACCEPTED
+QUARANTINED
+REJECTED
+DEPRECATED
+```
+
+### 7.6. Validation status
+
+Validation status określa wynik technicznej walidacji danych.
+
+Status walidacji nie jest tym samym co status datasetu.
+
+Status walidacji powinien być zapisywany w `validation_report.json`.
+
+Docelowe statusy walidacji:
+
+```text
+not_validated
+valid
+valid_with_warnings
+invalid
+```
+
+Znaczenie:
+
+* `not_validated` — raport walidacji został utworzony, ale właściwa walidacja nie została jeszcze wykonana,
+* `valid` — dane przeszły walidację bez problemów,
+* `valid_with_warnings` — dane są technicznie używalne, ale mają ostrzeżenia,
+* `invalid` — dane nie powinny być używane dalej bez poprawy albo ponownego utworzenia datasetu.
+
 ---
 
 ## 8. Pierwszy obsługiwany typ danych
@@ -370,7 +407,7 @@ timezone
 downloaded_at
 data_version
 raw_path
-validation_status
+dataset_status
 ```
 
 Znaczenie pól:
@@ -387,7 +424,9 @@ Znaczenie pól:
 * `downloaded_at` — czas pobrania danych,
 * `data_version` — wersja datasetu,
 * `raw_path` — lokalizacja danych surowych,
-* `validation_status` — status walidacji.
+* `dataset_status` — status życia datasetu.
+
+Status wyniku walidacji nie jest polem metadanych datasetu. Status wyniku walidacji powinien znajdować się w `validation_report.json`.
 
 ---
 
