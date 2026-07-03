@@ -43,7 +43,7 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     assert result.dataset_id == EXPECTED_DATASET_ID
     assert result.version == "v001"
     assert result.dataset_path == expected_dataset_path
-    assert result.data_path == expected_dataset_path / "data.csv"
+    assert result.data_path == expected_dataset_path / "normalized" / "candles.csv"
     assert result.metadata_path == expected_dataset_path / "metadata.json"
     assert (
         result.validation_report_path
@@ -54,6 +54,7 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     assert result.dataset_path.is_dir()
     assert (expected_dataset_path / "raw").is_dir()
     assert (expected_dataset_path / "normalized").is_dir()
+    assert (expected_dataset_path / "data.csv").is_file()
     assert result.data_path.is_file()
     assert result.metadata_path.is_file()
     assert result.validation_report_path.is_file()
@@ -89,7 +90,7 @@ def test_create_dataset_writes_initial_validation_report_json(
     assert loaded_report == _build_expected_validation_report()
 
 
-def test_create_dataset_writes_empty_data_csv_with_ohlcv_header(
+def test_create_dataset_writes_empty_normalized_candles_csv_with_ohlcv_header(
     tmp_path: Path,
 ) -> None:
     request = _build_dataset_request()
@@ -101,6 +102,25 @@ def test_create_dataset_writes_empty_data_csv_with_ohlcv_header(
     )
 
     assert result.data_path.read_text(encoding="utf-8").splitlines() == [
+        EXPECTED_OHLCV_HEADER
+    ]
+
+
+def test_create_dataset_keeps_legacy_data_csv_with_ohlcv_header(
+    tmp_path: Path,
+) -> None:
+    request = _build_dataset_request()
+
+    result = create_dataset(
+        request=request,
+        base_data_dir=tmp_path,
+        version="v001",
+    )
+
+    legacy_data_path = result.dataset_path / "data.csv"
+
+    assert legacy_data_path.is_file()
+    assert legacy_data_path.read_text(encoding="utf-8").splitlines() == [
         EXPECTED_OHLCV_HEADER
     ]
 
@@ -127,7 +147,7 @@ def test_create_dataset_creates_only_initial_artifacts(
     ]
 
 
-def test_create_dataset_creates_empty_raw_and_normalized_directories(
+def test_create_dataset_creates_target_directories_and_normalized_candles(
     tmp_path: Path,
 ) -> None:
     request = _build_dataset_request()
@@ -144,7 +164,9 @@ def test_create_dataset_creates_empty_raw_and_normalized_directories(
     assert raw_dir_path.is_dir()
     assert normalized_dir_path.is_dir()
     assert list(raw_dir_path.iterdir()) == []
-    assert list(normalized_dir_path.iterdir()) == []
+    assert sorted(path.name for path in normalized_dir_path.iterdir()) == [
+        "candles.csv"
+    ]
 
 
 def test_create_dataset_fails_when_dataset_version_already_exists(
@@ -184,6 +206,8 @@ def test_create_dataset_creates_missing_base_directories(
     assert result.dataset_path.is_dir()
     assert (expected_dataset_path / "raw").is_dir()
     assert (expected_dataset_path / "normalized").is_dir()
+    assert (expected_dataset_path / "data.csv").is_file()
+    assert result.data_path == expected_dataset_path / "normalized" / "candles.csv"
     assert result.data_path.is_file()
     assert result.metadata_path.is_file()
     assert result.validation_report_path.is_file()
@@ -218,9 +242,18 @@ def test_create_dataset_creates_new_version_without_changing_existing_version(
     assert (second_result.dataset_path / "raw").is_dir()
     assert (second_result.dataset_path / "normalized").is_dir()
 
+    assert (first_result.dataset_path / "data.csv").is_file()
+    assert first_result.data_path == (
+        first_result.dataset_path / "normalized" / "candles.csv"
+    )
     assert first_result.data_path.is_file()
     assert first_result.metadata_path.is_file()
     assert first_result.validation_report_path.is_file()
+
+    assert (second_result.dataset_path / "data.csv").is_file()
+    assert second_result.data_path == (
+        second_result.dataset_path / "normalized" / "candles.csv"
+    )
     assert second_result.data_path.is_file()
     assert second_result.metadata_path.is_file()
     assert second_result.validation_report_path.is_file()

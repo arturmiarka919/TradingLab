@@ -1274,16 +1274,17 @@ Macierz scenariuszy dla budowania datasetu:
 | ID | Scenariusz | Oczekiwany wynik | Status |
 | ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
 | DATASET_BUILDER-001 | Utworzenie datasetu na podstawie poprawnego `DatasetRequest` | Funkcja zwraca `DatasetBuildResult` i tworzy katalog wersji datasetu | pokryte testem |
-| DATASET_BUILDER-002 | Zbudowanie ścieżek artefaktów datasetu | Wynik zawiera ścieżki do `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
+| DATASET_BUILDER-002 | Zbudowanie ścieżek artefaktów datasetu | Wynik zawiera ścieżkę danych do `normalized/candles.csv` oraz ścieżki do `metadata.json` i `validation_report.json` | pokryte testem |
 | DATASET_BUILDER-003 | Zapis początkowego `metadata.json` | Plik metadata istnieje i zawiera oczekiwane dane ze statusem `created` | pokryte testem |
 | DATASET_BUILDER-004 | Zapis początkowego `validation_report.json` | Plik raportu walidacji istnieje i zawiera status `not_validated` oraz zerowe liczniki | pokryte testem |
-| DATASET_BUILDER-005 | Zapis pustego `data.csv` | Plik danych istnieje i zawiera wyłącznie nagłówek OHLCV | pokryte testem |
+| DATASET_BUILDER-005 | Zapis pustego `normalized/candles.csv` | Główny plik danych istnieje w `normalized/candles.csv` i zawiera wyłącznie nagłówek OHLCV | pokryte testem |
 | DATASET_BUILDER-006 | Utworzenie początkowych artefaktów i katalogów datasetu | Katalog wersji zawiera `data.csv`, `metadata.json`, `validation_report.json`, `raw/` i `normalized/` | pokryte testem |
 | DATASET_BUILDER-007 | Próba utworzenia istniejącej wersji datasetu | Funkcja kończy się błędem i nie nadpisuje istniejącego katalogu wersji | pokryte testem |
 | DATASET_BUILDER-008 | Utworzenie datasetu w nieistniejącym katalogu bazowym | Funkcja tworzy brakujące katalogi nadrzędne | pokryte testem |
 | DATASET_BUILDER-009 | Utworzenie nowej wersji dla istniejącego `dataset_id` | Funkcja tworzy nowy katalog wersji bez naruszania poprzedniej wersji | pokryte testem |
 | DATASET_BUILDER-010 | Rozdzielenie początkowych statusów między wynikiem, metadata i raportem walidacji | `DatasetBuildResult` i `metadata.json` mają status `created`, a `validation_report.json` ma status `not_validated` | pokryte testem |
-| DATASET_BUILDER-011 | Utworzenie pustych katalogów `raw/` i `normalized/` | Katalogi `raw/` i `normalized/` istnieją i są puste po utworzeniu datasetu | pokryte testem |
+| DATASET_BUILDER-011 | Utworzenie katalogów `raw/` i `normalized/` oraz pustego `normalized/candles.csv` | Katalog `raw/` istnieje i jest pusty, a katalog `normalized/` zawiera pusty plik `candles.csv` z nagłówkiem OHLCV | pokryte testem |
+| DATASET_BUILDER-012 | Pozostawienie przejściowego `data.csv` z samym nagłówkiem | Plik `data.csv` nadal istnieje jako artefakt legacy i zawiera tylko nagłówek OHLCV | pokryte testem |
 
 Na obecnym etapie obszar budowania datasetu można uznać za domknięty dla zakresu v0.2.0.
 
