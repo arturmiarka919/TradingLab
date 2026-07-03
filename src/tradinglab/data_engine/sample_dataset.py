@@ -21,6 +21,7 @@ from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
 from tradinglab.data_engine.status import DATASET_STATUS_VALIDATED
 from tradinglab.data_engine.storage import (
     build_dataset_version_path,
+    build_normalized_candles_path,
     build_raw_response_path,
 )
 from tradinglab.data_engine.validation_report import write_validation_report
@@ -120,10 +121,11 @@ def create_sample_ohlcv_dataset(
         encoding="utf-8",
     )
 
-    write_ohlcv_csv(result.data_path, build_sample_ohlcv_bars())
+    normalized_candles_path = build_normalized_candles_path(result.dataset_path)
+    write_ohlcv_csv(normalized_candles_path, build_sample_ohlcv_bars())
 
     validation_report = validate_ohlcv_csv(
-        data_path=result.data_path,
+        data_path=normalized_candles_path,
         dataset_id=result.dataset_id,
         version=result.version,
     )
@@ -147,4 +149,8 @@ def create_sample_ohlcv_dataset(
         ),
     )
 
-    return replace(result, status=DATASET_STATUS_VALIDATED)
+    return replace(
+        result,
+        data_path=normalized_candles_path,
+        status=DATASET_STATUS_VALIDATED,
+    )

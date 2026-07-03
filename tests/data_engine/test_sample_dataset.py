@@ -22,6 +22,8 @@ from tradinglab.data_engine.status import (
 )
 from tradinglab.data_engine.validation_report import load_validation_report
 
+EXPECTED_OHLCV_HEADER = "timestamp,open,high,low,close,volume"
+
 
 def test_create_sample_ohlcv_dataset_writes_expected_artifacts(
     tmp_path: Path,
@@ -39,6 +41,7 @@ def test_create_sample_ohlcv_dataset_writes_expected_artifacts(
     ]
     assert result.metadata_path.is_file()
     assert result.validation_report_path.is_file()
+    assert result.data_path == result.dataset_path / "normalized" / "candles.csv"
     assert result.data_path.is_file()
 
 
@@ -55,15 +58,29 @@ def test_create_sample_ohlcv_dataset_writes_raw_response_json(
     )
 
 
-def test_create_sample_ohlcv_dataset_keeps_normalized_directory_empty_during_transition(
+def test_create_sample_ohlcv_dataset_writes_normalized_candles_csv(
     tmp_path: Path,
 ) -> None:
     result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
 
-    normalized_dir_path = result.dataset_path / "normalized"
+    normalized_candles_path = result.dataset_path / "normalized" / "candles.csv"
 
-    assert normalized_dir_path.is_dir()
-    assert list(normalized_dir_path.iterdir()) == []
+    assert normalized_candles_path.is_file()
+    assert result.data_path == normalized_candles_path
+    assert read_ohlcv_csv(normalized_candles_path) == build_sample_ohlcv_bars()
+
+
+def test_create_sample_ohlcv_dataset_keeps_transitional_data_csv_header_only(
+    tmp_path: Path,
+) -> None:
+    result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
+
+    transitional_data_path = result.dataset_path / "data.csv"
+
+    assert transitional_data_path.is_file()
+    assert transitional_data_path.read_text(encoding="utf-8").splitlines() == [
+        EXPECTED_OHLCV_HEADER
+    ]
 
 
 def test_create_sample_ohlcv_dataset_writes_sample_bars(
@@ -80,6 +97,7 @@ def test_create_sample_ohlcv_dataset_writes_validated_metadata_and_valid_report(
     tmp_path: Path,
 ) -> None:
     result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
+
     metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
     validation_report = json.loads(
         result.validation_report_path.read_text(encoding="utf-8")
@@ -135,6 +153,7 @@ def test_create_sample_ohlcv_dataset_uses_default_version(
     tmp_path: Path,
 ) -> None:
     result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
+
     metadata = load_metadata(result.metadata_path)
     validation_report = load_validation_report(result.validation_report_path)
 
@@ -151,6 +170,7 @@ def test_create_sample_ohlcv_dataset_uses_custom_version(
         base_data_dir=tmp_path,
         version="v002",
     )
+
     metadata = load_metadata(result.metadata_path)
     validation_report = load_validation_report(result.validation_report_path)
 
@@ -188,6 +208,9 @@ def test_create_sample_ohlcv_dataset_overwrite_recreates_existing_version(
 
     artifact_names = sorted(path.name for path in second_result.dataset_path.iterdir())
     raw_response_path = second_result.dataset_path / "raw" / "response.json"
+    normalized_candles_path = (
+        second_result.dataset_path / "normalized" / "candles.csv"
+    )
 
     assert second_result.dataset_path == first_result.dataset_path
     assert not stale_file.exists()
@@ -201,6 +224,7 @@ def test_create_sample_ohlcv_dataset_overwrite_recreates_existing_version(
     assert json.loads(raw_response_path.read_text(encoding="utf-8")) == (
         build_sample_raw_response()
     )
+    assert second_result.data_path == normalized_candles_path
     assert read_ohlcv_csv(second_result.data_path) == build_sample_ohlcv_bars()
     assert second_result.status == DATASET_STATUS_VALIDATED
 
@@ -231,11 +255,12 @@ def test_create_sample_ohlcv_dataset_returns_consistent_result(
     tmp_path: Path,
 ) -> None:
     result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
+
     validation_report = load_validation_report(result.validation_report_path)
 
     assert result.status == DATASET_STATUS_VALIDATED
     assert validation_report.status == VALIDATION_STATUS_VALID
-    assert result.data_path == result.dataset_path / "data.csv"
+    assert result.data_path == result.dataset_path / "normalized" / "candles.csv"
     assert result.metadata_path == result.dataset_path / "metadata.json"
     assert result.validation_report_path == (
         result.dataset_path / "validation_report.json"

@@ -1310,7 +1310,7 @@ Macierz scenariuszy dla przykładowego datasetu:
 | ID | Scenariusz | Oczekiwany wynik | Status |
 | ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
 | SAMPLE_DATASET-001 | Utworzenie przykładowego datasetu OHLCV | Katalog wersji zawiera `data.csv`, `metadata.json`, `validation_report.json`, `raw/` i `normalized/` | pokryte testem |
-| SAMPLE_DATASET-002 | Zapis przykładowych świec OHLCV | Odczyt `data.csv` zwraca dokładnie świece z `build_sample_ohlcv_bars` | pokryte testem |
+| SAMPLE_DATASET-002 | Zapis znormalizowanych świec OHLCV | Odczyt `normalized/candles.csv` zwraca dokładnie świece z `build_sample_ohlcv_bars` | pokryte testem |
 | SAMPLE_DATASET-003 | Zapis metadata i raportu walidacji po walidacji | Metadata i wynik datasetu mają status `validated`, a raport walidacji ma status `valid` | pokryte testem |
 | SAMPLE_DATASET-004 | Raport walidacji dla przykładowych świec | Raport ma 2 sprawdzone wiersze, 2 poprawne wiersze, 0 błędnych wierszy oraz brak błędów i ostrzeżeń | pokryte testem |
 | SAMPLE_DATASET-005 | Uruchomienie skryptu `scripts/create_sample_dataset.py` | Skrypt kończy się sukcesem, wypisuje ścieżki artefaktów i tworzy katalog `data/datasets` | pokryte testem |
@@ -1321,9 +1321,10 @@ Macierz scenariuszy dla przykładowego datasetu:
 | SAMPLE_DATASET-010 | Próba ponownego utworzenia datasetu bez `overwrite` | Funkcja kończy się błędem istniejącej wersji i nie nadpisuje danych | pokryte testem |
 | SAMPLE_DATASET-011 | Ponowne utworzenie datasetu z `overwrite=True` | Istniejąca wersja datasetu zostaje usunięta i odtworzona z poprawnymi artefaktami | pokryte testem |
 | SAMPLE_DATASET-012 | Spójność pól metadata z przykładowym requestem | `metadata.json` zachowuje pola z `build_sample_dataset_request` i status po walidacji | pokryte testem |
-| SAMPLE_DATASET-013 | Spójność ścieżek i statusów wyniku | `DatasetBuildResult` wskazuje istniejące artefakty i ma status datasetu `validated`, a raport walidacji ma status `valid` | pokryte testem |
+| SAMPLE_DATASET-013 | Spójność ścieżek i statusów wyniku | `DatasetBuildResult` wskazuje `normalized/candles.csv`, ma status datasetu `validated`, a raport walidacji ma status `valid` | pokryte testem |
 | SAMPLE_DATASET-014 | Zapis przejściowego `raw/response.json` | Plik `raw/response.json` istnieje i zawiera wynik `build_sample_raw_response` | pokryte testem |
-| SAMPLE_DATASET-015 | Pozostawienie pustego katalogu `normalized/` w czasie migracji | Katalog `normalized/` istnieje i nie zawiera jeszcze `candles.csv` | pokryte testem |
+| SAMPLE_DATASET-015 | Zapis `normalized/candles.csv` w sample dataset | Plik `normalized/candles.csv` istnieje i zawiera przykładowe świece OHLCV | pokryte testem |
+| SAMPLE_DATASET-016 | Pozostawienie przejściowego `data.csv` z samym nagłówkiem | Plik `data.csv` nadal istnieje jako artefakt przejściowy i zawiera tylko nagłówek OHLCV | pokryte testem |
 
 Na obecnym etapie obszar przykładowego datasetu można uznać za domknięty dla zakresu v0.2.0.
 
