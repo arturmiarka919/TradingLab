@@ -13,7 +13,10 @@ from tradinglab.data_engine import (
     create_dataset,
 )
 from tradinglab.data_engine.metadata import load_metadata
-from tradinglab.data_engine.status import DATASET_STATUS_CREATED
+from tradinglab.data_engine.status import (
+    DATASET_STATUS_CREATED,
+    VALIDATION_STATUS_NOT_VALIDATED,
+)
 from tradinglab.data_engine.validation_report import load_validation_report
 
 
@@ -192,7 +195,7 @@ def test_create_dataset_creates_new_version_without_changing_existing_version(
     assert second_metadata.version == "v002"
 
 
-def test_create_dataset_keeps_created_status_consistent_across_artifacts(
+def test_create_dataset_keeps_initial_statuses_separated_across_artifacts(
     tmp_path: Path,
 ) -> None:
     request = _build_dataset_request()
@@ -208,7 +211,7 @@ def test_create_dataset_keeps_created_status_consistent_across_artifacts(
 
     assert result.status == DATASET_STATUS_CREATED
     assert loaded_metadata.status == DATASET_STATUS_CREATED
-    assert loaded_report.status == DATASET_STATUS_CREATED
+    assert loaded_report.status == VALIDATION_STATUS_NOT_VALIDATED
 
 
 def _build_dataset_request() -> DatasetRequest:
@@ -244,7 +247,7 @@ def _build_expected_validation_report() -> ValidationReport:
     return ValidationReport(
         dataset_id=EXPECTED_DATASET_ID,
         version="v001",
-        status=DATASET_STATUS_CREATED,
+        status=VALIDATION_STATUS_NOT_VALIDATED,
         errors=(),
         warnings=(),
         checked_rows=0,

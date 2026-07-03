@@ -11,7 +11,10 @@ from tradinglab.data_engine.models import (
     DatasetRequest,
     ValidationReport,
 )
-from tradinglab.data_engine.status import DATASET_STATUS_CREATED
+from tradinglab.data_engine.status import (
+    DATASET_STATUS_CREATED,
+    VALIDATION_STATUS_NOT_VALIDATED,
+)
 from tradinglab.data_engine.storage import (
     build_data_path,
     build_dataset_version_path,
@@ -58,7 +61,7 @@ def create_dataset(
     validation_report = ValidationReport(
         dataset_id=dataset_id,
         version=version,
-        status=DATASET_STATUS_CREATED,
+        status=VALIDATION_STATUS_NOT_VALIDATED,
         errors=(),
         warnings=(),
         checked_rows=0,
