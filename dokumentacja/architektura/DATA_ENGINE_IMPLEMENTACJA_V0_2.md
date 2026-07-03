@@ -1047,10 +1047,10 @@ Macierz scenariuszy dla walidatora OHLCV:
 
 | ID        | Scenariusz                                                           | Oczekiwany wynik                                                 | Status                      |
 | --------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
-| OHLCV-001 | Poprawny dataset z dwoma świecami                                    | `validated`, brak błędów, poprawne liczniki                      | pokryte testem              |
+| OHLCV-001 | Poprawny dataset z dwoma świecami | `valid`, brak błędów, poprawne liczniki | pokryte testem |
 | OHLCV-002 | Niepoprawny nagłówek CSV                                             | `invalid`, błąd struktury pliku                                  | pokryte testem              |
 | OHLCV-003 | Poprawny nagłówek CSV, ale zero rekordów danych                      | `invalid`, błąd pustego datasetu                                 | pokryte testem              |
-| OHLCV-004 | `volume = 0` oraz świeca płaska `open = high = low = close`          | `validated`                                                      | pokryte testem              |
+| OHLCV-004 | `volume = 0` oraz świeca płaska `open = high = low = close` | `valid` | pokryte testem |
 | OHLCV-005 | `open <= 0`                                                          | `invalid`                                                        | pokryte testem              |
 | OHLCV-006 | `high <= 0`                                                          | `invalid`                                                        | pokryte testem              |
 | OHLCV-007 | `low <= 0`                                                           | `invalid`                                                        | pokryte testem              |
@@ -1066,7 +1066,7 @@ Macierz scenariuszy dla walidatora OHLCV:
 | OHLCV-017 | Jeden plik zawiera rekord poprawny i rekord błędny                   | `invalid`, poprawne `checked_rows`, `valid_rows`, `invalid_rows` | pokryte testem              |
 | OHLCV-018 | Jeden rekord zawiera jednocześnie błąd świecy i błąd timestampu      | rekord liczony jako jeden błędny wiersz                          | pokryte testem              |
 | OHLCV-019 | Dataset z trzema rekordami, gdzie tylko środkowy ma błędny timestamp | `invalid`, tylko jeden rekord liczony jako błędny                | pokryte testem              |
-| OHLCV-020 | Sample dataset generowany skryptem projektu                          | `validated`, brak błędów                                         | sprawdzane testem i ręcznie |
+| OHLCV-020 | Sample dataset generowany skryptem projektu | raport walidacji `valid`, brak błędów; metadata i wynik datasetu `validated` | sprawdzane testem i ręcznie |
 
 Na obecnym etapie walidator OHLCV można uznać za domknięty dla zakresu v0.2.0.
 
@@ -1193,7 +1193,7 @@ Macierz scenariuszy dla raportu walidacji:
 
 Na obecnym etapie obszar raportu walidacji można uznać za domknięty dla zakresu v0.2.0.
 
-Przyszłe rozszerzenia mogą obejmować docelowe rozdzielenie statusów datasetu od statusów walidacji, dodanie `validation_schema_version`, `validated_at_utc`, szczegółowej sekcji `summary`, listy `checks` oraz bardziej rozbudowanej struktury błędów i ostrzeżeń. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy zapisu i odczytu raportu walidacji.
+Przyszłe rozszerzenia mogą obejmować pełniejsze wykorzystanie rozdzielonych statusów, dodanie `validation_schema_version`, `validated_at_utc`, szczegółowej sekcji `summary`, listy `checks` oraz bardziej rozbudowanej struktury błędów i ostrzeżeń. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy zapisu i odczytu raportu walidacji.
 
 ### 25.6. Macierz scenariuszy budowania datasetu
 
@@ -1217,13 +1217,13 @@ Macierz scenariuszy dla budowania datasetu:
 | DATASET_BUILDER-001 | Utworzenie datasetu na podstawie poprawnego `DatasetRequest` | Funkcja zwraca `DatasetBuildResult` i tworzy katalog wersji datasetu | pokryte testem |
 | DATASET_BUILDER-002 | Zbudowanie ścieżek artefaktów datasetu | Wynik zawiera ścieżki do `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
 | DATASET_BUILDER-003 | Zapis początkowego `metadata.json` | Plik metadata istnieje i zawiera oczekiwane dane ze statusem `created` | pokryte testem |
-| DATASET_BUILDER-004 | Zapis początkowego `validation_report.json` | Plik raportu walidacji istnieje i zawiera status `created` oraz zerowe liczniki | pokryte testem |
+| DATASET_BUILDER-004 | Zapis początkowego `validation_report.json` | Plik raportu walidacji istnieje i zawiera status `not_validated` oraz zerowe liczniki | pokryte testem |
 | DATASET_BUILDER-005 | Zapis pustego `data.csv` | Plik danych istnieje i zawiera wyłącznie nagłówek OHLCV | pokryte testem |
 | DATASET_BUILDER-006 | Utworzenie tylko początkowych artefaktów datasetu | Katalog wersji zawiera wyłącznie `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
 | DATASET_BUILDER-007 | Próba utworzenia istniejącej wersji datasetu | Funkcja kończy się błędem i nie nadpisuje istniejącego katalogu wersji | pokryte testem |
 | DATASET_BUILDER-008 | Utworzenie datasetu w nieistniejącym katalogu bazowym | Funkcja tworzy brakujące katalogi nadrzędne | pokryte testem |
 | DATASET_BUILDER-009 | Utworzenie nowej wersji dla istniejącego `dataset_id` | Funkcja tworzy nowy katalog wersji bez naruszania poprzedniej wersji | pokryte testem |
-| DATASET_BUILDER-010 | Spójność statusu `created` między wynikiem, metadata i raportem walidacji | `DatasetBuildResult`, `metadata.json` i `validation_report.json` mają status `created` | pokryte testem |
+| DATASET_BUILDER-010 | Rozdzielenie początkowych statusów między wynikiem, metadata i raportem walidacji | `DatasetBuildResult` i `metadata.json` mają status `created`, a `validation_report.json` ma status `not_validated` | pokryte testem |
 
 Na obecnym etapie obszar budowania datasetu można uznać za domknięty dla zakresu v0.2.0.
 
@@ -1251,7 +1251,7 @@ Macierz scenariuszy dla przykładowego datasetu:
 | ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
 | SAMPLE_DATASET-001 | Utworzenie przykładowego datasetu OHLCV | Katalog wersji zawiera `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
 | SAMPLE_DATASET-002 | Zapis przykładowych świec OHLCV | Odczyt `data.csv` zwraca dokładnie świece z `build_sample_ohlcv_bars` | pokryte testem |
-| SAMPLE_DATASET-003 | Zapis metadata i raportu walidacji po walidacji | Metadata, raport walidacji i wynik mają status `validated` | pokryte testem |
+| SAMPLE_DATASET-003 | Zapis metadata i raportu walidacji po walidacji | Metadata i wynik datasetu mają status `validated`, a raport walidacji ma status `valid` | pokryte testem |
 | SAMPLE_DATASET-004 | Raport walidacji dla przykładowych świec | Raport ma 2 sprawdzone wiersze, 2 poprawne wiersze, 0 błędnych wierszy oraz brak błędów i ostrzeżeń | pokryte testem |
 | SAMPLE_DATASET-005 | Uruchomienie skryptu `scripts/create_sample_dataset.py` | Skrypt kończy się sukcesem, wypisuje ścieżki artefaktów i tworzy katalog `data/datasets` | pokryte testem |
 | SAMPLE_DATASET-006 | Deterministyczny `DatasetRequest` przykładowego datasetu | Request ma oczekiwane pola providera, instrumentu, typu danych, interwału i zakresu dat | pokryte testem |
@@ -1261,7 +1261,7 @@ Macierz scenariuszy dla przykładowego datasetu:
 | SAMPLE_DATASET-010 | Próba ponownego utworzenia datasetu bez `overwrite` | Funkcja kończy się błędem istniejącej wersji i nie nadpisuje danych | pokryte testem |
 | SAMPLE_DATASET-011 | Ponowne utworzenie datasetu z `overwrite=True` | Istniejąca wersja datasetu zostaje usunięta i odtworzona z poprawnymi artefaktami | pokryte testem |
 | SAMPLE_DATASET-012 | Spójność pól metadata z przykładowym requestem | `metadata.json` zachowuje pola z `build_sample_dataset_request` i status po walidacji | pokryte testem |
-| SAMPLE_DATASET-013 | Spójność ścieżek i statusu wyniku | `DatasetBuildResult` wskazuje istniejące artefakty i ma status raportu walidacji | pokryte testem |
+| SAMPLE_DATASET-013 | Spójność ścieżek i statusów wyniku | `DatasetBuildResult` wskazuje istniejące artefakty i ma status datasetu `validated`, a raport walidacji ma status `valid` | pokryte testem |
 
 Na obecnym etapie obszar przykładowego datasetu można uznać za domknięty dla zakresu v0.2.0.
 
@@ -1389,11 +1389,13 @@ Macierz scenariuszy dla statusów Data Engine:
 | STATUS-005 | Statusy życia datasetu i statusy walidacji nie mieszają się | Zbiory `DATASET_LIFECYCLE_STATUSES` i `VALIDATION_STATUSES` są rozłączne | pokryte testem |
 | STATUS-006 | Stare statusy implementacyjne pozostają tymczasowo dostępne | `created`, `validated`, `invalid` są dostępne jako legacy | pokryte testem |
 | STATUS-007 | `metadata.status` używa statusu życia datasetu | `metadata.json` korzysta z `RAW`, `VALIDATED`, `ACCEPTED`, `QUARANTINED`, `REJECTED` albo `DEPRECATED` | do przepięcia |
-| STATUS-008 | `validation_report.status` używa statusu walidacji | `validation_report.json` korzysta z `not_validated`, `valid`, `valid_with_warnings` albo `invalid` | do przepięcia |
-| STATUS-009 | `DatasetBuildResult.status` oznacza status życia datasetu | Wynik budowania datasetu nie używa statusu walidacji jako statusu datasetu | do przepięcia |
+| STATUS-008 | `validation_report.status` używa statusu walidacji | `validation_report.json` korzysta z `not_validated`, `valid`, `valid_with_warnings` albo `invalid` | pokryte testem |
+| STATUS-009 | `DatasetBuildResult.status` oznacza status życia datasetu | Wynik budowania datasetu nie używa statusu walidacji jako statusu datasetu | pokryte testem |
 | STATUS-010 | Legacy statusy zostają usunięte albo jawnie utrzymane czasowo | Po przepięciu modeli, walidatora i buildera stare stałe nie są używane jako model docelowy | do domknięcia |
 
-Obszar statusów nie jest jeszcze domknięty.
+Po mikro-krokach 68 i 69 status raportu walidacji jest już oddzielony od statusu datasetu.
+
+Obszar statusów nie jest jeszcze domknięty, ponieważ `metadata.status` nadal korzysta z tymczasowych statusów legacy, a stare stałe nie zostały jeszcze usunięte.
 
 Za domknięty można go uznać dopiero wtedy, gdy:
 
