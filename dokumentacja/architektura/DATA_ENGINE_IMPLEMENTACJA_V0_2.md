@@ -1386,11 +1386,15 @@ Macierz scenariuszy dla ścieżek storage:
 | STORAGE-006 | Obsługa niestandardowego katalogu bazowego | Ścieżka wersji datasetu jest budowana względem przekazanego `base_data_dir` | pokryte testem |
 | STORAGE-007 | Obsługa niestandardowej wersji datasetu | Ścieżka wersji datasetu zawiera dokładnie przekazany numer wersji, np. `v002` | pokryte testem |
 | STORAGE-008 | Spójność nazw artefaktów storage z `DatasetBuildResult` | Nazwy plików storage pozostają zgodne z `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
-| STORAGE-009 | Brak obsługi docelowych ścieżek `raw/` i `normalized/` w obecnym storage | Obecna warstwa storage nie deklaruje jeszcze helperów dla `raw/response.json` i `normalized/candles.csv` | pokryte testem |
+| STORAGE-009 | Obsługa docelowych ścieżek `raw/` i `normalized/` w storage | Warstwa storage udostępnia helpery dla `raw/`, `raw/response.json`, `normalized/` i `normalized/candles.csv` | pokryte testem |
 
 Na obecnym etapie obszar ścieżek storage można uznać za domknięty dla zakresu v0.2.0.
 
-Przyszłe rozszerzenia mogą obejmować helpery dla `raw/response.json`, `normalized/candles.csv`, katalogów pośrednich, formatów innych niż CSV oraz walidację bezpieczeństwa ścieżek. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej minimalnej warstwy storage.
+Po mikro-kroku 71B storage udostępnia już helpery dla docelowych ścieżek `raw/`, `raw/response.json`, `normalized/` i `normalized/candles.csv`.
+
+`create_dataset` nadal używa przejściowego `data.csv`.
+
+Przyszłe rozszerzenia obejmą przepięcie buildera i sample datasetu na nową strukturę, formaty inne niż CSV oraz walidację bezpieczeństwa ścieżek.
 
 ### 25.10. Macierz scenariuszy statusów Data Engine
 
