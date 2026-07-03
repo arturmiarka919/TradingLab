@@ -237,7 +237,7 @@ Raport walidacji powinien być możliwy do odczytania przez człowieka oraz w pr
 
 Walidacja danych w Data Engine musi być testowana restrykcyjnie.
 
-Nie wystarczy sprawdzić, że poprawny dataset otrzymuje status `validated`.
+Nie wystarczy sprawdzić, że poprawne dane dają raport walidacji ze statusem `valid`.
 
 Każdy walidator danych powinien posiadać testy obejmujące co najmniej:
 
