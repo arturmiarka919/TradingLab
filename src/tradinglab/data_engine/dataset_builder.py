@@ -19,6 +19,8 @@ from tradinglab.data_engine.storage import (
     build_data_path,
     build_dataset_version_path,
     build_metadata_path,
+    build_normalized_dir_path,
+    build_raw_dir_path,
     build_validation_report_path,
 )
 from tradinglab.data_engine.validation_report import write_validation_report
@@ -30,7 +32,6 @@ def create_dataset(
     version: str,
 ) -> DatasetBuildResult:
     """Create dataset version directory, write artifacts and return build result."""
-
     dataset_id = generate_dataset_id(request)
     dataset_path = build_dataset_version_path(
         base_data_dir=base_data_dir,
@@ -39,6 +40,12 @@ def create_dataset(
     )
 
     dataset_path.mkdir(parents=True, exist_ok=False)
+
+    raw_dir_path = build_raw_dir_path(dataset_path)
+    normalized_dir_path = build_normalized_dir_path(dataset_path)
+
+    raw_dir_path.mkdir()
+    normalized_dir_path.mkdir()
 
     metadata_path = build_metadata_path(dataset_path)
     validation_report_path = build_validation_report_path(dataset_path)

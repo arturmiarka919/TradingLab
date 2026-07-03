@@ -29,10 +29,30 @@ def test_create_sample_ohlcv_dataset_writes_expected_artifacts(
 
     artifact_names = sorted(path.name for path in result.dataset_path.iterdir())
 
-    assert artifact_names == ["data.csv", "metadata.json", "validation_report.json"]
+    assert artifact_names == [
+        "data.csv",
+        "metadata.json",
+        "normalized",
+        "raw",
+        "validation_report.json",
+    ]
     assert result.metadata_path.is_file()
     assert result.validation_report_path.is_file()
     assert result.data_path.is_file()
+
+
+def test_create_sample_ohlcv_dataset_creates_empty_raw_and_normalized_directories(
+    tmp_path: Path,
+) -> None:
+    result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
+
+    raw_dir_path = result.dataset_path / "raw"
+    normalized_dir_path = result.dataset_path / "normalized"
+
+    assert raw_dir_path.is_dir()
+    assert normalized_dir_path.is_dir()
+    assert list(raw_dir_path.iterdir()) == []
+    assert list(normalized_dir_path.iterdir()) == []
 
 
 def test_create_sample_ohlcv_dataset_writes_sample_bars(
@@ -159,7 +179,13 @@ def test_create_sample_ohlcv_dataset_overwrite_recreates_existing_version(
 
     assert second_result.dataset_path == first_result.dataset_path
     assert not stale_file.exists()
-    assert artifact_names == ["data.csv", "metadata.json", "validation_report.json"]
+    assert artifact_names == [
+        "data.csv",
+        "metadata.json",
+        "normalized",
+        "raw",
+        "validation_report.json",
+    ]
     assert read_ohlcv_csv(second_result.data_path) == build_sample_ohlcv_bars()
     assert second_result.status == DATASET_STATUS_VALIDATED
 
