@@ -837,7 +837,20 @@ dataset_id + version
 
 ## 19. Minimalny interfejs Data Engine
 
-Minimalny publiczny interfejs Data Engine w v0.2.0 obejmuje:
+Ten rozdział rozdziela dwa poziomy interfejsu Data Engine:
+
+1. obecny eksportowany interfejs pakietu,
+2. docelowy publiczny interfejs Data Engine dla pełnego zakresu v0.2.0.
+
+Na obecnym etapie implementacji eksportowany interfejs pakietu `tradinglab.data_engine` obejmuje przede wszystkim:
+
+* modele danych,
+* `create_dataset`,
+* `generate_dataset_id`.
+
+Jest to aktualny, minimalny interfejs techniczny wynikający z dotychczas domkniętych mikro-kroków.
+
+Docelowy publiczny interfejs Data Engine dla zakresu v0.2.0 powinien obejmować:
 
 1. `create_dataset`,
 2. `validate_dataset`,
@@ -845,23 +858,28 @@ Minimalny publiczny interfejs Data Engine w v0.2.0 obejmuje:
 4. `load_validation_report`,
 5. `load_normalized_candles`.
 
+Funkcje docelowego interfejsu nie muszą być eksportowane jednocześnie. Powinny być dodawane mikro-krokami, po zaprojektowaniu odpowiedzialności, testów oraz wpływu na istniejące moduły.
+
 ### 19.1. create_dataset
 
-Tworzy nową wersję datasetu na podstawie żądania danych.
+Tworzy nową wersję datasetu na podstawie `DatasetRequest`.
 
-Odpowiada za:
+W obecnej implementacji `create_dataset` odpowiada za:
 
-* pobranie danych ze źródła,
-* zapis raw data,
-* normalizację OHLCV,
-* zapis `metadata.json`,
-* wykonanie walidacji,
-* zapis `validation_report.json`.
+* zbudowanie deterministycznego `dataset_id`,
+* wyznaczenie katalogu wersji datasetu,
+* utworzenie katalogów `raw/` i `normalized/`,
+* zapis początkowego `metadata.json`,
+* zapis początkowego `validation_report.json`,
+* zapis pustego `normalized/candles.csv`,
+* zwrócenie `DatasetBuildResult`.
 
-Logika:
+Docelowo `create_dataset` może zostać rozszerzone o pobieranie danych ze źródła, zapis raw data, normalizację OHLCV i automatyczną walidację. Te rozszerzenia muszą być jednak dodawane osobnymi mikro-krokami.
+
+Logika obecnego poziomu:
 
 ```text
-create_dataset(request) -> dataset_reference
+create_dataset(request) -> DatasetBuildResult
 ```
 
 Request powinien zawierać co najmniej:
@@ -879,25 +897,80 @@ Wynik powinien zawierać co najmniej:
 
 * dataset_id,
 * version,
-* path,
-* dataset_status,
-* validation_status.
+* dataset_path,
+* data_path,
+* metadata_path,
+* validation_report_path,
+* status.
 
 ### 19.2. validate_dataset
 
-Wykonuje walidację istniejącej wersji datasetu i zapisuje `validation_report.json`.
+`validate_dataset` jest docelową funkcją publicznego interfejsu, która powinna wykonać walidację istniejącej wersji datasetu i zapisać `validation_report.json`.
+
+Na obecnym etapie istnieje już wewnętrzna logika walidacji OHLCV, ale decyzja o publicznym kształcie `validate_dataset` wymaga osobnego mikro-kroku.
+
+Do zaprojektowania przed implementacją:
+
+* sygnatura funkcji,
+* sposób wskazywania datasetu,
+* sposób wskazywania katalogu bazowego danych,
+* statusy datasetu po walidacji,
+* relacja między raportem walidacji a metadata,
+* testy publicznego API.
 
 ### 19.3. load_metadata
 
-Wczytuje `metadata.json` dla wskazanego `dataset_id` i wersji.
+`load_metadata` jest docelową funkcją publicznego interfejsu do odczytu `metadata.json` dla wskazanego datasetu i wersji.
+
+Na obecnym etapie istnieją helpery techniczne do odczytu metadanych, ale decyzja o ich eksporcie jako stabilnego API wymaga osobnego mikro-kroku.
+
+Do zaprojektowania przed implementacją publicznego API:
+
+* czy funkcja przyjmuje bezpośrednią ścieżkę, czy `base_data_dir + dataset_id + version`,
+* jakie błędy są częścią publicznego kontraktu,
+* czy funkcja ma być dostępna z `tradinglab.data_engine`,
+* jakie testy potwierdzają stabilność interfejsu.
 
 ### 19.4. load_validation_report
 
-Wczytuje `validation_report.json` dla wskazanego `dataset_id` i wersji.
+`load_validation_report` jest docelową funkcją publicznego interfejsu do odczytu `validation_report.json` dla wskazanego datasetu i wersji.
+
+Na obecnym etapie istnieją helpery techniczne do odczytu raportu walidacji, ale publiczny kontrakt tej funkcji powinien zostać domknięty osobnym mikro-krokiem.
+
+Do zaprojektowania przed implementacją publicznego API:
+
+* sposób wskazywania datasetu,
+* zachowanie przy braku raportu,
+* zgodność ze schematem raportu,
+* testy publicznego API.
 
 ### 19.5. load_normalized_candles
 
-Wczytuje `normalized/candles.csv` dla wskazanego `dataset_id` i wersji.
+`load_normalized_candles` jest docelową funkcją publicznego interfejsu do odczytu `normalized/candles.csv` dla wskazanego datasetu i wersji.
+
+Na obecnym etapie istnieją helpery techniczne do odczytu OHLCV CSV, ale stabilny publiczny interfejs odczytu świec powinien zostać dodany osobnym mikro-krokiem.
+
+Do zaprojektowania przed implementacją publicznego API:
+
+* czy funkcja zwraca krotkę `OhlcvBar`, listę, iterator czy strukturę wyższego poziomu,
+* sposób wskazywania datasetu,
+* zachowanie przy błędnym nagłówku CSV,
+* zachowanie przy pustym datasetcie,
+* testy publicznego API.
+
+### 19.6. Zasada rozwoju publicznego interfejsu
+
+Publiczny interfejs Data Engine powinien być stabilny i rozwijany ostrożnie.
+
+Nie należy eksportować nowych funkcji z pakietu tylko dlatego, że istnieją jako helpery techniczne. Każda funkcja publiczna powinna mieć:
+
+* jasną odpowiedzialność,
+* testy publicznego kontraktu,
+* stabilną sygnaturę,
+* opis w dokumentacji,
+* zgodność z modelem wersjonowanych datasetów.
+
+Dalsze prace nad publicznym interfejsem powinny być prowadzone mikro-krokami, bez mieszania ich ze zmianami statusów legacy, zmianami formatu metadanych albo zmianami walidatora.
 
 ## 20. Czego nie ma w interfejsie v0.2.0
 
