@@ -13,6 +13,7 @@ from tradinglab.data_engine.sample_dataset import (
     SAMPLE_DATASET_VERSION,
     build_sample_dataset_request,
     build_sample_ohlcv_bars,
+    build_sample_raw_response,
     create_sample_ohlcv_dataset,
 )
 from tradinglab.data_engine.status import (
@@ -41,17 +42,27 @@ def test_create_sample_ohlcv_dataset_writes_expected_artifacts(
     assert result.data_path.is_file()
 
 
-def test_create_sample_ohlcv_dataset_creates_empty_raw_and_normalized_directories(
+def test_create_sample_ohlcv_dataset_writes_raw_response_json(
     tmp_path: Path,
 ) -> None:
     result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
 
-    raw_dir_path = result.dataset_path / "raw"
+    raw_response_path = result.dataset_path / "raw" / "response.json"
+
+    assert raw_response_path.is_file()
+    assert json.loads(raw_response_path.read_text(encoding="utf-8")) == (
+        build_sample_raw_response()
+    )
+
+
+def test_create_sample_ohlcv_dataset_keeps_normalized_directory_empty_during_transition(
+    tmp_path: Path,
+) -> None:
+    result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
+
     normalized_dir_path = result.dataset_path / "normalized"
 
-    assert raw_dir_path.is_dir()
     assert normalized_dir_path.is_dir()
-    assert list(raw_dir_path.iterdir()) == []
     assert list(normalized_dir_path.iterdir()) == []
 
 
@@ -176,6 +187,7 @@ def test_create_sample_ohlcv_dataset_overwrite_recreates_existing_version(
     )
 
     artifact_names = sorted(path.name for path in second_result.dataset_path.iterdir())
+    raw_response_path = second_result.dataset_path / "raw" / "response.json"
 
     assert second_result.dataset_path == first_result.dataset_path
     assert not stale_file.exists()
@@ -186,6 +198,9 @@ def test_create_sample_ohlcv_dataset_overwrite_recreates_existing_version(
         "raw",
         "validation_report.json",
     ]
+    assert json.loads(raw_response_path.read_text(encoding="utf-8")) == (
+        build_sample_raw_response()
+    )
     assert read_ohlcv_csv(second_result.data_path) == build_sample_ohlcv_bars()
     assert second_result.status == DATASET_STATUS_VALIDATED
 

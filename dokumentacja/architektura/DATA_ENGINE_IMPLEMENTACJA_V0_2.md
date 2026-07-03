@@ -1322,7 +1322,8 @@ Macierz scenariuszy dla przykładowego datasetu:
 | SAMPLE_DATASET-011 | Ponowne utworzenie datasetu z `overwrite=True` | Istniejąca wersja datasetu zostaje usunięta i odtworzona z poprawnymi artefaktami | pokryte testem |
 | SAMPLE_DATASET-012 | Spójność pól metadata z przykładowym requestem | `metadata.json` zachowuje pola z `build_sample_dataset_request` i status po walidacji | pokryte testem |
 | SAMPLE_DATASET-013 | Spójność ścieżek i statusów wyniku | `DatasetBuildResult` wskazuje istniejące artefakty i ma status datasetu `validated`, a raport walidacji ma status `valid` | pokryte testem |
-| SAMPLE_DATASET-014 | Utworzenie pustych katalogów `raw/` i `normalized/` w sample dataset | Katalogi `raw/` i `normalized/` istnieją i są puste po utworzeniu sample datasetu | pokryte testem |
+| SAMPLE_DATASET-014 | Zapis przejściowego `raw/response.json` | Plik `raw/response.json` istnieje i zawiera wynik `build_sample_raw_response` | pokryte testem |
+| SAMPLE_DATASET-015 | Pozostawienie pustego katalogu `normalized/` w czasie migracji | Katalog `normalized/` istnieje i nie zawiera jeszcze `candles.csv` | pokryte testem |
 
 Na obecnym etapie obszar przykładowego datasetu można uznać za domknięty dla zakresu v0.2.0.
 

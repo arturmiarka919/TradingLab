@@ -1,5 +1,6 @@
 """Sample dataset helpers for local TradingLab Data Engine demos."""
 
+import json
 from dataclasses import replace
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -18,16 +19,17 @@ from tradinglab.data_engine.models import (
 )
 from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
 from tradinglab.data_engine.status import DATASET_STATUS_VALIDATED
-from tradinglab.data_engine.storage import build_dataset_version_path
+from tradinglab.data_engine.storage import (
+    build_dataset_version_path,
+    build_raw_response_path,
+)
 from tradinglab.data_engine.validation_report import write_validation_report
-
 
 SAMPLE_DATASET_VERSION = "v001"
 
 
 def build_sample_dataset_request() -> DatasetRequest:
     """Build sample OHLCV dataset request for local demos."""
-
     return DatasetRequest(
         provider="sample",
         asset_class="forex",
@@ -42,7 +44,6 @@ def build_sample_dataset_request() -> DatasetRequest:
 
 def build_sample_ohlcv_bars() -> tuple[OhlcvBar, OhlcvBar]:
     """Build sample OHLCV bars for local demos."""
-
     return (
         OhlcvBar(
             timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
@@ -63,13 +64,39 @@ def build_sample_ohlcv_bars() -> tuple[OhlcvBar, OhlcvBar]:
     )
 
 
+def build_sample_raw_response() -> dict[str, object]:
+    """Build transitional sample raw provider response for local demos."""
+    return {
+        "provider": "sample",
+        "symbol": "EUR/USD",
+        "interval": "1d",
+        "results": [
+            {
+                "timestamp": "2024-01-02T00:00:00Z",
+                "open": "1.1000",
+                "high": "1.1200",
+                "low": "1.0900",
+                "close": "1.1100",
+                "volume": "12345.67",
+            },
+            {
+                "timestamp": "2024-01-03T00:00:00Z",
+                "open": "1.1100",
+                "high": "1.1300",
+                "low": "1.1000",
+                "close": "1.1250",
+                "volume": "23456.78",
+            },
+        ],
+    }
+
+
 def create_sample_ohlcv_dataset(
     base_data_dir: Path,
     version: str = SAMPLE_DATASET_VERSION,
     overwrite: bool = False,
 ) -> DatasetBuildResult:
     """Create local sample OHLCV dataset, write sample bars and validate it."""
-
     request = build_sample_dataset_request()
     dataset_id = generate_dataset_id(request)
     dataset_path = build_dataset_version_path(
@@ -87,6 +114,12 @@ def create_sample_ohlcv_dataset(
         version=version,
     )
 
+    raw_response_path = build_raw_response_path(result.dataset_path)
+    raw_response_path.write_text(
+        json.dumps(build_sample_raw_response(), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
     write_ohlcv_csv(result.data_path, build_sample_ohlcv_bars())
 
     validation_report = validate_ohlcv_csv(
@@ -96,6 +129,7 @@ def create_sample_ohlcv_dataset(
     )
 
     write_validation_report(result.validation_report_path, validation_report)
+
     write_metadata(
         result.metadata_path,
         DatasetMetadata(
