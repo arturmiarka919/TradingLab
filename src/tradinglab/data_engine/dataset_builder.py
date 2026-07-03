@@ -16,7 +16,6 @@ from tradinglab.data_engine.status import (
     VALIDATION_STATUS_NOT_VALIDATED,
 )
 from tradinglab.data_engine.storage import (
-    build_data_path,
     build_dataset_version_path,
     build_metadata_path,
     build_normalized_candles_path,
@@ -50,7 +49,6 @@ def create_dataset(
 
     metadata_path = build_metadata_path(dataset_path)
     validation_report_path = build_validation_report_path(dataset_path)
-    legacy_data_path = build_data_path(dataset_path)
     normalized_candles_path = build_normalized_candles_path(dataset_path)
 
     metadata = DatasetMetadata(
@@ -80,7 +78,6 @@ def create_dataset(
 
     write_metadata(metadata_path, metadata)
     write_validation_report(validation_report_path, validation_report)
-    write_empty_ohlcv_csv(legacy_data_path)
     write_empty_ohlcv_csv(normalized_candles_path)
 
     return DatasetBuildResult(

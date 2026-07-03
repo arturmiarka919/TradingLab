@@ -245,7 +245,7 @@ Plan migracji:
 8. wygasić albo usunąć tymczasowy `data.csv`,
 9. zaktualizować testy i dokumentację po zakończeniu migracji.
 
-Do czasu zakończenia migracji `data.csv` pozostaje świadomym artefaktem przejściowym, a nie docelowym formatem datasetu.
+Po mikro-kroku 71G `data.csv` nie jest już tworzony przez `create_dataset` ani przez sample dataset. Pozostałe wystąpienia `data.csv` dotyczą helpera legacy oraz lokalnych plików testowych i zostaną uporządkowane w kolejnych mikro-krokach.
 
 ## 6. Dalszy rozwój formatów zapisu
 
@@ -1278,13 +1278,13 @@ Macierz scenariuszy dla budowania datasetu:
 | DATASET_BUILDER-003 | Zapis początkowego `metadata.json` | Plik metadata istnieje i zawiera oczekiwane dane ze statusem `created` | pokryte testem |
 | DATASET_BUILDER-004 | Zapis początkowego `validation_report.json` | Plik raportu walidacji istnieje i zawiera status `not_validated` oraz zerowe liczniki | pokryte testem |
 | DATASET_BUILDER-005 | Zapis pustego `normalized/candles.csv` | Główny plik danych istnieje w `normalized/candles.csv` i zawiera wyłącznie nagłówek OHLCV | pokryte testem |
-| DATASET_BUILDER-006 | Utworzenie początkowych artefaktów i katalogów datasetu | Katalog wersji zawiera `data.csv`, `metadata.json`, `validation_report.json`, `raw/` i `normalized/` | pokryte testem |
+| DATASET_BUILDER-006 | Utworzenie początkowych artefaktów i katalogów datasetu | Katalog wersji zawiera `metadata.json`, `validation_report.json`, `raw/` i `normalized/` | pokryte testem |
 | DATASET_BUILDER-007 | Próba utworzenia istniejącej wersji datasetu | Funkcja kończy się błędem i nie nadpisuje istniejącego katalogu wersji | pokryte testem |
 | DATASET_BUILDER-008 | Utworzenie datasetu w nieistniejącym katalogu bazowym | Funkcja tworzy brakujące katalogi nadrzędne | pokryte testem |
 | DATASET_BUILDER-009 | Utworzenie nowej wersji dla istniejącego `dataset_id` | Funkcja tworzy nowy katalog wersji bez naruszania poprzedniej wersji | pokryte testem |
 | DATASET_BUILDER-010 | Rozdzielenie początkowych statusów między wynikiem, metadata i raportem walidacji | `DatasetBuildResult` i `metadata.json` mają status `created`, a `validation_report.json` ma status `not_validated` | pokryte testem |
 | DATASET_BUILDER-011 | Utworzenie katalogów `raw/` i `normalized/` oraz pustego `normalized/candles.csv` | Katalog `raw/` istnieje i jest pusty, a katalog `normalized/` zawiera pusty plik `candles.csv` z nagłówkiem OHLCV | pokryte testem |
-| DATASET_BUILDER-012 | Pozostawienie przejściowego `data.csv` z samym nagłówkiem | Plik `data.csv` nadal istnieje jako artefakt legacy i zawiera tylko nagłówek OHLCV | pokryte testem |
+| DATASET_BUILDER-012 | Usunięcie przejściowego `data.csv` z buildera | `create_dataset` nie tworzy już pliku `data.csv` w katalogu wersji datasetu | pokryte testem |
 
 Na obecnym etapie obszar budowania datasetu można uznać za domknięty dla zakresu v0.2.0.
 
@@ -1310,7 +1310,7 @@ Macierz scenariuszy dla przykładowego datasetu:
 
 | ID | Scenariusz | Oczekiwany wynik | Status |
 | ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
-| SAMPLE_DATASET-001 | Utworzenie przykładowego datasetu OHLCV | Katalog wersji zawiera `data.csv`, `metadata.json`, `validation_report.json`, `raw/` i `normalized/` | pokryte testem |
+| SAMPLE_DATASET-001 | Utworzenie przykładowego datasetu OHLCV | Katalog wersji zawiera `metadata.json`, `validation_report.json`, `raw/` i `normalized/` | pokryte testem |
 | SAMPLE_DATASET-002 | Zapis znormalizowanych świec OHLCV | Odczyt `normalized/candles.csv` zwraca dokładnie świece z `build_sample_ohlcv_bars` | pokryte testem |
 | SAMPLE_DATASET-003 | Zapis metadata i raportu walidacji po walidacji | Metadata i wynik datasetu mają status `validated`, a raport walidacji ma status `valid` | pokryte testem |
 | SAMPLE_DATASET-004 | Raport walidacji dla przykładowych świec | Raport ma 2 sprawdzone wiersze, 2 poprawne wiersze, 0 błędnych wierszy oraz brak błędów i ostrzeżeń | pokryte testem |
@@ -1325,7 +1325,7 @@ Macierz scenariuszy dla przykładowego datasetu:
 | SAMPLE_DATASET-013 | Spójność ścieżek i statusów wyniku | `DatasetBuildResult` wskazuje `normalized/candles.csv`, ma status datasetu `validated`, a raport walidacji ma status `valid` | pokryte testem |
 | SAMPLE_DATASET-014 | Zapis przejściowego `raw/response.json` | Plik `raw/response.json` istnieje i zawiera wynik `build_sample_raw_response` | pokryte testem |
 | SAMPLE_DATASET-015 | Zapis `normalized/candles.csv` w sample dataset | Plik `normalized/candles.csv` istnieje i zawiera przykładowe świece OHLCV | pokryte testem |
-| SAMPLE_DATASET-016 | Pozostawienie przejściowego `data.csv` z samym nagłówkiem | Plik `data.csv` nadal istnieje jako artefakt przejściowy i zawiera tylko nagłówek OHLCV | pokryte testem |
+| SAMPLE_DATASET-016 | Brak przejściowego `data.csv` w sample dataset | Katalog wersji sample datasetu nie zawiera już pliku `data.csv` | pokryte testem |
 
 Na obecnym etapie obszar przykładowego datasetu można uznać za domknięty dla zakresu v0.2.0.
 

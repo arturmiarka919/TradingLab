@@ -54,7 +54,6 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
     assert result.dataset_path.is_dir()
     assert (expected_dataset_path / "raw").is_dir()
     assert (expected_dataset_path / "normalized").is_dir()
-    assert (expected_dataset_path / "data.csv").is_file()
     assert result.data_path.is_file()
     assert result.metadata_path.is_file()
     assert result.validation_report_path.is_file()
@@ -106,25 +105,6 @@ def test_create_dataset_writes_empty_normalized_candles_csv_with_ohlcv_header(
     ]
 
 
-def test_create_dataset_keeps_legacy_data_csv_with_ohlcv_header(
-    tmp_path: Path,
-) -> None:
-    request = _build_dataset_request()
-
-    result = create_dataset(
-        request=request,
-        base_data_dir=tmp_path,
-        version="v001",
-    )
-
-    legacy_data_path = result.dataset_path / "data.csv"
-
-    assert legacy_data_path.is_file()
-    assert legacy_data_path.read_text(encoding="utf-8").splitlines() == [
-        EXPECTED_OHLCV_HEADER
-    ]
-
-
 def test_create_dataset_creates_only_initial_artifacts(
     tmp_path: Path,
 ) -> None:
@@ -139,7 +119,6 @@ def test_create_dataset_creates_only_initial_artifacts(
     artifact_names = sorted(path.name for path in result.dataset_path.iterdir())
 
     assert artifact_names == [
-        "data.csv",
         "metadata.json",
         "normalized",
         "raw",
@@ -206,7 +185,6 @@ def test_create_dataset_creates_missing_base_directories(
     assert result.dataset_path.is_dir()
     assert (expected_dataset_path / "raw").is_dir()
     assert (expected_dataset_path / "normalized").is_dir()
-    assert (expected_dataset_path / "data.csv").is_file()
     assert result.data_path == expected_dataset_path / "normalized" / "candles.csv"
     assert result.data_path.is_file()
     assert result.metadata_path.is_file()
@@ -242,7 +220,6 @@ def test_create_dataset_creates_new_version_without_changing_existing_version(
     assert (second_result.dataset_path / "raw").is_dir()
     assert (second_result.dataset_path / "normalized").is_dir()
 
-    assert (first_result.dataset_path / "data.csv").is_file()
     assert first_result.data_path == (
         first_result.dataset_path / "normalized" / "candles.csv"
     )
@@ -250,7 +227,6 @@ def test_create_dataset_creates_new_version_without_changing_existing_version(
     assert first_result.metadata_path.is_file()
     assert first_result.validation_report_path.is_file()
 
-    assert (second_result.dataset_path / "data.csv").is_file()
     assert second_result.data_path == (
         second_result.dataset_path / "normalized" / "candles.csv"
     )

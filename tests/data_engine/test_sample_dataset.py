@@ -22,7 +22,6 @@ from tradinglab.data_engine.status import (
 )
 from tradinglab.data_engine.validation_report import load_validation_report
 
-EXPECTED_OHLCV_HEADER = "timestamp,open,high,low,close,volume"
 
 
 def test_create_sample_ohlcv_dataset_writes_expected_artifacts(
@@ -33,7 +32,6 @@ def test_create_sample_ohlcv_dataset_writes_expected_artifacts(
     artifact_names = sorted(path.name for path in result.dataset_path.iterdir())
 
     assert artifact_names == [
-        "data.csv",
         "metadata.json",
         "normalized",
         "raw",
@@ -68,19 +66,6 @@ def test_create_sample_ohlcv_dataset_writes_normalized_candles_csv(
     assert normalized_candles_path.is_file()
     assert result.data_path == normalized_candles_path
     assert read_ohlcv_csv(normalized_candles_path) == build_sample_ohlcv_bars()
-
-
-def test_create_sample_ohlcv_dataset_keeps_transitional_data_csv_header_only(
-    tmp_path: Path,
-) -> None:
-    result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
-
-    transitional_data_path = result.dataset_path / "data.csv"
-
-    assert transitional_data_path.is_file()
-    assert transitional_data_path.read_text(encoding="utf-8").splitlines() == [
-        EXPECTED_OHLCV_HEADER
-    ]
 
 
 def test_create_sample_ohlcv_dataset_writes_sample_bars(
@@ -215,7 +200,6 @@ def test_create_sample_ohlcv_dataset_overwrite_recreates_existing_version(
     assert second_result.dataset_path == first_result.dataset_path
     assert not stale_file.exists()
     assert artifact_names == [
-        "data.csv",
         "metadata.json",
         "normalized",
         "raw",
