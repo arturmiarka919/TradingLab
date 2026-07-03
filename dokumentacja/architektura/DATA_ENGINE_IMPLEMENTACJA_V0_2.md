@@ -188,6 +188,65 @@ Raport walidacji jest zapisywany jako:
 validation_report.json
 ```
 
+### 5.6. Ścieżka dojścia od `data.csv` do docelowej struktury datasetu
+
+Obecna implementacja Data Engine używa uproszczonego artefaktu:
+
+```text
+data.csv
+```
+
+Ten plik pełni rolę tymczasowego pliku ze znormalizowanymi świecami OHLCV.
+
+Nie jest to docelowa struktura datasetu v0.2.0.
+
+Model uproszczony został użyty jako etap przejściowy, żeby bezpiecznie domknąć mały, działający pion implementacji:
+
+* modele danych,
+* generowanie `dataset_id`,
+* budowanie katalogu wersji datasetu,
+* zapis i odczyt `metadata.json`,
+* zapis i odczyt `validation_report.json`,
+* zapis i odczyt OHLCV CSV,
+* walidację OHLCV,
+* statusy datasetu i statusy walidacji,
+* testy automatyczne.
+
+Docelowa struktura datasetu Data Engine v0.2.0 to:
+
+```text
+data/datasets/{dataset_id}/{version}/
+  raw/
+    response.json
+  normalized/
+    candles.csv
+  metadata.json
+  validation_report.json
+```
+
+Znaczenie artefaktów docelowych:
+
+* `raw/response.json` — możliwie wierny zapis odpowiedzi providera,
+* `normalized/candles.csv` — znormalizowane świece OHLCV używane przez system,
+* `metadata.json` — opis datasetu, jego źródła, parametrów i statusu życia datasetu,
+* `validation_report.json` — wynik technicznej walidacji danych.
+
+Migracja z uproszczonego `data.csv` do docelowej struktury zostanie wykonana mikro-krokami.
+
+Plan migracji:
+
+1. zapisać decyzję architektoniczną w dokumentacji,
+2. dodać helpery storage dla `raw/` i `normalized/`,
+3. dodać testy nowych helperów storage,
+4. przepiąć `create_dataset` na tworzenie katalogów `raw/` i `normalized/`,
+5. przepiąć zapis OHLCV z `data.csv` na `normalized/candles.csv`,
+6. dodać przejściowy zapis `raw/response.json` dla sample datasetu,
+7. przepiąć walidator i sample dataset na `normalized/candles.csv`,
+8. wygasić albo usunąć tymczasowy `data.csv`,
+9. zaktualizować testy i dokumentację po zakończeniu migracji.
+
+Do czasu zakończenia migracji `data.csv` pozostaje świadomym artefaktem przejściowym, a nie docelowym formatem datasetu.
+
 ## 6. Dalszy rozwój formatów zapisu
 
 CSV jest formatem startowym dla v0.2.0. Nie jest docelowym ograniczeniem architektury.
