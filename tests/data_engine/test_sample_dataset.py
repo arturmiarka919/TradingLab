@@ -15,7 +15,10 @@ from tradinglab.data_engine.sample_dataset import (
     build_sample_ohlcv_bars,
     create_sample_ohlcv_dataset,
 )
-from tradinglab.data_engine.status import DATASET_STATUS_VALIDATED
+from tradinglab.data_engine.status import (
+    DATASET_STATUS_VALIDATED,
+    VALIDATION_STATUS_VALID,
+)
 from tradinglab.data_engine.validation_report import load_validation_report
 
 
@@ -42,7 +45,7 @@ def test_create_sample_ohlcv_dataset_writes_sample_bars(
     assert bars == build_sample_ohlcv_bars()
 
 
-def test_create_sample_ohlcv_dataset_writes_validated_metadata_and_report(
+def test_create_sample_ohlcv_dataset_writes_validated_metadata_and_valid_report(
     tmp_path: Path,
 ) -> None:
     result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
@@ -53,7 +56,7 @@ def test_create_sample_ohlcv_dataset_writes_validated_metadata_and_report(
 
     assert result.status == DATASET_STATUS_VALIDATED
     assert metadata["status"] == DATASET_STATUS_VALIDATED
-    assert validation_report["status"] == DATASET_STATUS_VALIDATED
+    assert validation_report["status"] == VALIDATION_STATUS_VALID
     assert validation_report["checked_rows"] == 2
     assert validation_report["valid_rows"] == 2
     assert validation_report["invalid_rows"] == 0
@@ -189,7 +192,8 @@ def test_create_sample_ohlcv_dataset_returns_consistent_result(
     result = create_sample_ohlcv_dataset(base_data_dir=tmp_path)
     validation_report = load_validation_report(result.validation_report_path)
 
-    assert result.status == validation_report.status
+    assert result.status == DATASET_STATUS_VALIDATED
+    assert validation_report.status == VALIDATION_STATUS_VALID
     assert result.data_path == result.dataset_path / "data.csv"
     assert result.metadata_path == result.dataset_path / "metadata.json"
     assert result.validation_report_path == (

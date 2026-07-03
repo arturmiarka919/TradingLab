@@ -6,8 +6,8 @@ import pytest
 
 from tradinglab.data_engine.models import ValidationReport
 from tradinglab.data_engine.status import (
-    DATASET_STATUS_INVALID,
-    DATASET_STATUS_VALIDATED,
+    VALIDATION_STATUS_INVALID,
+    VALIDATION_STATUS_VALID,
 )
 
 
@@ -18,7 +18,7 @@ def test_validation_report_can_describe_valid_dataset() -> None:
             "2024-01-01_2024-12-31"
         ),
         version="v001",
-        status=DATASET_STATUS_VALIDATED,
+        status=VALIDATION_STATUS_VALID,
         errors=(),
         warnings=(),
         checked_rows=252,
@@ -26,7 +26,7 @@ def test_validation_report_can_describe_valid_dataset() -> None:
         invalid_rows=0,
     )
 
-    assert report.status == "validated"
+    assert report.status == VALIDATION_STATUS_VALID
     assert report.errors == ()
     assert report.warnings == ()
     assert report.checked_rows == 252
@@ -41,7 +41,7 @@ def test_validation_report_can_describe_invalid_dataset() -> None:
             "2024-01-01_2024-12-31"
         ),
         version="v001",
-        status=DATASET_STATUS_INVALID,
+        status=VALIDATION_STATUS_INVALID,
         errors=("row 10: close price is missing",),
         warnings=("volume is provider-specific",),
         checked_rows=252,
@@ -49,7 +49,7 @@ def test_validation_report_can_describe_invalid_dataset() -> None:
         invalid_rows=1,
     )
 
-    assert report.status == "invalid"
+    assert report.status == VALIDATION_STATUS_INVALID
     assert report.errors == ("row 10: close price is missing",)
     assert report.warnings == ("volume is provider-specific",)
     assert report.checked_rows == 252
@@ -64,7 +64,7 @@ def test_validation_report_is_immutable() -> None:
             "2024-01-01_2024-12-31"
         ),
         version="v001",
-        status=DATASET_STATUS_VALIDATED,
+        status=VALIDATION_STATUS_VALID,
         errors=(),
         warnings=(),
         checked_rows=252,
@@ -73,4 +73,4 @@ def test_validation_report_is_immutable() -> None:
     )
 
     with pytest.raises(FrozenInstanceError):
-        report.status = DATASET_STATUS_INVALID
+        report.status = VALIDATION_STATUS_INVALID

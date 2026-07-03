@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from tradinglab.data_engine.models import ValidationReport
-from tradinglab.data_engine.status import DATASET_STATUS_INVALID
+from tradinglab.data_engine.status import VALIDATION_STATUS_INVALID
 from tradinglab.data_engine.validation_report import (
     load_validation_report,
     validation_report_from_dict,
@@ -36,7 +36,7 @@ EXPECTED_VALIDATION_REPORT = ValidationReport(
         "2024-01-01_2024-12-31"
     ),
     version="v001",
-    status=DATASET_STATUS_INVALID,
+    status=VALIDATION_STATUS_INVALID,
     errors=("row 10: close price is missing",),
     warnings=("volume is provider-specific",),
     checked_rows=252,
@@ -174,11 +174,11 @@ def test_write_validation_report_preserves_non_ascii_characters(
     report = ValidationReport(
         dataset_id="\u017c\u00f3\u0142\u0107_dataset",
         version="v001",
-        status=DATASET_STATUS_INVALID,
+        status=VALIDATION_STATUS_INVALID,
         errors=(
             "b\u0142\u0105d \u015bwiecy: "
-            "zamkni\u0119cie ni\u017csze ni\u017c minimum"
-        ,),
+            "zamkni\u0119cie ni\u017csze ni\u017c minimum",
+        ),
         warnings=("ostrze\u017cenie: wolumen zale\u017cny od dostawcy",),
         checked_rows=1,
         valid_rows=0,

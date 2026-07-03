@@ -10,12 +10,12 @@ from tradinglab.data_engine import OhlcvBar, ValidationReport
 from tradinglab.data_engine.data_file import write_ohlcv_csv
 from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
 from tradinglab.data_engine.status import (
-    DATASET_STATUS_INVALID,
-    DATASET_STATUS_VALIDATED,
+    VALIDATION_STATUS_INVALID,
+    VALIDATION_STATUS_VALID,
 )
 
 
-def test_validate_ohlcv_csv_returns_validated_report_for_valid_file(
+def test_validate_ohlcv_csv_returns_valid_report_for_valid_file(
     tmp_path: Path,
 ) -> None:
     data_path = tmp_path / "data.csv"
@@ -32,7 +32,7 @@ def test_validate_ohlcv_csv_returns_validated_report_for_valid_file(
     assert report == ValidationReport(
         dataset_id="dataset_1",
         version="v001",
-        status=DATASET_STATUS_VALIDATED,
+        status=VALIDATION_STATUS_VALID,
         errors=(),
         warnings=(),
         checked_rows=2,
@@ -56,7 +56,7 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_invalid_header(
     assert report == ValidationReport(
         dataset_id="dataset_1",
         version="v001",
-        status=DATASET_STATUS_INVALID,
+        status=VALIDATION_STATUS_INVALID,
         errors=("OHLCV CSV header does not match expected header.",),
         warnings=(),
         checked_rows=0,
@@ -81,7 +81,7 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_empty_dataset(
     assert report == ValidationReport(
         dataset_id="dataset_1",
         version="v001",
-        status=DATASET_STATUS_INVALID,
+        status=VALIDATION_STATUS_INVALID,
         errors=("OHLCV CSV must contain at least one data row.",),
         warnings=(),
         checked_rows=0,
@@ -117,7 +117,7 @@ def test_validate_ohlcv_csv_allows_zero_volume_and_flat_candle(
     assert report == ValidationReport(
         dataset_id="dataset_1",
         version="v001",
-        status=DATASET_STATUS_VALIDATED,
+        status=VALIDATION_STATUS_VALID,
         errors=(),
         warnings=(),
         checked_rows=1,
@@ -212,7 +212,7 @@ def test_validate_ohlcv_csv_returns_invalid_report_for_candle_quality_error(
         version="v001",
     )
 
-    assert report.status == DATASET_STATUS_INVALID
+    assert report.status == VALIDATION_STATUS_INVALID
     assert expected_error in report.errors
     assert report.checked_rows == 1
     assert report.valid_rows == 0
@@ -246,7 +246,7 @@ def test_validate_ohlcv_csv_counts_valid_and_invalid_rows_in_same_file(
         version="v001",
     )
 
-    assert report.status == DATASET_STATUS_INVALID
+    assert report.status == VALIDATION_STATUS_INVALID
     assert report.errors == (
         "Row 3: high must be greater than or equal to open.",
     )
@@ -278,7 +278,7 @@ def test_validate_ohlcv_csv_rejects_duplicate_timestamps(
         version="v001",
     )
 
-    assert report.status == DATASET_STATUS_INVALID
+    assert report.status == VALIDATION_STATUS_INVALID
     assert report.errors == (
         "Row 3: timestamp must be unique.",
         "Row 3: timestamp must be greater than previous row timestamp.",
@@ -314,7 +314,7 @@ def test_validate_ohlcv_csv_rejects_non_increasing_timestamps(
     assert report == ValidationReport(
         dataset_id="dataset_1",
         version="v001",
-        status=DATASET_STATUS_INVALID,
+        status=VALIDATION_STATUS_INVALID,
         errors=(
             "Row 3: timestamp must be greater than previous row timestamp.",
         ),
@@ -352,7 +352,7 @@ def test_validate_ohlcv_csv_counts_timestamp_and_candle_errors_once_per_row(
         version="v001",
     )
 
-    assert report.status == DATASET_STATUS_INVALID
+    assert report.status == VALIDATION_STATUS_INVALID
     assert report.errors == (
         "Row 3: high must be greater than or equal to open.",
         "Row 3: timestamp must be unique.",
@@ -389,7 +389,7 @@ def test_validate_ohlcv_csv_counts_non_increasing_timestamp_row_as_invalid(
         version="v001",
     )
 
-    assert report.status == DATASET_STATUS_INVALID
+    assert report.status == VALIDATION_STATUS_INVALID
     assert report.errors == (
         "Row 3: timestamp must be greater than previous row timestamp.",
     )

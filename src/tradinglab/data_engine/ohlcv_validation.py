@@ -6,8 +6,8 @@ from pathlib import Path
 from tradinglab.data_engine.data_file import read_ohlcv_csv
 from tradinglab.data_engine.models import OhlcvBar, ValidationReport
 from tradinglab.data_engine.status import (
-    DATASET_STATUS_INVALID,
-    DATASET_STATUS_VALIDATED,
+    VALIDATION_STATUS_INVALID,
+    VALIDATION_STATUS_VALID,
 )
 
 
@@ -24,7 +24,7 @@ def validate_ohlcv_csv(
         return ValidationReport(
             dataset_id=dataset_id,
             version=version,
-            status=DATASET_STATUS_INVALID,
+            status=VALIDATION_STATUS_INVALID,
             errors=(str(error),),
             warnings=(),
             checked_rows=0,
@@ -38,7 +38,7 @@ def validate_ohlcv_csv(
         return ValidationReport(
             dataset_id=dataset_id,
             version=version,
-            status=DATASET_STATUS_INVALID,
+            status=VALIDATION_STATUS_INVALID,
             errors=("OHLCV CSV must contain at least one data row.",),
             warnings=(),
             checked_rows=0,
@@ -75,7 +75,7 @@ def validate_ohlcv_csv(
         previous_timestamp = bar.timestamp
 
     valid_rows = checked_rows - invalid_rows
-    status = DATASET_STATUS_INVALID if errors else DATASET_STATUS_VALIDATED
+    status = VALIDATION_STATUS_INVALID if errors else VALIDATION_STATUS_VALID
 
     return ValidationReport(
         dataset_id=dataset_id,
