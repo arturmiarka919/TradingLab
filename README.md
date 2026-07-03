@@ -34,9 +34,11 @@ Najważniejsze dokumenty projektu:
 
 ## Status
 
-Aktualna wersja projektu: **v0.1.0 — Fundamenty projektu**
+Aktualny etap projektu: **v0.2.0 – Data Engine**
 
-Status wersji: **zakończona**
+Status etapu: **w trakcie implementacji**
+
+Poprzedni etap: **v0.1.0 – Fundamenty projektu — zakończony**
 
 W ramach wersji v0.1.0 przygotowano:
 
@@ -49,5 +51,3 @@ W ramach wersji v0.1.0 przygotowano:
 * mapę drogową projektu,
 * narzędzia testów i jakości kodu,
 * pierwszy test techniczny.
-
-Następny etap: **v0.2.0 — Data Engine**
