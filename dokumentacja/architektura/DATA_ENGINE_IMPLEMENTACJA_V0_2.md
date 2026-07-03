@@ -190,15 +190,13 @@ validation_report.json
 
 ### 5.6. Ścieżka dojścia od `data.csv` do docelowej struktury datasetu
 
-Obecna implementacja Data Engine używa uproszczonego artefaktu:
+W poprzednich mikro-krokach implementacja Data Engine używała uproszczonego artefaktu:
 
 ```text
 data.csv
 ```
 
-Ten plik pełni rolę tymczasowego pliku ze znormalizowanymi świecami OHLCV.
-
-Nie jest to docelowa struktura datasetu v0.2.0.
+Ten plik pełnił rolę tymczasowego pliku ze znormalizowanymi świecami OHLCV. Nie był docelową strukturą datasetu v0.2.0.
 
 Model uproszczony został użyty jako etap przejściowy, żeby bezpiecznie domknąć mały, działający pion implementacji:
 
@@ -216,12 +214,12 @@ Docelowa struktura datasetu Data Engine v0.2.0 to:
 
 ```text
 data/datasets/{dataset_id}/{version}/
-  raw/
-    response.json
-  normalized/
-    candles.csv
-  metadata.json
-  validation_report.json
+    raw/
+        response.json
+    normalized/
+        candles.csv
+    metadata.json
+    validation_report.json
 ```
 
 Znaczenie artefaktów docelowych:
@@ -231,9 +229,7 @@ Znaczenie artefaktów docelowych:
 * `metadata.json` — opis datasetu, jego źródła, parametrów i statusu życia datasetu,
 * `validation_report.json` — wynik technicznej walidacji danych.
 
-Migracja z uproszczonego `data.csv` do docelowej struktury zostanie wykonana mikro-krokami.
-
-Plan migracji:
+Migracja z uproszczonego `data.csv` do docelowej struktury była wykonywana mikro-krokami:
 
 1. zapisać decyzję architektoniczną w dokumentacji,
 2. dodać helpery storage dla `raw/` i `normalized/`,
@@ -242,10 +238,25 @@ Plan migracji:
 5. przepiąć zapis OHLCV z `data.csv` na `normalized/candles.csv`,
 6. dodać przejściowy zapis `raw/response.json` dla sample datasetu,
 7. przepiąć walidator i sample dataset na `normalized/candles.csv`,
-8. wygasić albo usunąć tymczasowy `data.csv`,
-9. zaktualizować testy i dokumentację po zakończeniu migracji.
+8. wygasić tworzenie tymczasowego `data.csv`,
+9. usunąć legacy helper `build_data_path`,
+10. zaktualizować testy i dokumentację po zakończeniu migracji.
 
-Po mikro-kroku 71G `data.csv` nie jest już tworzony przez `create_dataset` ani przez sample dataset. Pozostałe wystąpienia `data.csv` dotyczą helpera legacy oraz lokalnych plików testowych i zostaną uporządkowane w kolejnych mikro-krokach.
+Po mikro-kroku 71G `data.csv` nie jest już tworzony przez `create_dataset` ani przez sample dataset.
+
+Po mikro-kroku 71H helper `build_data_path()` został usunięty ze storage. Data Engine nie udostępnia już helpera prowadzącego do legacy ścieżki:
+
+```text
+data/datasets/{dataset_id}/{version}/data.csv
+```
+
+Docelową ścieżką dla znormalizowanych świec OHLCV jest:
+
+```text
+data/datasets/{dataset_id}/{version}/normalized/candles.csv
+```
+
+Pozostałe wystąpienia nazwy `data.csv` w testach mogą oznaczać lokalne, tymczasowe pliki CSV używane wewnątrz testów jednostkowych. Nie są one artefaktem struktury datasetu Data Engine.
 
 ## 6. Dalszy rozwój formatów zapisu
 

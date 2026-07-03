@@ -22,11 +22,6 @@ def build_validation_report_path(dataset_path: Path) -> Path:
     return dataset_path / "validation_report.json"
 
 
-def build_data_path(dataset_path: Path) -> Path:
-    """Build temporary main data CSV path for a dataset version."""
-    return dataset_path / "data.csv"
-
-
 def build_raw_dir_path(dataset_path: Path) -> Path:
     """Build raw data directory path for a dataset version."""
     return dataset_path / "raw"
