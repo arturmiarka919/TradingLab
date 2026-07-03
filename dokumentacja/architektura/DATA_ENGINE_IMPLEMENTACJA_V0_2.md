@@ -1384,11 +1384,16 @@ Warstwa storage jest małym obszarem pomocniczym Data Engine.
 W obecnej implementacji v0.2.0 ten obszar odpowiada wyłącznie za budowanie ścieżek do minimalnych artefaktów datasetu:
 
 * katalogu wersji datasetu `data/datasets/{dataset_id}/{version}`,
-* pliku danych `data.csv`,
+* katalogu danych surowych `raw/`,
+* pliku surowej odpowiedzi providera `raw/response.json`,
+* katalogu danych znormalizowanych `normalized/`,
+* pliku znormalizowanych świec OHLCV `normalized/candles.csv`,
 * pliku metadanych `metadata.json`,
 * pliku raportu walidacji `validation_report.json`.
 
-Obecna warstwa storage nie tworzy katalogów, nie zapisuje plików, nie odczytuje plików i nie waliduje nazw. Te odpowiedzialności należą do innych warstw albo przyszłych rozszerzeń.
+Warstwa storage nie tworzy katalogów, nie zapisuje plików, nie odczytuje plików i nie waliduje nazw. Te odpowiedzialności należą do innych warstw albo przyszłych rozszerzeń.
+
+Legacy helper `build_data_path()` został usunięty po mikro-kroku 71H. Storage nie udostępnia już helpera prowadzącego do ścieżki `{dataset_path}/data.csv`.
 
 Macierz scenariuszy dla ścieżek storage:
 
@@ -1397,20 +1402,21 @@ Macierz scenariuszy dla ścieżek storage:
 | STORAGE-001 | Zbudowanie ścieżki katalogu wersji datasetu | Funkcja zwraca ścieżkę `{base_data_dir}/datasets/{dataset_id}/{version}` | pokryte testem |
 | STORAGE-002 | Zbudowanie ścieżki `metadata.json` | Funkcja zwraca ścieżkę `{dataset_path}/metadata.json` | pokryte testem |
 | STORAGE-003 | Zbudowanie ścieżki `validation_report.json` | Funkcja zwraca ścieżkę `{dataset_path}/validation_report.json` | pokryte testem |
-| STORAGE-004 | Zbudowanie ścieżki `data.csv` | Funkcja zwraca ścieżkę `{dataset_path}/data.csv` | pokryte testem |
-| STORAGE-005 | Helpery storage nie tworzą katalogów ani plików | Samo zbudowanie ścieżek nie powoduje efektów ubocznych w systemie plików | pokryte testem |
-| STORAGE-006 | Obsługa niestandardowego katalogu bazowego | Ścieżka wersji datasetu jest budowana względem przekazanego `base_data_dir` | pokryte testem |
-| STORAGE-007 | Obsługa niestandardowej wersji datasetu | Ścieżka wersji datasetu zawiera dokładnie przekazany numer wersji, np. `v002` | pokryte testem |
-| STORAGE-008 | Spójność nazw artefaktów storage z `DatasetBuildResult` | Nazwy plików storage pozostają zgodne z `data.csv`, `metadata.json` i `validation_report.json` | pokryte testem |
-| STORAGE-009 | Obsługa docelowych ścieżek `raw/` i `normalized/` w storage | Warstwa storage udostępnia helpery dla `raw/`, `raw/response.json`, `normalized/` i `normalized/candles.csv` | pokryte testem |
+| STORAGE-004 | Zbudowanie ścieżki katalogu `raw/` | Funkcja zwraca ścieżkę `{dataset_path}/raw` | pokryte testem |
+| STORAGE-005 | Zbudowanie ścieżki `raw/response.json` | Funkcja zwraca ścieżkę `{dataset_path}/raw/response.json` | pokryte testem |
+| STORAGE-006 | Zbudowanie ścieżki katalogu `normalized/` | Funkcja zwraca ścieżkę `{dataset_path}/normalized` | pokryte testem |
+| STORAGE-007 | Zbudowanie ścieżki `normalized/candles.csv` | Funkcja zwraca ścieżkę `{dataset_path}/normalized/candles.csv` | pokryte testem |
+| STORAGE-008 | Helpery storage nie tworzą katalogów ani plików | Samo zbudowanie ścieżek nie powoduje efektów ubocznych w systemie plików | pokryte testem |
+| STORAGE-009 | Obsługa niestandardowego katalogu bazowego | Ścieżka wersji datasetu jest budowana względem przekazanego `base_data_dir` | pokryte testem |
+| STORAGE-010 | Obsługa niestandardowej wersji datasetu | Ścieżka wersji datasetu zawiera dokładnie przekazany numer wersji, np. `v002` | pokryte testem |
+| STORAGE-011 | Spójność nazw artefaktów storage z `DatasetBuildResult` | `DatasetBuildResult.data_path` wskazuje `normalized/candles.csv`, a pozostałe ścieżki wskazują `metadata.json` i `validation_report.json` | pokryte testem |
+| STORAGE-012 | Obsługa docelowych ścieżek `raw/` i `normalized/` w storage | Warstwa storage udostępnia helpery dla `raw/`, `raw/response.json`, `normalized/` i `normalized/candles.csv` | pokryte testem |
 
 Na obecnym etapie obszar ścieżek storage można uznać za domknięty dla zakresu v0.2.0.
 
-Po mikro-kroku 71B storage udostępnia już helpery dla docelowych ścieżek `raw/`, `raw/response.json`, `normalized/` i `normalized/candles.csv`.
+Po mikro-kroku 71H storage udostępnia helpery dla docelowych ścieżek `raw/`, `raw/response.json`, `normalized/` i `normalized/candles.csv`. Legacy helper `build_data_path()` został usunięty i nie powinien wracać bez osobnej decyzji projektowej.
 
-`create_dataset` nadal używa przejściowego `data.csv`.
-
-Przyszłe rozszerzenia obejmą przepięcie buildera i sample datasetu na nową strukturę, formaty inne niż CSV oraz walidację bezpieczeństwa ścieżek.
+Przyszłe rozszerzenia storage mogą obejmować formaty inne niż CSV oraz walidację bezpieczeństwa ścieżek. Nie należą one jednak do obecnego zakresu domykania migracji z przejściowego `data.csv` na docelowe `normalized/candles.csv`.
 
 ### 25.10. Macierz scenariuszy statusów Data Engine
 
