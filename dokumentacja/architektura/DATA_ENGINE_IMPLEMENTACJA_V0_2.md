@@ -1279,14 +1279,17 @@ Warstwa budowania datasetu jest obszarem spinającym podstawowe artefakty Data E
 
 Ten obszar odpowiada za:
 
-* utworzenie katalogu konkretnej wersji datasetu,
-* wygenerowanie deterministycznego `dataset_id` na podstawie `DatasetRequest`,
-* zbudowanie ścieżek do `data.csv`, `metadata.json` i `validation_report.json`,
-* zapis początkowego pliku `metadata.json`,
-* zapis początkowego pliku `validation_report.json`,
-* zapis pustego pliku `data.csv` z nagłówkiem OHLCV,
-* zwrócenie obiektu `DatasetBuildResult`,
-* zabezpieczenie przed nadpisaniem istniejącej wersji datasetu.
+* przyjęcie `DatasetRequest`,
+* zbudowanie deterministycznego `dataset_id`,
+* wyznaczenie katalogu wersji datasetu,
+* utworzenie katalogów `raw/` i `normalized/`,
+* zbudowanie ścieżek do `raw/response.json`, `normalized/candles.csv`, `metadata.json` i `validation_report.json`,
+* zapis początkowego `metadata.json`,
+* zapis początkowego `validation_report.json`,
+* zapis pustego `normalized/candles.csv` z nagłówkiem OHLCV,
+* zwrócenie `DatasetBuildResult`.
+
+Warstwa buildera nie tworzy już przejściowego pliku `data.csv`. Docelowym plikiem danych znormalizowanych jest `normalized/candles.csv`.
 
 Macierz scenariuszy dla budowania datasetu:
 
@@ -1318,12 +1321,15 @@ Ten obszar odpowiada za:
 * zbudowanie deterministycznego `DatasetRequest` dla przykładowych danych OHLCV,
 * zbudowanie przykładowych świec OHLCV,
 * utworzenie datasetu przez `create_dataset`,
-* zapis przykładowych świec do `data.csv`,
+* zapis przejściowej surowej odpowiedzi do `raw/response.json`,
+* zapis przykładowych świec do `normalized/candles.csv`,
 * walidację zapisanego pliku OHLCV,
 * zapis finalnego `validation_report.json`,
 * aktualizację `metadata.json` statusem walidacji,
 * zwrócenie `DatasetBuildResult` ze statusem po walidacji,
 * opcjonalne usunięcie istniejącej wersji datasetu przy `overwrite=True`.
+
+Warstwa sample datasetu nie tworzy już przejściowego pliku `data.csv`. Przykładowe świece są zapisywane do docelowego pliku `normalized/candles.csv`.
 
 Macierz scenariuszy dla przykładowego datasetu:
 
