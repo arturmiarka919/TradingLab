@@ -1,8 +1,10 @@
-# Praca na wielu komputerach
+# Praca z asystentem nad projektem TradingLab
 
-Ten dokument opisuje bezpieczną procedurę pracy nad projektem TradingLab na więcej niż jednym komputerze.
+Ten dokument opisuje bezpieczną procedurę pracy nad projektem TradingLab z asystentem AI.
 
-Celem procedury jest uniknięcie sytuacji, w której jeden komputer pracuje na starszym stanie repozytorium albo zmiany lokalne nie zostały wypchnięte na GitHub przed rozpoczęciem pracy na drugim komputerze.
+Obejmuje pracę na wielu komputerach, edycję dokumentacji, edycję kodu Python, kontrolę jakości oraz zasady zatrzymania pracy przy błędach.
+
+Celem procedury jest ograniczenie ryzyka sytuacji, w której jeden komputer pracuje na starszym stanie repozytorium, zmiany lokalne nie zostały wypchnięte na GitHub albo kod został zmieniony ręcznie w sposób podatny na pomyłki.
 
 ## Zasada główna
 
@@ -254,6 +256,100 @@ Zamiast tego asystent powinien używać schematu:
 3. wklej albo podmień konkretny blok w VS Code,
 4. zapisz plik,
 5. sprawdź testy, ruff i diff.
+
+## Edycja kodu Python z asystentem
+
+Kod Python należy edytować z asystentem w sposób ograniczający ryzyko błędów ręcznej edycji.
+
+Nie należy preferować długich serii instrukcji typu:
+
+```text
+znajdź X,
+podmień na Y,
+potem znajdź Z,
+potem jeszcze usuń jedną linię.
+```
+
+Taki sposób pracy jest podatny na błędy, szczególnie przy refaktorach obejmujących kilka plików.
+
+Preferowany model pracy:
+
+1. jeden plik naraz albo mała, logicznie powiązana paczka plików,
+2. użytkownik udostępnia aktualną zawartość pliku, jeżeli asystent nie ma pewnego kontekstu,
+3. asystent przygotowuje pełną zawartość pliku do podmiany albo pełny blok funkcji, klasy lub sekcji,
+4. użytkownik wkleja blok ręcznie w VS Code,
+5. po zapisie wykonywane są testy, ruff i kontrola diffu,
+6. commit jest wykonywany dopiero po zaakceptowaniu diffu.
+
+### Preferowana kolejność
+
+Dla małych plików Python preferuje się pełną zawartość pliku do podmiany.
+
+Dla średnich plików Python również można użyć pełnej zawartości pliku, jeżeli jest to czytelne i wygodne.
+
+Dla dużych plików Python preferuje się pełną funkcję, pełną klasę albo pełny logiczny blok do podmiany.
+
+Nie należy mieszać wielu drobnych podmian w kilku plikach bez sprawdzenia pełnego kontekstu.
+
+### Zasada braku stuprocentowej gwarancji
+
+Asystent nie powinien deklarować stuprocentowej pewności, że przygotowany kod nie zawiera błędu.
+
+Bezpieczeństwo projektu nie wynika z deklaracji asystenta, tylko z procesu kontroli jakości:
+
+```powershell
+uv run pytest
+uv run ruff check .
+git diff --stat
+git diff --check
+git diff
+```
+
+Pełna podmiana pliku albo pełnego bloku nie zastępuje kontroli jakości.
+
+Jest tylko sposobem zmniejszenia ryzyka błędów ręcznej edycji.
+
+### Zasada zatrzymania przy błędach
+
+Jeżeli po zmianie testy albo ruff nie przechodzą, nie należy kontynuować kolejnych zmian.
+
+Najpierw trzeba:
+
+1. zatrzymać pracę,
+2. zdiagnozować błąd,
+3. poprawić zmianę albo wycofać ją do czystego stanu,
+4. ponownie uruchomić testy i ruff,
+5. dopiero potem przejść dalej.
+
+Jeżeli zmiana była częściowa, nieczytelna albo zbyt ryzykowna, można wrócić do czystego stanu komendą `git restore` dla konkretnych plików.
+
+Przykład:
+
+```powershell
+git restore src\tradinglab\data_engine\ohlcv_validation.py tests\data_engine\test_ohlcv_validation.py
+```
+
+Po wycofaniu zmian należy sprawdzić:
+
+```powershell
+git status
+uv run pytest
+uv run ruff check .
+```
+
+### Zasada dla asystenta przy edycji kodu Python
+
+Asystent prowadzący projekt TradingLab powinien preferować instrukcje w formacie:
+
+```text
+Otwórz plik w VS Code.
+Zaznacz całą zawartość albo wskazany pełny blok.
+Podmień na poniższą kompletną treść.
+Zapisz plik.
+Uruchom kontrolę.
+```
+
+Asystent powinien unikać instrukcji polegających na wielu ręcznych, rozproszonych podmianach pojedynczych nazw, jeżeli można bezpieczniej podać pełny plik albo pełny blok do podmiany.
 
 ## Pliki ignorowane
 
