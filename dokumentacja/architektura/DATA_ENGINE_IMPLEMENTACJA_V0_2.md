@@ -142,18 +142,26 @@ normalized/candles.csv
 Minimalny format `candles.csv`:
 
 ```csv
-timestamp_utc,open,high,low,close,volume
-2024-01-02T00:00:00Z,1.1034,1.1048,1.0921,1.0945,12345
+timestamp,open,high,low,close,volume
+2024-01-02T00:00:00+00:00,1.1034,1.1048,1.0921,1.0945,12345
 ```
 
 Kolumny:
 
-* `timestamp_utc`,
+* `timestamp`,
 * `open`,
 * `high`,
 * `low`,
 * `close`,
 * `volume`.
+
+Kolumna `timestamp` przechowuje czas świecy. W obecnej implementacji Data Engine nazwa kolumny w pliku CSV jest zgodna z modelem `OhlcvBar.timestamp` oraz z nagłówkiem używanym przez helpery zapisu i odczytu OHLCV CSV.
+
+Wartość timestampu powinna być zapisywana w formacie ISO 8601. Dla danych z czasem UTC obecny format zapisu używa jawnego offsetu, na przykład:
+
+```text
+2024-01-02T00:00:00+00:00
+```
 
 Dane w `candles.csv` mają być czystą tabelą świec. Informacje takie jak provider, dataset_id, symbol, interwał i zakres dat powinny znajdować się w `metadata.json`.
 
