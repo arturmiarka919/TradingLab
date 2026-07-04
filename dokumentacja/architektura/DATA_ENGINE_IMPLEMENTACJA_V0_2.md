@@ -1050,16 +1050,61 @@ W szczególności:
 
 Jeżeli w przyszłości konieczna będzie zmiana niekompatybilna wstecznie, musi zostać wcześniej opisana w dokumentacji albo ADR oraz powinna mieć jasną ścieżkę migracji.
 
-## 23. Minimalna struktura modułów w src/tradinglab
+## 23. Struktura modułów w src/tradinglab
 
-Minimalna struktura kodu Data Engine:
+Ten rozdział opisuje różnicę między:
+
+1. obecną strukturą kodu Data Engine,
+2. docelowym kierunkiem rozwoju struktury modułów.
+
+Obecna implementacja Data Engine v0.2.0 jest bardziej rozbita na małe moduły niż pierwotny szkic architektoniczny. To nie jest błąd. Taki podział powstał w trakcie bezpiecznej implementacji mikro-krokami i pozwolił utrzymać testowalność oraz ograniczać wpływ zmian na inne obszary.
+
+Obecna struktura kodu:
 
 ```text
 src/
   tradinglab/
     __init__.py
     main.py
+    data_engine/
+      __init__.py
+      dataset_builder.py
+      dataset_id.py
+      data_file.py
+      metadata.py
+      models.py
+      ohlcv_validation.py
+      sample_dataset.py
+      status.py
+      storage.py
+      validation_report.py
+```
 
+Obecne odpowiedzialności:
+
+| Plik / katalog | Odpowiedzialność |
+| --- | --- |
+| `data_engine/` | główny moduł Data Engine |
+| `data_engine/__init__.py` | aktualny eksport technicznego interfejsu pakietu |
+| `dataset_builder.py` | tworzenie katalogu wersji datasetu i początkowych artefaktów |
+| `dataset_id.py` | generowanie deterministycznego `dataset_id` |
+| `data_file.py` | zapis i odczyt plików OHLCV CSV |
+| `metadata.py` | serializacja, zapis i odczyt `metadata.json` |
+| `models.py` | modele danych Data Engine |
+| `ohlcv_validation.py` | walidacja lokalnych danych OHLCV CSV |
+| `sample_dataset.py` | tworzenie przykładowego datasetu Data Engine |
+| `status.py` | stałe statusów życia datasetu i statusów walidacji |
+| `storage.py` | budowanie ścieżek i katalogów datasetu |
+| `validation_report.py` | serializacja, zapis i odczyt `validation_report.json` |
+| `main.py` | na razie minimalny plik wejściowy projektu |
+
+Pierwotny szkic docelowy zakładał strukturę:
+
+```text
+src/
+  tradinglab/
+    __init__.py
+    main.py
     data_engine/
       __init__.py
       engine.py
@@ -1067,26 +1112,33 @@ src/
       dataset_id.py
       storage.py
       validation.py
-
       connectors/
         __init__.py
         base.py
         polygon_forex.py
 ```
 
-Odpowiedzialności:
+Ten szkic należy traktować jako kierunek architektoniczny, a nie jako opis aktualnego kodu.
 
-| Plik / katalog                | Odpowiedzialność                                            |
-| ----------------------------- | ----------------------------------------------------------- |
-| `data_engine/`                | główny moduł Data Engine                                    |
-| `engine.py`                   | publiczny interfejs Data Engine                             |
-| `models.py`                   | modele requestów, referencji datasetu, metadanych i raportu |
-| `dataset_id.py`               | generowanie `dataset_id`                                    |
-| `storage.py`                  | zapis i odczyt plików datasetu                              |
-| `validation.py`               | walidacja `candles.csv` i tworzenie raportu                 |
-| `connectors/base.py`          | bazowy interfejs konektora danych                           |
-| `connectors/polygon_forex.py` | pierwszy konektor Polygon/Massive Forex                     |
-| `main.py`                     | na razie może pozostać minimalny                            |
+Na obecnym etapie nie istnieją jeszcze:
+
+* `engine.py`,
+* `validation.py`,
+* `connectors/base.py`,
+* `connectors/polygon_forex.py`,
+* publiczny konektor `PolygonForexConnector`.
+
+Decyzje dotyczące tych elementów powinny być podejmowane osobnymi mikro-krokami, gdy będą wynikały z realnej potrzeby implementacyjnej.
+
+Możliwy kierunek dalszego rozwoju:
+
+| Docelowy element | Obecny stan | Decyzja |
+| --- | --- | --- |
+| `engine.py` | brak | Dodać dopiero przy porządkowaniu publicznego interfejsu Data Engine. |
+| `validation.py` | brak; istnieje `ohlcv_validation.py` | Nie tworzyć na siłę. Obecny walidator OHLCV działa w osobnym module. |
+| `connectors/base.py` | brak | Dodać dopiero przed pierwszym prawdziwym konektorem providera. |
+| `connectors/polygon_forex.py` | brak | Dodać dopiero przy implementacji pobierania danych z Polygon/Massive. |
+| `PolygonForexConnector` | brak | Nadal jest docelowym konektorem referencyjnym, ale nie częścią obecnego kodu. |
 
 W v0.2.0 nie tworzymy jeszcze modułów:
 
@@ -1106,8 +1158,8 @@ Nowe funkcje powinny być dodawane przez rozszerzanie architektury, a nie przez 
 
 W szczególności:
 
-* dodanie nowego providera nie powinno wymagać przebudowy istniejącego konektora Polygon/Massive,
-* dodanie Dukascopy nie powinno zmieniać działania datasetów utworzonych z Polygon/Massive,
+* dodanie pierwszego konektora Polygon/Massive nie powinno wymagać przebudowy obecnych fundamentów datasetu,
+* dodanie Dukascopy nie powinno zmieniać działania datasetów utworzonych wcześniej z innego providera,
 * dodanie nowego formatu zapisu, np. Parquet, nie powinno unieważniać CSV,
 * dodanie nowych reguł walidacji nie powinno psuć odczytu starszych raportów walidacji,
 * dodanie nowych pól w `metadata.json` nie powinno uniemożliwiać odczytu starszych metadanych,
