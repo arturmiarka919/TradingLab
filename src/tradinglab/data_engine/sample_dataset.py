@@ -10,21 +10,17 @@ from shutil import rmtree
 from tradinglab.data_engine.data_file import write_ohlcv_csv
 from tradinglab.data_engine.dataset_builder import create_dataset
 from tradinglab.data_engine.dataset_id import generate_dataset_id
-from tradinglab.data_engine.metadata import write_metadata
+from tradinglab.data_engine.engine import load_metadata, validate_dataset
 from tradinglab.data_engine.models import (
     DatasetBuildResult,
-    DatasetMetadata,
     DatasetRequest,
     OhlcvBar,
 )
-from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
-from tradinglab.data_engine.status import DATASET_LIFECYCLE_STATUS_VALIDATED
 from tradinglab.data_engine.storage import (
     build_dataset_version_path,
     build_normalized_candles_path,
     build_raw_response_path,
 )
-from tradinglab.data_engine.validation_report import write_validation_report
 
 SAMPLE_DATASET_VERSION = "v001"
 
@@ -124,32 +120,19 @@ def create_sample_ohlcv_dataset(
     normalized_candles_path = build_normalized_candles_path(result.dataset_path)
     write_ohlcv_csv(normalized_candles_path, build_sample_ohlcv_bars())
 
-    validation_report = validate_ohlcv_csv(
-        data_path=normalized_candles_path,
+    validate_dataset(
+        base_data_dir=base_data_dir,
         dataset_id=result.dataset_id,
         version=result.version,
     )
-    write_validation_report(result.validation_report_path, validation_report)
-
-    write_metadata(
-        result.metadata_path,
-        DatasetMetadata(
-            dataset_id=result.dataset_id,
-            version=result.version,
-            provider=request.provider,
-            asset_class=request.asset_class,
-            symbol=request.symbol,
-            data_type=request.data_type,
-            price_type=request.price_type,
-            interval=request.interval,
-            requested_start=request.requested_start,
-            requested_end=request.requested_end,
-            status=DATASET_LIFECYCLE_STATUS_VALIDATED,
-        ),
+    metadata = load_metadata(
+        base_data_dir=base_data_dir,
+        dataset_id=result.dataset_id,
+        version=result.version,
     )
 
     return replace(
         result,
         data_path=normalized_candles_path,
-        status=DATASET_LIFECYCLE_STATUS_VALIDATED,
+        status=metadata.status,
     )
