@@ -824,73 +824,58 @@ Odczyt datasetu powinien wskazywać konkretny:
 dataset_id + version
 ```
 
-## 19. Minimalny interfejs Data Engine
+## 19. Minimalny publiczny interfejs Data Engine
 
-Ten rozdział rozdziela dwa poziomy interfejsu Data Engine:
+Ten rozdział rozdziela:
 
-1. obecny eksportowany interfejs pakietu,
-2. docelowy publiczny interfejs Data Engine dla pełnego zakresu v0.2.0.
+1. obecnie zaimplementowany publiczny interfejs Data Engine,
+2. docelowy minimalny publiczny interfejs dla pełniejszego zakresu v0.2.0,
+3. zasady dalszego rozwoju publicznego interfejsu.
 
-Na obecnym etapie implementacji eksportowany interfejs pakietu `tradinglab.data_engine` obejmuje przede wszystkim:
+Obecny publiczny eksport z `tradinglab.data_engine` obejmuje:
 
-* modele danych,
-* `create_dataset`,
-* `generate_dataset_id`.
+```text
+create_dataset
+generate_dataset_id
+load_metadata
+load_validation_report
+load_normalized_candles
+DatasetRequest
+DatasetMetadata
+DatasetBuildResult
+OhlcvBar
+ValidationReport
+```
 
-Jest to aktualny, minimalny interfejs techniczny wynikający z dotychczas domkniętych mikro-kroków.
+Docelowy minimalny publiczny interfejs Data Engine dla pełniejszego zakresu v0.2.0 nadal obejmuje:
 
-Docelowy publiczny interfejs Data Engine dla zakresu v0.2.0 powinien obejmować:
+```text
+create_dataset
+validate_dataset
+load_metadata
+load_validation_report
+load_normalized_candles
+```
 
-1. `create_dataset`,
-2. `validate_dataset`,
-3. `load_metadata`,
-4. `load_validation_report`,
-5. `load_normalized_candles`.
+Po mikro-kroku 73A.1 publiczny odczyt metadanych, raportu walidacji i znormalizowanych świec jest już zaimplementowany.
 
-Funkcje docelowego interfejsu nie muszą być eksportowane jednocześnie. Powinny być dodawane mikro-krokami, po zaprojektowaniu odpowiedzialności, testów oraz wpływu na istniejące moduły.
+Publiczna funkcja `validate_dataset` nie jest jeszcze zaimplementowana.
 
 ### 19.1. create_dataset
 
-Tworzy nową wersję datasetu na podstawie `DatasetRequest`.
+`create_dataset` jest obecnie publiczną funkcją tworzącą katalog wersji datasetu i początkowe artefakty.
 
-W obecnej implementacji `create_dataset` odpowiada za:
+Obecny zakres:
 
-* zbudowanie deterministycznego `dataset_id`,
-* wyznaczenie katalogu wersji datasetu,
-* utworzenie katalogów `raw/` i `normalized/`,
-* zapis początkowego `metadata.json`,
-* zapis początkowego `validation_report.json`,
-* zapis pustego `normalized/candles.csv`,
-* zwrócenie `DatasetBuildResult`.
-
-Docelowo `create_dataset` może zostać rozszerzone o pobieranie danych ze źródła, zapis raw data, normalizację OHLCV i automatyczną walidację. Te rozszerzenia muszą być jednak dodawane osobnymi mikro-krokami.
-
-Logika obecnego poziomu:
-
-```text
-create_dataset(request) -> DatasetBuildResult
-```
-
-Request powinien zawierać co najmniej:
-
-* provider,
-* asset_class,
-* symbol,
-* data_type,
-* price_type,
-* interval,
-* requested_start,
-* requested_end.
-
-Wynik powinien zawierać co najmniej:
-
-* dataset_id,
-* version,
-* dataset_path,
-* data_path,
-* metadata_path,
-* validation_report_path,
-* status.
+* tworzy katalog `data/datasets/{dataset_id}/{version}/`,
+* zapisuje `metadata.json`,
+* zapisuje początkowy `validation_report.json`,
+* tworzy katalog `raw/`,
+* tworzy katalog `normalized/`,
+* zapisuje pusty `normalized/candles.csv`,
+* zwraca `DatasetBuildResult`,
+* nadaje datasetowi status życia `RAW`,
+* nadaje początkowemu raportowi walidacji status `not_validated`.
 
 ### 19.2. validate_dataset
 
@@ -898,68 +883,139 @@ Wynik powinien zawierać co najmniej:
 
 Na obecnym etapie istnieje już wewnętrzna logika walidacji OHLCV, ale decyzja o publicznym kształcie `validate_dataset` wymaga osobnego mikro-kroku.
 
-Do zaprojektowania przed implementacją:
-
-* sygnatura funkcji,
-* sposób wskazywania datasetu,
-* sposób wskazywania katalogu bazowego danych,
-* statusy datasetu po walidacji,
-* relacja między raportem walidacji a metadata,
-* testy publicznego API.
+`validate_dataset` pozostaje do zaprojektowania i implementacji.
 
 ### 19.3. load_metadata
 
-`load_metadata` jest docelową funkcją publicznego interfejsu do odczytu `metadata.json` dla wskazanego datasetu i wersji.
+`load_metadata` jest publiczną funkcją odczytu metadanych datasetu.
 
-Na obecnym etapie istnieją helpery techniczne do odczytu metadanych, ale decyzja o ich eksporcie jako stabilnego API wymaga osobnego mikro-kroku.
+Obecny podpis funkcji:
 
-Do zaprojektowania przed implementacją publicznego API:
+```text
+load_metadata(*, base_data_dir, dataset_id, version)
+```
 
-* czy funkcja przyjmuje bezpośrednią ścieżkę, czy `base_data_dir + dataset_id + version`,
-* jakie błędy są częścią publicznego kontraktu,
-* czy funkcja ma być dostępna z `tradinglab.data_engine`,
-* jakie testy potwierdzają stabilność interfejsu.
+Funkcja:
+
+* przyjmuje katalog bazowy danych,
+* przyjmuje `dataset_id`,
+* przyjmuje `version`,
+* buduje ścieżkę do wersji datasetu,
+* odczytuje `metadata.json`,
+* zwraca `DatasetMetadata`.
+
+Funkcja jest zaimplementowana w:
+
+```text
+src/tradinglab/data_engine/engine.py
+```
+
+i eksportowana z:
+
+```text
+tradinglab.data_engine
+```
+
+Odczyt przez bezpośrednią ścieżkę do pliku nadal istnieje technicznie w module `metadata.py`, ale publiczny interfejs domenowy powinien używać `base_data_dir + dataset_id + version`.
 
 ### 19.4. load_validation_report
 
-`load_validation_report` jest docelową funkcją publicznego interfejsu do odczytu `validation_report.json` dla wskazanego datasetu i wersji.
+`load_validation_report` jest publiczną funkcją odczytu raportu walidacji datasetu.
 
-Na obecnym etapie istnieją helpery techniczne do odczytu raportu walidacji, ale publiczny kontrakt tej funkcji powinien zostać domknięty osobnym mikro-krokiem.
+Obecny podpis funkcji:
 
-Do zaprojektowania przed implementacją publicznego API:
+```text
+load_validation_report(*, base_data_dir, dataset_id, version)
+```
 
-* sposób wskazywania datasetu,
-* zachowanie przy braku raportu,
-* zgodność ze schematem raportu,
-* testy publicznego API.
+Funkcja:
+
+* przyjmuje katalog bazowy danych,
+* przyjmuje `dataset_id`,
+* przyjmuje `version`,
+* buduje ścieżkę do wersji datasetu,
+* odczytuje `validation_report.json`,
+* zwraca `ValidationReport`.
+
+Funkcja jest zaimplementowana w:
+
+```text
+src/tradinglab/data_engine/engine.py
+```
+
+i eksportowana z:
+
+```text
+tradinglab.data_engine
+```
+
+Odczyt przez bezpośrednią ścieżkę do pliku nadal istnieje technicznie w module `validation_report.py`, ale publiczny interfejs domenowy powinien używać `base_data_dir + dataset_id + version`.
 
 ### 19.5. load_normalized_candles
 
-`load_normalized_candles` jest docelową funkcją publicznego interfejsu do odczytu `normalized/candles.csv` dla wskazanego datasetu i wersji.
+`load_normalized_candles` jest publiczną funkcją odczytu znormalizowanych świec OHLCV datasetu.
 
-Na obecnym etapie istnieją helpery techniczne do odczytu OHLCV CSV, ale stabilny publiczny interfejs odczytu świec powinien zostać dodany osobnym mikro-krokiem.
+Obecny podpis funkcji:
 
-Do zaprojektowania przed implementacją publicznego API:
+```text
+load_normalized_candles(*, base_data_dir, dataset_id, version)
+```
 
-* czy funkcja zwraca krotkę `OhlcvBar`, listę, iterator czy strukturę wyższego poziomu,
-* sposób wskazywania datasetu,
-* zachowanie przy błędnym nagłówku CSV,
-* zachowanie przy pustym datasetcie,
-* testy publicznego API.
+Funkcja:
 
-### 19.6. Zasada rozwoju publicznego interfejsu
+* przyjmuje katalog bazowy danych,
+* przyjmuje `dataset_id`,
+* przyjmuje `version`,
+* buduje ścieżkę do wersji datasetu,
+* odczytuje `normalized/candles.csv`,
+* zwraca krotkę obiektów `OhlcvBar`.
 
-Publiczny interfejs Data Engine powinien być stabilny i rozwijany ostrożnie.
+Funkcja jest zaimplementowana w:
 
-Nie należy eksportować nowych funkcji z pakietu tylko dlatego, że istnieją jako helpery techniczne. Każda funkcja publiczna powinna mieć:
+```text
+src/tradinglab/data_engine/engine.py
+```
 
-* jasną odpowiedzialność,
-* testy publicznego kontraktu,
-* stabilną sygnaturę,
-* opis w dokumentacji,
-* zgodność z modelem wersjonowanych datasetów.
+i eksportowana z:
 
-Dalsze prace nad publicznym interfejsem powinny być prowadzone mikro-krokami, bez mieszania ich ze zmianami statusów legacy, zmianami formatu metadanych albo zmianami walidatora.
+```text
+tradinglab.data_engine
+```
+
+Publiczny odczyt jest pokryty testami w:
+
+```text
+tests/data_engine/test_engine.py
+```
+
+### 19.6. Dalszy rozwój publicznego interfejsu
+
+Publiczny interfejs Data Engine powinien pozostać mały, stabilny i domenowy.
+
+Nowe funkcje publiczne powinny być dodawane dopiero wtedy, gdy:
+
+* istnieje realna potrzeba użycia ich przez inny moduł projektu,
+* ich zachowanie jest pokryte testami,
+* ich nazwa i podpis nie ujawniają niepotrzebnie szczegółów technicznych,
+* nie dublują istniejących funkcji technicznych bez jasnego celu,
+* nie wymuszają zmiany znaczenia wcześniej dodanych funkcji publicznych.
+
+Publiczny interfejs powinien operować na pojęciach domenowych:
+
+```text
+base_data_dir
+dataset_id
+version
+DatasetMetadata
+ValidationReport
+OhlcvBar
+```
+
+a nie na przypadkowych ścieżkach do plików wewnętrznych.
+
+Moduły techniczne, takie jak `metadata.py`, `validation_report.py`, `data_file.py` i `storage.py`, mogą nadal istnieć jako warstwa niższego poziomu. Ich funkcje nie muszą być automatycznie eksportowane jako publiczne API pakietu.
+
+Dalsze rozszerzenia publicznego interfejsu powinny być prowadzone mikro-krokami, bez mieszania ich ze zmianami statusów, zmianami formatu metadanych, zmianami walidatora albo implementacją konektorów providera.
 
 ## 20. Czego nie ma w interfejsie v0.2.0
 
@@ -1060,6 +1116,7 @@ src/
       dataset_builder.py
       dataset_id.py
       data_file.py
+      engine.py
       metadata.py
       models.py
       ohlcv_validation.py
@@ -1078,13 +1135,14 @@ Obecne odpowiedzialności:
 | `dataset_builder.py` | tworzenie katalogu wersji datasetu i początkowych artefaktów |
 | `dataset_id.py` | generowanie deterministycznego `dataset_id` |
 | `data_file.py` | zapis i odczyt plików OHLCV CSV |
-| `metadata.py` | serializacja, zapis i odczyt `metadata.json` |
+| `engine.py` | publiczny domenowy interfejs odczytu Data Engine |
+| `metadata.py` | serializacja, zapis i techniczny odczyt `metadata.json` |
 | `models.py` | modele danych Data Engine |
 | `ohlcv_validation.py` | walidacja lokalnych danych OHLCV CSV |
 | `sample_dataset.py` | tworzenie przykładowego datasetu Data Engine |
 | `status.py` | stałe statusów życia datasetu i statusów walidacji |
 | `storage.py` | budowanie ścieżek i katalogów datasetu |
-| `validation_report.py` | serializacja, zapis i odczyt `validation_report.json` |
+| `validation_report.py` | serializacja, zapis i techniczny odczyt `validation_report.json` |
 | `main.py` | na razie minimalny plik wejściowy projektu |
 
 Pierwotny szkic docelowy zakładał strukturę:
@@ -1109,9 +1167,10 @@ src/
 
 Ten szkic należy traktować jako kierunek architektoniczny, a nie jako opis aktualnego kodu.
 
+Po mikro-kroku 73A.1 plik `engine.py` już istnieje i zawiera publiczny interfejs odczytu.
+
 Na obecnym etapie nie istnieją jeszcze:
 
-* `engine.py`,
 * `validation.py`,
 * `connectors/base.py`,
 * `connectors/polygon_forex.py`,
@@ -1123,7 +1182,7 @@ Możliwy kierunek dalszego rozwoju:
 
 | Docelowy element | Obecny stan | Decyzja |
 | --- | --- | --- |
-| `engine.py` | brak | Dodać dopiero przy porządkowaniu publicznego interfejsu Data Engine. |
+| `engine.py` | istnieje | Rozbudowywać ostrożnie jako publiczny interfejs Data Engine, bez przenoszenia do niego całej logiki technicznej. |
 | `validation.py` | brak; istnieje `ohlcv_validation.py` | Nie tworzyć na siłę. Obecny walidator OHLCV działa w osobnym module. |
 | `connectors/base.py` | brak | Dodać dopiero przed pierwszym prawdziwym konektorem providera. |
 | `connectors/polygon_forex.py` | brak | Dodać dopiero przy implementacji pobierania danych z Polygon/Massive. |
@@ -1655,6 +1714,7 @@ tests/
     test_dataset_build_result_model.py
     test_dataset_builder.py
     test_dataset_id.py
+    test_engine.py
     test_metadata.py
     test_models.py
     test_ohlcv_bar_model.py
@@ -1679,21 +1739,21 @@ Na obecnym etapie nie istnieje katalog:
 tests/fixtures/data_engine/
 ```
 
-Na obecnym etapie nie istnieją też pliki:
+Na obecnym etapie nie istnieje jeszcze plik:
 
 ```text
-tests/data_engine/test_engine.py
 tests/data_engine/test_validation.py
 ```
 
-Brak tych plików nie jest błędem. Obecna implementacja ma rozdzielone testy zgodnie z faktycznymi modułami kodu, między innymi `dataset_builder.py`, `ohlcv_validation.py`, `metadata.py`, `validation_report.py`, `storage.py`, `sample_dataset.py` i `status.py`.
+Brak tego pliku nie jest błędem. Obecna implementacja ma rozdzielone testy zgodnie z faktycznymi modułami kodu, między innymi `dataset_builder.py`, `engine.py`, `ohlcv_validation.py`, `metadata.py`, `validation_report.py`, `storage.py`, `sample_dataset.py` i `status.py`.
+
+Plik `tests/data_engine/test_engine.py` istnieje od mikro-kroku 73A.1 i pokrywa publiczny interfejs odczytu Data Engine.
 
 Możliwy kierunek dalszego rozwoju testów:
 
 ```text
 tests/
   data_engine/
-    test_engine.py
     test_public_api.py
     test_connectors_base.py
     test_polygon_forex_connector.py
