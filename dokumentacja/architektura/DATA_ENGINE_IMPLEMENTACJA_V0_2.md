@@ -862,7 +862,7 @@ Po mikro-kroku 73A.1 publiczny odczyt metadanych, raportu walidacji i znormalizo
 
 Po mikro-kroku 73B.1 publiczna funkcja `validate_dataset` została zaimplementowana.
 
-Obecne `validate_dataset` wykonuje techniczną walidację znormalizowanego pliku OHLCV i zapisuje `validation_report.json`, ale nie zmienia jeszcze statusu życia datasetu w `metadata.json`.
+Po mikro-kroku 73C.1 `validate_dataset` wykonuje techniczną walidację znormalizowanego pliku OHLCV, zapisuje `validation_report.json` i aktualizuje status życia datasetu w `metadata.json`.
 
 ### 19.1. create_dataset
 
@@ -912,9 +912,24 @@ i eksportowana z:
 tradinglab.data_engine
 ```
 
-Obecne `validate_dataset` nie zmienia `metadata.status`.
+Po mikro-kroku 73C.1 `validate_dataset` aktualizuje `metadata.status` według wyniku walidacji:
 
-Status życia datasetu po walidacji, na przykład przejście z `RAW` do `VALIDATED`, `QUARANTINED` albo `REJECTED`, pozostaje osobną decyzją projektową i powinien zostać domknięty w późniejszym mikro-kroku.
+```text
+validation_report.status = valid
+    -> metadata.status = VALIDATED
+
+validation_report.status = valid_with_warnings
+    -> metadata.status = VALIDATED
+
+validation_report.status = invalid
+    -> metadata.status = QUARANTINED
+```
+
+`validate_dataset` nie nadaje automatycznie statusu `ACCEPTED` ani `REJECTED`.
+
+`ACCEPTED` powinien oznaczać świadome dopuszczenie datasetu do użycia badawczego albo strategicznego.
+
+`REJECTED` powinien oznaczać świadomą decyzję o odrzuceniu datasetu, a nie sam techniczny wynik walidacji.
 
 ### 19.3. load_metadata
 
@@ -1198,7 +1213,7 @@ src/
 
 Ten szkic należy traktować jako kierunek architektoniczny, a nie jako opis aktualnego kodu.
 
-Po mikro-kroku 73A.1 plik `engine.py` zawierał publiczny interfejs odczytu. Po mikro-kroku 73B.1 zawiera również publiczną funkcję `validate_dataset`.
+Po mikro-kroku 73A.1 plik `engine.py` zawierał publiczny interfejs odczytu. Po mikro-kroku 73B.1 zawiera również publiczną funkcję `validate_dataset`. Po mikro-kroku 73C.1 `validate_dataset` aktualizuje także status życia datasetu w `metadata.json`.
 
 Na obecnym etapie nie istnieją jeszcze:
 
@@ -1712,8 +1727,8 @@ Macierz scenariuszy dla statusów Data Engine:
 | STATUS-008 | `validation_report.status` używa statusu walidacji | `validation_report.json` korzysta z `not_validated`, `valid`, `valid_with_warnings` albo `invalid` | pokryte testem |
 | STATUS-009 | `DatasetBuildResult.status` oznacza status życia datasetu | Wynik budowania datasetu nie używa statusu walidacji jako statusu datasetu | pokryte testami buildera i sample datasetu |
 | STATUS-010 | Początkowy dataset po `create_dataset` otrzymuje status życia `RAW` | `DatasetBuildResult.status` i `metadata.status` po utworzeniu datasetu wskazują `RAW` | pokryte testem |
-| STATUS-011 | Dataset po udanej walidacji otrzymuje status życia `VALIDATED` | `DatasetBuildResult.status` i `metadata.status` po udanej walidacji sample datasetu wskazują `VALIDATED` | pokryte testem |
-| STATUS-012 | Nieudana walidacja nie używa `invalid` jako statusu życia datasetu | `invalid` pozostaje statusem `validation_report.status`, a status życia datasetu będzie rozstrzygany osobną decyzją dla scenariuszy błędnych datasetów | do zaprojektowania później |
+| STATUS-011 | Dataset po udanej walidacji otrzymuje status życia `VALIDATED` | Sample dataset oraz publiczne `validate_dataset` po wyniku walidacji `valid` ustawiają `metadata.status` na `VALIDATED` | pokryte testami |
+| STATUS-012 | Nieudana walidacja nie używa `invalid` jako statusu życia datasetu | Publiczne `validate_dataset` po wyniku walidacji `invalid` zapisuje `validation_report.status = invalid` i ustawia `metadata.status` na `QUARANTINED` | pokryte testem |
 
 Po mikro-krokach 68 i 69 status raportu walidacji został oddzielony od statusu datasetu.
 
@@ -1778,7 +1793,7 @@ tests/data_engine/test_validation.py
 
 Brak tego pliku nie jest błędem. Obecna implementacja ma rozdzielone testy zgodnie z faktycznymi modułami kodu, między innymi `dataset_builder.py`, `engine.py`, `ohlcv_validation.py`, `metadata.py`, `validation_report.py`, `storage.py`, `sample_dataset.py` i `status.py`.
 
-Plik `tests/data_engine/test_engine.py` istnieje od mikro-kroku 73A.1. Po mikro-kroku 73B.1 pokrywa publiczny interfejs odczytu Data Engine oraz publiczną funkcję `validate_dataset`.
+Plik `tests/data_engine/test_engine.py` istnieje od mikro-kroku 73A.1. Po mikro-kroku 73B.1 pokrywa publiczny interfejs odczytu Data Engine oraz publiczną funkcję `validate_dataset`. Po mikro-kroku 73C.1 pokrywa również aktualizację `metadata.status` po walidacji.
 
 Możliwy kierunek dalszego rozwoju testów:
 

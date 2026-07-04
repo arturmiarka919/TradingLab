@@ -374,9 +374,24 @@ Obecne `validate_dataset`:
 * waliduje `normalized/candles.csv`,
 * zapisuje wynik do `validation_report.json`,
 * zwraca `ValidationReport`,
-* nie zmienia jeszcze statusu życia datasetu w `metadata.json`.
+* aktualizuje status życia datasetu w `metadata.json`.
 
-Decyzja o tym, czy i kiedy publiczne `validate_dataset` ma zmieniać `metadata.status`, pozostaje osobnym zagadnieniem projektowym.
+Mapowanie statusu walidacji na status życia datasetu:
+
+```text
+validation_report.status = valid
+    -> metadata.status = VALIDATED
+
+validation_report.status = valid_with_warnings
+    -> metadata.status = VALIDATED
+
+validation_report.status = invalid
+    -> metadata.status = QUARANTINED
+```
+
+Publiczne `validate_dataset` nie nadaje automatycznie statusu `ACCEPTED` ani `REJECTED`.
+
+`ACCEPTED` i `REJECTED` pozostają statusami świadomej decyzji wyższej warstwy systemu.
 
 Data Engine v0.2.0 nie posiada jeszcze funkcji:
 

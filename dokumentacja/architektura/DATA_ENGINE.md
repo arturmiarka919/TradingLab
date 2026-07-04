@@ -110,6 +110,7 @@ Aktualny stan implementacji v0.2.0 jest mniejszy niż pełna wizja architektonic
 * publiczny odczyt raportu walidacji przez `load_validation_report`,
 * publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
 * publiczna walidacja datasetu przez `validate_dataset`,
+* aktualizacja statusu życia datasetu po `validate_dataset`,
 * testy jednostkowe dla obecnego zakresu.
 
 Na obecnym etapie nie są jeszcze zaimplementowane:
@@ -919,7 +920,8 @@ Część decyzji została już doprecyzowana w dokumencie implementacyjnym v0.2.
 * publiczny odczyt metadanych przez `load_metadata`,
 * publiczny odczyt raportu walidacji przez `load_validation_report`,
 * publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
-* publiczna walidacja datasetu przez `validate_dataset`.
+* publiczna walidacja datasetu przez `validate_dataset`,
+* mapowanie wyniku `validate_dataset` na `metadata.status`.
 
 Nadal otwarte albo odłożone na dalsze mikro-kroki pozostają między innymi:
 
@@ -928,7 +930,7 @@ Nadal otwarte albo odłożone na dalsze mikro-kroki pozostają między innymi:
 * sposób przechowywania sekretów i kluczy API,
 * pełniejszy schemat metadanych,
 * pełniejszy schemat raportu walidacji,
-* obsługa nieudanej walidacji na poziomie statusu życia datasetu,
+* dalsza polityka obsługi datasetów oznaczonych jako `QUARANTINED`,
 * decyzja, kiedy dataset może otrzymać status `ACCEPTED`,
 * przyszłe formaty przechowywania inne niż CSV.
 
