@@ -319,26 +319,15 @@ data/
 
 Prawdziwe dane robocze nie powinny być commitowane do repozytorium.
 
-Do testów automatycznych używane są małe przykładowe datasety zapisane w:
+Do testów automatycznych używane są małe dane tworzone bezpośrednio w testach, katalogi tymczasowe pytest, na przykład `tmp_path`, albo przyszłe jawnie dodane fixtures.
+
+Na obecnym etapie repozytorium nie posiada katalogu:
 
 ```text
 tests/fixtures/data_engine/
 ```
 
-Przykładowa struktura danych testowych:
-
-```text
-tests/
-  fixtures/
-    data_engine/
-      polygon_forex_eurusd_1d_sample/
-        raw/
-          response.json
-        normalized/
-          candles.csv
-        metadata.json
-        validation_report.json
-```
+Jeżeli w przyszłości pojawi się potrzeba utrzymywania stałych fixtures, katalog testowy powinien zostać dodany osobnym mikro-krokiem razem z testami, które faktycznie go wykorzystują.
 
 ## 8. Sekrety i konfiguracja
 
@@ -1648,28 +1637,88 @@ Obszar statusów można uznać za domknięty dla obecnego zakresu v0.2.0 pod war
 4. legacy statusy nie wracają bez osobnej decyzji projektowej,
 5. przyszłe scenariusze nieudanej walidacji datasetu zostaną zaprojektowane osobno przed implementacją.
 
-## 26. Proponowana struktura testów
+## 26. Struktura testów
+
+Ten rozdział rozdziela:
+
+1. obecną strukturę testów,
+2. możliwy kierunek dalszego rozwoju testów.
+
+Obecna struktura testów Data Engine:
 
 ```text
 tests/
   test_smoke.py
-
   data_engine/
+    test_create_sample_dataset_script.py
+    test_data_file.py
+    test_dataset_build_result_model.py
+    test_dataset_builder.py
     test_dataset_id.py
+    test_metadata.py
+    test_models.py
+    test_ohlcv_bar_model.py
+    test_ohlcv_validation.py
+    test_sample_dataset.py
+    test_status.py
     test_storage.py
-    test_validation.py
-    test_engine.py
-
-  fixtures/
-    data_engine/
-      polygon_forex_eurusd_1d_sample/
-        raw/
-          response.json
-        normalized/
-          candles.csv
-        metadata.json
-        validation_report.json
+    test_validation_report.py
+    test_validation_report_model.py
 ```
+
+Obecne testy używają przede wszystkim:
+
+* małych danych tworzonych bezpośrednio w testach,
+* katalogów tymczasowych pytest, na przykład `tmp_path`,
+* lokalnych tymczasowych plików CSV,
+* przykładowego datasetu generowanego przez kod projektu.
+
+Na obecnym etapie nie istnieje katalog:
+
+```text
+tests/fixtures/data_engine/
+```
+
+Na obecnym etapie nie istnieją też pliki:
+
+```text
+tests/data_engine/test_engine.py
+tests/data_engine/test_validation.py
+```
+
+Brak tych plików nie jest błędem. Obecna implementacja ma rozdzielone testy zgodnie z faktycznymi modułami kodu, między innymi `dataset_builder.py`, `ohlcv_validation.py`, `metadata.py`, `validation_report.py`, `storage.py`, `sample_dataset.py` i `status.py`.
+
+Możliwy kierunek dalszego rozwoju testów:
+
+```text
+tests/
+  data_engine/
+    test_engine.py
+    test_public_api.py
+    test_connectors_base.py
+    test_polygon_forex_connector.py
+    fixtures/
+      data_engine/
+        polygon_forex_eurusd_1d_sample/
+          raw/
+            response.json
+          normalized/
+            candles.csv
+          metadata.json
+          validation_report.json
+```
+
+Ten kierunek należy traktować jako plan na przyszłość, a nie jako opis aktualnego repozytorium.
+
+Nowe fixtures, testy publicznego API, testy konektorów i testy providera powinny być dodawane dopiero wtedy, gdy powstanie odpowiadająca im funkcjonalność w kodzie.
+
+Testy automatyczne Data Engine nadal nie powinny wymagać:
+
+* prawdziwego API key,
+* internetu,
+* dostępności zewnętrznego providera,
+* limitów API,
+* ręcznie przygotowanego lokalnego katalogu `data/datasets/`.
 
 ## 27. Przykładowe testy v0.2.0
 
