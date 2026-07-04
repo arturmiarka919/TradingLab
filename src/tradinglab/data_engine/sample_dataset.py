@@ -18,7 +18,7 @@ from tradinglab.data_engine.models import (
     OhlcvBar,
 )
 from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
-from tradinglab.data_engine.status import DATASET_STATUS_VALIDATED
+from tradinglab.data_engine.status import DATASET_LIFECYCLE_STATUS_VALIDATED
 from tradinglab.data_engine.storage import (
     build_dataset_version_path,
     build_normalized_candles_path,
@@ -129,7 +129,6 @@ def create_sample_ohlcv_dataset(
         dataset_id=result.dataset_id,
         version=result.version,
     )
-
     write_validation_report(result.validation_report_path, validation_report)
 
     write_metadata(
@@ -145,12 +144,12 @@ def create_sample_ohlcv_dataset(
             interval=request.interval,
             requested_start=request.requested_start,
             requested_end=request.requested_end,
-            status=DATASET_STATUS_VALIDATED,
+            status=DATASET_LIFECYCLE_STATUS_VALIDATED,
         ),
     )
 
     return replace(
         result,
         data_path=normalized_candles_path,
-        status=DATASET_STATUS_VALIDATED,
+        status=DATASET_LIFECYCLE_STATUS_VALIDATED,
     )

@@ -17,11 +17,10 @@ from tradinglab.data_engine.sample_dataset import (
     create_sample_ohlcv_dataset,
 )
 from tradinglab.data_engine.status import (
-    DATASET_STATUS_VALIDATED,
+    DATASET_LIFECYCLE_STATUS_VALIDATED,
     VALIDATION_STATUS_VALID,
 )
 from tradinglab.data_engine.validation_report import load_validation_report
-
 
 
 def test_create_sample_ohlcv_dataset_writes_expected_artifacts(
@@ -88,8 +87,8 @@ def test_create_sample_ohlcv_dataset_writes_validated_metadata_and_valid_report(
         result.validation_report_path.read_text(encoding="utf-8")
     )
 
-    assert result.status == DATASET_STATUS_VALIDATED
-    assert metadata["status"] == DATASET_STATUS_VALIDATED
+    assert result.status == DATASET_LIFECYCLE_STATUS_VALIDATED
+    assert metadata["status"] == DATASET_LIFECYCLE_STATUS_VALIDATED
     assert validation_report["status"] == VALIDATION_STATUS_VALID
     assert validation_report["checked_rows"] == 2
     assert validation_report["valid_rows"] == 2
@@ -210,7 +209,7 @@ def test_create_sample_ohlcv_dataset_overwrite_recreates_existing_version(
     )
     assert second_result.data_path == normalized_candles_path
     assert read_ohlcv_csv(second_result.data_path) == build_sample_ohlcv_bars()
-    assert second_result.status == DATASET_STATUS_VALIDATED
+    assert second_result.status == DATASET_LIFECYCLE_STATUS_VALIDATED
 
 
 def test_create_sample_ohlcv_dataset_keeps_metadata_fields_from_request(
@@ -232,7 +231,7 @@ def test_create_sample_ohlcv_dataset_keeps_metadata_fields_from_request(
     assert metadata.interval == request.interval
     assert metadata.requested_start == request.requested_start
     assert metadata.requested_end == request.requested_end
-    assert metadata.status == DATASET_STATUS_VALIDATED
+    assert metadata.status == DATASET_LIFECYCLE_STATUS_VALIDATED
 
 
 def test_create_sample_ohlcv_dataset_returns_consistent_result(
@@ -242,7 +241,7 @@ def test_create_sample_ohlcv_dataset_returns_consistent_result(
 
     validation_report = load_validation_report(result.validation_report_path)
 
-    assert result.status == DATASET_STATUS_VALIDATED
+    assert result.status == DATASET_LIFECYCLE_STATUS_VALIDATED
     assert validation_report.status == VALIDATION_STATUS_VALID
     assert result.data_path == result.dataset_path / "normalized" / "candles.csv"
     assert result.metadata_path == result.dataset_path / "metadata.json"
