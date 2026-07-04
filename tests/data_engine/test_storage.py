@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from tradinglab.data_engine.models import DatasetBuildResult
-from tradinglab.data_engine.status import DATASET_STATUS_CREATED
+from tradinglab.data_engine.status import DATASET_LIFECYCLE_STATUS_RAW
 from tradinglab.data_engine.storage import (
     build_dataset_version_path,
     build_metadata_path,
@@ -138,7 +138,7 @@ def test_storage_artifact_names_are_consistent_with_dataset_build_result() -> No
         data_path=build_normalized_candles_path(dataset_path),
         metadata_path=build_metadata_path(dataset_path),
         validation_report_path=build_validation_report_path(dataset_path),
-        status=DATASET_STATUS_CREATED,
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
     assert result.data_path == dataset_path / "normalized" / "candles.csv"

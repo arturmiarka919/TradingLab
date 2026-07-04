@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from tradinglab.data_engine.models import DatasetBuildResult
-from tradinglab.data_engine.status import DATASET_STATUS_CREATED
+from tradinglab.data_engine.status import DATASET_LIFECYCLE_STATUS_RAW
 
 
 def test_dataset_build_result_contains_dataset_artifact_paths() -> None:
@@ -16,7 +16,7 @@ def test_dataset_build_result_contains_dataset_artifact_paths() -> None:
         data_path=dataset_path / "normalized" / "candles.csv",
         metadata_path=dataset_path / "metadata.json",
         validation_report_path=dataset_path / "validation_report.json",
-        status=DATASET_STATUS_CREATED,
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
     assert result.dataset_id == "dataset_1"
@@ -25,4 +25,4 @@ def test_dataset_build_result_contains_dataset_artifact_paths() -> None:
     assert result.data_path == dataset_path / "normalized" / "candles.csv"
     assert result.metadata_path == dataset_path / "metadata.json"
     assert result.validation_report_path == dataset_path / "validation_report.json"
-    assert result.status == DATASET_STATUS_CREATED
+    assert result.status == DATASET_LIFECYCLE_STATUS_RAW
