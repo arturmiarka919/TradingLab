@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import tradinglab.data_engine.engine as engine_module
 from tradinglab.data_engine import (
     DatasetMetadata,
     OhlcvBar,
@@ -18,10 +19,12 @@ from tradinglab.data_engine import (
 from tradinglab.data_engine.data_file import write_ohlcv_csv
 from tradinglab.data_engine.metadata import write_metadata
 from tradinglab.data_engine.status import (
+    DATASET_LIFECYCLE_STATUS_QUARANTINED,
     DATASET_LIFECYCLE_STATUS_RAW,
     DATASET_LIFECYCLE_STATUS_VALIDATED,
     VALIDATION_STATUS_INVALID,
     VALIDATION_STATUS_VALID,
+    VALIDATION_STATUS_VALID_WITH_WARNINGS,
 )
 from tradinglab.data_engine.storage import (
     build_dataset_version_path,
@@ -134,15 +137,22 @@ def test_public_load_normalized_candles_raises_for_missing_dataset_version(
         )
 
 
-def test_public_validate_dataset_writes_valid_validation_report(
+def test_public_validate_dataset_writes_valid_validation_report_and_updates_metadata(
     tmp_path: Path,
 ) -> None:
     _write_dataset_artifacts(
         base_data_dir=tmp_path,
+        metadata_status=DATASET_LIFECYCLE_STATUS_RAW,
         validation_report=_build_invalid_validation_report(),
     )
 
     validation_report = validate_dataset(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    metadata = load_metadata(
         base_data_dir=tmp_path,
         dataset_id=DATASET_ID,
         version="v001",
@@ -157,17 +167,25 @@ def test_public_validate_dataset_writes_valid_validation_report(
         )
         == validation_report
     )
+    assert metadata.status == DATASET_LIFECYCLE_STATUS_VALIDATED
 
 
-def test_public_validate_dataset_writes_invalid_validation_report(
+def test_public_validate_dataset_writes_invalid_validation_report_and_quarantines_metadata(
     tmp_path: Path,
 ) -> None:
     _write_dataset_artifacts(
         base_data_dir=tmp_path,
+        metadata_status=DATASET_LIFECYCLE_STATUS_RAW,
         bars=_build_invalid_bars(),
     )
 
     validation_report = validate_dataset(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    metadata = load_metadata(
         base_data_dir=tmp_path,
         dataset_id=DATASET_ID,
         version="v001",
@@ -182,17 +200,41 @@ def test_public_validate_dataset_writes_invalid_validation_report(
         )
         == validation_report
     )
+    assert metadata.status == DATASET_LIFECYCLE_STATUS_QUARANTINED
 
 
-def test_public_validate_dataset_does_not_update_lifecycle_status_metadata(
+def test_public_validate_dataset_marks_warning_report_as_validated(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _write_dataset_artifacts(
         base_data_dir=tmp_path,
         metadata_status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
-    validate_dataset(
+    def fake_validate_ohlcv_csv(
+        data_path: Path,
+        dataset_id: str,
+        version: str,
+    ) -> ValidationReport:
+        return ValidationReport(
+            dataset_id=dataset_id,
+            version=version,
+            status=VALIDATION_STATUS_VALID_WITH_WARNINGS,
+            errors=(),
+            warnings=("volume is provider-specific",),
+            checked_rows=2,
+            valid_rows=2,
+            invalid_rows=0,
+        )
+
+    monkeypatch.setattr(
+        engine_module,
+        "validate_ohlcv_csv",
+        fake_validate_ohlcv_csv,
+    )
+
+    validation_report = validate_dataset(
         base_data_dir=tmp_path,
         dataset_id=DATASET_ID,
         version="v001",
@@ -204,7 +246,17 @@ def test_public_validate_dataset_does_not_update_lifecycle_status_metadata(
         version="v001",
     )
 
-    assert metadata.status == DATASET_LIFECYCLE_STATUS_RAW
+    assert validation_report.status == VALIDATION_STATUS_VALID_WITH_WARNINGS
+    assert validation_report.warnings == ("volume is provider-specific",)
+    assert (
+        load_validation_report(
+            base_data_dir=tmp_path,
+            dataset_id=DATASET_ID,
+            version="v001",
+        )
+        == validation_report
+    )
+    assert metadata.status == DATASET_LIFECYCLE_STATUS_VALIDATED
 
 
 def _write_dataset_artifacts(
