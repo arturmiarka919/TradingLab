@@ -106,13 +106,16 @@ Aktualny stan implementacji v0.2.0 jest mniejszy niż pełna wizja architektonic
 * sample dataset,
 * podstawowe statusy życia datasetu,
 * podstawowe statusy walidacji,
+* publiczny odczyt metadanych przez `load_metadata`,
+* publiczny odczyt raportu walidacji przez `load_validation_report`,
+* publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
 * testy jednostkowe dla obecnego zakresu.
 
 Na obecnym etapie nie są jeszcze zaimplementowane:
 
 * prawdziwy konektor do zewnętrznego providera,
 * pobieranie danych z API providera,
-* publiczne funkcje `validate_dataset`, `load_metadata`, `load_validation_report` i `load_normalized_candles` jako docelowy interfejs Data Engine,
+* publiczna funkcja `validate_dataset`,
 * pełny docelowy schemat metadanych,
 * pełny docelowy schemat raportu walidacji,
 * automatyczne dopuszczanie datasetu do użycia w badaniach.
@@ -912,7 +915,10 @@ Część decyzji została już doprecyzowana w dokumencie implementacyjnym v0.2.
 * rozdzielenie statusów życia datasetu i statusów walidacji,
 * ścieżka do `raw/response.json`,
 * ścieżka do `normalized/candles.csv`,
-* obecny zakres sample datasetu.
+* obecny zakres sample datasetu,
+* publiczny odczyt metadanych przez `load_metadata`,
+* publiczny odczyt raportu walidacji przez `load_validation_report`,
+* publiczny odczyt znormalizowanych świec przez `load_normalized_candles`.
 
 Nadal otwarte albo odłożone na dalsze mikro-kroki pozostają między innymi:
 
@@ -920,7 +926,6 @@ Nadal otwarte albo odłożone na dalsze mikro-kroki pozostają między innymi:
 * pierwszy konektor providera,
 * sposób przechowywania sekretów i kluczy API,
 * publiczna funkcja `validate_dataset`,
-* publiczne funkcje odczytu metadanych, raportu walidacji i danych znormalizowanych,
 * pełniejszy schemat metadanych,
 * pełniejszy schemat raportu walidacji,
 * obsługa nieudanej walidacji na poziomie statusu życia datasetu,

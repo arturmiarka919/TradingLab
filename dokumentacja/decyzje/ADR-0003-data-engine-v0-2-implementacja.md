@@ -336,24 +336,44 @@ load_normalized_candles
 
 Stan implementacji:
 
-Obecny eksportowany interfejs jest mniejszy i obejmuje przede wszystkim:
+Obecny eksportowany interfejs obejmuje przede wszystkim:
 
 ```text
 create_dataset
 generate_dataset_id
+load_metadata
+load_validation_report
+load_normalized_candles
 modele danych Data Engine
 ```
 
-Funkcje:
+Funkcje publicznego odczytu:
 
 ```text
-validate_dataset
 load_metadata
 load_validation_report
 load_normalized_candles
 ```
 
-nie są jeszcze gotowym publicznym interfejsem Data Engine. Powinny zostać wdrożone albo świadomie oznaczone jako odłożone w kolejnych mikro-krokach.
+są zaimplementowane od mikro-kroku 73A.1 jako publiczny, domenowy interfejs odczytu Data Engine.
+
+Publiczny odczyt działa przez:
+
+```text
+base_data_dir
+dataset_id
+version
+```
+
+a nie przez ręczne podawanie ścieżek do wewnętrznych plików datasetu.
+
+Funkcja:
+
+```text
+validate_dataset
+```
+
+nie jest jeszcze gotowym publicznym interfejsem Data Engine. Powinna zostać wdrożona albo świadomie oznaczona jako odłożona w kolejnym mikro-kroku.
 
 Data Engine v0.2.0 nie posiada jeszcze funkcji:
 
