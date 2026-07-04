@@ -20,9 +20,15 @@ Najważniejsze dokumenty projektu:
 * [Architektura systemu](dokumentacja/architektura/ARCHITEKTURA.md)
 * [Proces badawczy](dokumentacja/badania/PROCES_BADAWCZY.md)
 * [Data Engine](dokumentacja/architektura/DATA_ENGINE.md)
+* [Implementacja Data Engine v0.2.0](dokumentacja/architektura/DATA_ENGINE_IMPLEMENTACJA_V0_2.md)
 * [Praca z asystentem](dokumentacja/procesy/PRACA_Z_ASYSTENTEM.md)
 * [Mapa drogowa](dokumentacja/mapa_drogowa/ROADMAP.md)
+
+## Decyzje architektoniczne
+
 * [ADR-0001 — Fundamenty projektu](dokumentacja/decyzje/ADR-0001-fundamenty-projektu.md)
+* [ADR-0002 — Narzędzia testów i jakości kodu](dokumentacja/decyzje/ADR-0002-narzedzia-testow-i-jakosci-kodu.md)
+* [ADR-0003 — Data Engine v0.2.0 — implementacja](dokumentacja/decyzje/ADR-0003-data-engine-v0-2-implementacja.md)
 
 ## Standard projektu
 
@@ -34,11 +40,11 @@ Najważniejsze dokumenty projektu:
 
 ## Status
 
-Aktualny etap projektu: **v0.2.0 – Data Engine**
+Aktualny etap projektu: **v0.2.0 — Data Engine**
 
 Status etapu: **w trakcie implementacji**
 
-Poprzedni etap: **v0.1.0 – Fundamenty projektu — zakończony**
+Poprzedni etap: **v0.1.0 — Fundamenty projektu — zakończony**
 
 W ramach wersji v0.1.0 przygotowano:
 
@@ -51,3 +57,5 @@ W ramach wersji v0.1.0 przygotowano:
 * mapę drogową projektu,
 * narzędzia testów i jakości kodu,
 * pierwszy test techniczny.
+
+W ramach wersji v0.2.0 rozwijany jest moduł Data Engine, odpowiedzialny za tworzenie, zapisywanie, walidację i odczyt datasetów używanych w dalszych etapach projektu.

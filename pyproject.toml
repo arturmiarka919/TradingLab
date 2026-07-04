@@ -1,7 +1,7 @@
 [project]
 name = "tradinglab"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "Research and engineering platform for developing, validating, and eventually executing trading strategies."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
