@@ -341,23 +341,25 @@ Obecny eksportowany interfejs obejmuje przede wszystkim:
 ```text
 create_dataset
 generate_dataset_id
+validate_dataset
 load_metadata
 load_validation_report
 load_normalized_candles
 modele danych Data Engine
 ```
 
-Funkcje publicznego odczytu:
+Funkcje publicznego interfejsu:
 
 ```text
+validate_dataset
 load_metadata
 load_validation_report
 load_normalized_candles
 ```
 
-są zaimplementowane od mikro-kroku 73A.1 jako publiczny, domenowy interfejs odczytu Data Engine.
+są zaimplementowane jako publiczny, domenowy interfejs Data Engine.
 
-Publiczny odczyt działa przez:
+Publiczny interfejs działa przez:
 
 ```text
 base_data_dir
@@ -367,13 +369,14 @@ version
 
 a nie przez ręczne podawanie ścieżek do wewnętrznych plików datasetu.
 
-Funkcja:
+Obecne `validate_dataset`:
 
-```text
-validate_dataset
-```
+* waliduje `normalized/candles.csv`,
+* zapisuje wynik do `validation_report.json`,
+* zwraca `ValidationReport`,
+* nie zmienia jeszcze statusu życia datasetu w `metadata.json`.
 
-nie jest jeszcze gotowym publicznym interfejsem Data Engine. Powinna zostać wdrożona albo świadomie oznaczona jako odłożona w kolejnym mikro-kroku.
+Decyzja o tym, czy i kiedy publiczne `validate_dataset` ma zmieniać `metadata.status`, pozostaje osobnym zagadnieniem projektowym.
 
 Data Engine v0.2.0 nie posiada jeszcze funkcji:
 

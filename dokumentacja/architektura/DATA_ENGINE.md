@@ -109,13 +109,13 @@ Aktualny stan implementacji v0.2.0 jest mniejszy niż pełna wizja architektonic
 * publiczny odczyt metadanych przez `load_metadata`,
 * publiczny odczyt raportu walidacji przez `load_validation_report`,
 * publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
+* publiczna walidacja datasetu przez `validate_dataset`,
 * testy jednostkowe dla obecnego zakresu.
 
 Na obecnym etapie nie są jeszcze zaimplementowane:
 
 * prawdziwy konektor do zewnętrznego providera,
 * pobieranie danych z API providera,
-* publiczna funkcja `validate_dataset`,
 * pełny docelowy schemat metadanych,
 * pełny docelowy schemat raportu walidacji,
 * automatyczne dopuszczanie datasetu do użycia w badaniach.
@@ -918,14 +918,14 @@ Część decyzji została już doprecyzowana w dokumencie implementacyjnym v0.2.
 * obecny zakres sample datasetu,
 * publiczny odczyt metadanych przez `load_metadata`,
 * publiczny odczyt raportu walidacji przez `load_validation_report`,
-* publiczny odczyt znormalizowanych świec przez `load_normalized_candles`.
+* publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
+* publiczna walidacja datasetu przez `validate_dataset`.
 
 Nadal otwarte albo odłożone na dalsze mikro-kroki pozostają między innymi:
 
 * pierwsze prawdziwe źródło danych,
 * pierwszy konektor providera,
 * sposób przechowywania sekretów i kluczy API,
-* publiczna funkcja `validate_dataset`,
 * pełniejszy schemat metadanych,
 * pełniejszy schemat raportu walidacji,
 * obsługa nieudanej walidacji na poziomie statusu życia datasetu,

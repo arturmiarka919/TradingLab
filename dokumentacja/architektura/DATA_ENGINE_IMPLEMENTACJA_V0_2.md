@@ -837,6 +837,7 @@ Obecny publiczny eksport z `tradinglab.data_engine` obejmuje:
 ```text
 create_dataset
 generate_dataset_id
+validate_dataset
 load_metadata
 load_validation_report
 load_normalized_candles
@@ -847,7 +848,7 @@ OhlcvBar
 ValidationReport
 ```
 
-Docelowy minimalny publiczny interfejs Data Engine dla pełniejszego zakresu v0.2.0 nadal obejmuje:
+Docelowy minimalny publiczny interfejs Data Engine dla pełniejszego zakresu v0.2.0 obejmuje:
 
 ```text
 create_dataset
@@ -857,9 +858,11 @@ load_validation_report
 load_normalized_candles
 ```
 
-Po mikro-kroku 73A.1 publiczny odczyt metadanych, raportu walidacji i znormalizowanych świec jest już zaimplementowany.
+Po mikro-kroku 73A.1 publiczny odczyt metadanych, raportu walidacji i znormalizowanych świec został zaimplementowany.
 
-Publiczna funkcja `validate_dataset` nie jest jeszcze zaimplementowana.
+Po mikro-kroku 73B.1 publiczna funkcja `validate_dataset` została zaimplementowana.
+
+Obecne `validate_dataset` wykonuje techniczną walidację znormalizowanego pliku OHLCV i zapisuje `validation_report.json`, ale nie zmienia jeszcze statusu życia datasetu w `metadata.json`.
 
 ### 19.1. create_dataset
 
@@ -879,11 +882,39 @@ Obecny zakres:
 
 ### 19.2. validate_dataset
 
-`validate_dataset` jest docelową funkcją publicznego interfejsu, która powinna wykonać walidację istniejącej wersji datasetu i zapisać `validation_report.json`.
+`validate_dataset` jest publiczną funkcją walidacji istniejącej wersji datasetu.
 
-Na obecnym etapie istnieje już wewnętrzna logika walidacji OHLCV, ale decyzja o publicznym kształcie `validate_dataset` wymaga osobnego mikro-kroku.
+Obecny podpis funkcji:
 
-`validate_dataset` pozostaje do zaprojektowania i implementacji.
+```text
+validate_dataset(*, base_data_dir, dataset_id, version)
+```
+
+Funkcja:
+
+* przyjmuje katalog bazowy danych,
+* przyjmuje `dataset_id`,
+* przyjmuje `version`,
+* buduje ścieżkę do wersji datasetu,
+* waliduje plik `normalized/candles.csv`,
+* zapisuje wynik walidacji do `validation_report.json`,
+* zwraca `ValidationReport`.
+
+Funkcja jest zaimplementowana w:
+
+```text
+src/tradinglab/data_engine/engine.py
+```
+
+i eksportowana z:
+
+```text
+tradinglab.data_engine
+```
+
+Obecne `validate_dataset` nie zmienia `metadata.status`.
+
+Status życia datasetu po walidacji, na przykład przejście z `RAW` do `VALIDATED`, `QUARANTINED` albo `REJECTED`, pozostaje osobną decyzją projektową i powinien zostać domknięty w późniejszym mikro-kroku.
 
 ### 19.3. load_metadata
 
@@ -982,7 +1013,7 @@ i eksportowana z:
 tradinglab.data_engine
 ```
 
-Publiczny odczyt jest pokryty testami w:
+Publiczny interfejs Data Engine jest pokryty testami w:
 
 ```text
 tests/data_engine/test_engine.py
@@ -1013,7 +1044,7 @@ OhlcvBar
 
 a nie na przypadkowych ścieżkach do plików wewnętrznych.
 
-Moduły techniczne, takie jak `metadata.py`, `validation_report.py`, `data_file.py` i `storage.py`, mogą nadal istnieć jako warstwa niższego poziomu. Ich funkcje nie muszą być automatycznie eksportowane jako publiczne API pakietu.
+Moduły techniczne, takie jak `metadata.py`, `validation_report.py`, `data_file.py`, `ohlcv_validation.py` i `storage.py`, mogą nadal istnieć jako warstwa niższego poziomu. Ich funkcje nie muszą być automatycznie eksportowane jako publiczne API pakietu.
 
 Dalsze rozszerzenia publicznego interfejsu powinny być prowadzone mikro-krokami, bez mieszania ich ze zmianami statusów, zmianami formatu metadanych, zmianami walidatora albo implementacją konektorów providera.
 
@@ -1135,7 +1166,7 @@ Obecne odpowiedzialności:
 | `dataset_builder.py` | tworzenie katalogu wersji datasetu i początkowych artefaktów |
 | `dataset_id.py` | generowanie deterministycznego `dataset_id` |
 | `data_file.py` | zapis i odczyt plików OHLCV CSV |
-| `engine.py` | publiczny domenowy interfejs odczytu Data Engine |
+| `engine.py` | publiczny domenowy interfejs Data Engine, w tym publiczny odczyt i `validate_dataset` |
 | `metadata.py` | serializacja, zapis i techniczny odczyt `metadata.json` |
 | `models.py` | modele danych Data Engine |
 | `ohlcv_validation.py` | walidacja lokalnych danych OHLCV CSV |
@@ -1167,7 +1198,7 @@ src/
 
 Ten szkic należy traktować jako kierunek architektoniczny, a nie jako opis aktualnego kodu.
 
-Po mikro-kroku 73A.1 plik `engine.py` już istnieje i zawiera publiczny interfejs odczytu.
+Po mikro-kroku 73A.1 plik `engine.py` zawierał publiczny interfejs odczytu. Po mikro-kroku 73B.1 zawiera również publiczną funkcję `validate_dataset`.
 
 Na obecnym etapie nie istnieją jeszcze:
 
@@ -1747,7 +1778,7 @@ tests/data_engine/test_validation.py
 
 Brak tego pliku nie jest błędem. Obecna implementacja ma rozdzielone testy zgodnie z faktycznymi modułami kodu, między innymi `dataset_builder.py`, `engine.py`, `ohlcv_validation.py`, `metadata.py`, `validation_report.py`, `storage.py`, `sample_dataset.py` i `status.py`.
 
-Plik `tests/data_engine/test_engine.py` istnieje od mikro-kroku 73A.1 i pokrywa publiczny interfejs odczytu Data Engine.
+Plik `tests/data_engine/test_engine.py` istnieje od mikro-kroku 73A.1. Po mikro-kroku 73B.1 pokrywa publiczny interfejs odczytu Data Engine oraz publiczną funkcję `validate_dataset`.
 
 Możliwy kierunek dalszego rozwoju testów:
 
