@@ -18,13 +18,17 @@ Dokument ten opisuje szczegółowy projekt implementacji pierwszej wersji Data E
 
 Ponieważ decyzje dotyczące źródła danych, formatów zapisu, struktury datasetów, wersjonowania, identyfikatorów, walidacji i testów mają znaczenie architektoniczne, powinny zostać zapisane jako ADR.
 
+Ten ADR opisuje decyzje architektoniczne przyjęte dla Data Engine v0.2.0. Nie oznacza to, że wszystkie opisane elementy są już zaimplementowane w kodzie. Część decyzji jest wdrażana stopniowo mikro-krokami.
+
+Aktualny stan implementacji należy weryfikować z dokumentem implementacyjnym, testami i kodem.
+
 ## Decyzja
 
 Dla Data Engine v0.2.0 przyjmujemy następujące decyzje.
 
 ### 1. Pierwsze źródło danych
 
-Pierwszym źródłem danych będzie:
+Pierwszym docelowym źródłem danych będzie:
 
 > Polygon/Massive Forex API w planie darmowym.
 
@@ -36,9 +40,15 @@ Pierwszym typem danych będą:
 
 > historyczne świece OHLCV.
 
-Pierwszym konektorem referencyjnym będzie:
+Pierwszym docelowym konektorem referencyjnym będzie:
 
 > `PolygonForexConnector`.
+
+Stan implementacji:
+
+* konektor `PolygonForexConnector` nie jest jeszcze zaimplementowany,
+* pobieranie danych z API providera nie jest jeszcze zaimplementowane,
+* obecny kod posiada fundament lokalnego Data Engine, sample dataset oraz walidację lokalnych danych OHLCV.
 
 Uzasadnienie:
 
@@ -47,9 +57,7 @@ Uzasadnienie:
 * pozwala skupić się na cyklu życia datasetu zamiast na złożonym pobieraniu danych,
 * plan darmowy wystarcza do pierwszego etapu prac.
 
-Architektura Data Engine nie może jednak zakładać, że Polygon/Massive jest jedynym źródłem prawdy.
-
-W przyszłości możliwe będzie dodanie kolejnych źródeł danych, w szczególności Dukascopy jako darmowego źródła badawczego dla dłuższej historii Forex.
+Architektura Data Engine nie może jednak zakładać, że Polygon/Massive jest jedynym źródłem prawdy. W przyszłości możliwe będzie dodanie kolejnych źródeł danych, w szczególności Dukascopy jako darmowego źródła badawczego dla dłuższej historii Forex.
 
 ### 2. Format zapisu danych
 
@@ -62,13 +70,19 @@ metadata.json
 validation_report.json
 ```
 
-Raw data są zapisywane jako JSON, ponieważ pierwsze źródło danych zwraca odpowiedź API w formacie możliwym do zapisania jako JSON.
+Raw data są zapisywane jako JSON, ponieważ pierwsze źródło danych ma zwracać odpowiedź API w formacie możliwym do zapisania jako JSON.
 
 Znormalizowane dane OHLCV są zapisywane jako CSV, ponieważ CSV jest prosty, czytelny, łatwy do testowania i nie wymaga dodatkowych zależności.
 
-CSV jest formatem startowym, a nie docelowym ograniczeniem architektury.
+Stan implementacji:
 
-W przyszłości możliwe jest dodanie innych formatów, na przykład Parquet, bez unieważniania datasetów zapisanych wcześniej jako CSV.
+* `metadata.json` jest zaimplementowany,
+* `validation_report.json` jest zaimplementowany,
+* `normalized/candles.csv` jest zaimplementowany,
+* `raw/response.json` jest obecnie używany w sample dataset jako przykładowy artefakt surowej odpowiedzi,
+* prawdziwa odpowiedź API providera nie jest jeszcze pobierana.
+
+CSV jest formatem startowym, a nie docelowym ograniczeniem architektury. W przyszłości możliwe jest dodanie innych formatów, na przykład Parquet, bez unieważniania datasetów zapisanych wcześniej jako CSV.
 
 ### 3. Struktura katalogów datasetów
 
@@ -95,11 +109,7 @@ validation_report.json
 
 Prawdziwe dane robocze nie powinny być commitowane do repozytorium.
 
-Do testów automatycznych używane są małe przykładowe dane w katalogu:
-
-```text
-tests/fixtures/data_engine/
-```
+Do testów automatycznych używane są małe przykładowe dane, fixtures albo katalogi tymczasowe tworzone przez pytest.
 
 ### 4. Identyfikator datasetu
 
@@ -120,8 +130,6 @@ polygon_massive_forex_eurusd_ohlcv_provider_1d_2024-01-01_2024-12-31
 `dataset_id` nie zawiera numeru wersji.
 
 Daty w `dataset_id` oznaczają zakres żądany od źródła danych, a nie faktyczny zakres zwróconych danych.
-
-Faktyczny zakres danych jest zapisywany w `validation_report.json`.
 
 W przyszłości mechanizm `dataset_id` może zostać rozszerzony o fingerprint albo hash parametrów pobrania, jeśli pojawi się potrzeba rozróżniania datasetów o podobnym opisie, ale różnej konfiguracji źródłowej.
 
@@ -159,10 +167,12 @@ dataset_id + version
 
 Rozróżniamy:
 
-1. status datasetu,
-2. status walidacji.
+1. status życia datasetu,
+2. status wyniku walidacji.
 
-Status datasetu znajduje się w `metadata.json` i korzysta ze statusów opisanych w dokumentacji Data Engine:
+Status życia datasetu znajduje się w `metadata.json`.
+
+Docelowe statusy życia datasetu:
 
 ```text
 RAW
@@ -173,15 +183,26 @@ REJECTED
 DEPRECATED
 ```
 
-Status walidacji znajduje się w `validation_report.json` i może przyjmować wartości:
+Status wyniku walidacji znajduje się w `validation_report.json`.
+
+Statusy wyniku walidacji:
 
 ```text
+not_validated
 valid
 valid_with_warnings
 invalid
 ```
 
 Status datasetu nie zastępuje raportu walidacji.
+
+Stan implementacji:
+
+* `create_dataset` nadaje datasetowi status życia `RAW`,
+* sample dataset po udanej walidacji otrzymuje status życia `VALIDATED`,
+* początkowy raport walidacji używa statusu `not_validated`,
+* walidator OHLCV używa statusów walidacji, między innymi `valid` i `invalid`,
+* legacy statusy `created`, `validated` i `invalid` nie są już statusami życia datasetu.
 
 ### 7. Metadane datasetu
 
@@ -193,12 +214,12 @@ metadata.json
 
 Metadane mają umożliwiać identyfikację i odtworzenie datasetu.
 
-Minimalnie zawierają:
+Docelowo metadane mogą zawierać między innymi:
 
 * wersję schematu metadanych,
 * `dataset_id`,
 * wersję datasetu,
-* status datasetu,
+* status życia datasetu,
 * typ danych,
 * źródło danych,
 * konektor,
@@ -213,6 +234,26 @@ Minimalnie zawierają:
 
 API key, tokeny i inne sekrety nie mogą być zapisywane w metadanych.
 
+Stan implementacji:
+
+Obecny model `DatasetMetadata` jest prostszy i zawiera:
+
+```text
+dataset_id
+version
+provider
+asset_class
+symbol
+data_type
+price_type
+interval
+requested_start
+requested_end
+status
+```
+
+Pełniejszy schemat metadanych jest decyzją docelową, ale nie jest jeszcze w całości zaimplementowany.
+
 ### 8. Raport walidacji
 
 Raport walidacji jest zapisywany w pliku:
@@ -221,7 +262,7 @@ Raport walidacji jest zapisywany w pliku:
 validation_report.json
 ```
 
-Raport zawiera:
+Docelowo raport walidacji może zawierać:
 
 * wersję schematu raportu,
 * `dataset_id`,
@@ -233,7 +274,22 @@ Raport zawiera:
 * błędy,
 * ostrzeżenia.
 
-W v0.2.0 walidacja obejmuje podstawową poprawność techniczną danych OHLCV, między innymi:
+Stan implementacji:
+
+Obecny model `ValidationReport` jest prostszy i zawiera:
+
+```text
+dataset_id
+version
+status
+errors
+warnings
+checked_rows
+valid_rows
+invalid_rows
+```
+
+W v0.2.0 obecna walidacja obejmuje podstawową poprawność techniczną danych OHLCV, między innymi:
 
 * istnienie pliku znormalizowanego,
 * wymagane kolumny,
@@ -245,10 +301,7 @@ W v0.2.0 walidacja obejmuje podstawową poprawność techniczną danych OHLCV, m
 * brak pustych wartości OHLC,
 * brak ujemnych cen,
 * logiczną poprawność OHLC,
-* numeryczność i nieujemność `volume`,
-* ustalenie faktycznego zakresu danych,
-* podstawową zgodność zakresu i interwału,
-* podstawowe wykrywanie brakujących świec.
+* numeryczność i nieujemność `volume`.
 
 Pełny kalendarz rynku Forex, święta, DST i szczegółowe godziny handlu nie są wymagane w v0.2.0.
 
@@ -263,11 +316,15 @@ API key, tokeny i inne sekrety nie mogą być zapisane:
 
 W v0.2.0 klucz Polygon/Massive powinien być przekazywany przez konfigurację lokalną albo zmienną środowiskową.
 
-Testy automatyczne nie mogą wymagać prawdziwego API key.
+Stan implementacji:
+
+* projekt nie posiada jeszcze prawdziwego konektora providera,
+* testy automatyczne nie wymagają prawdziwego API key,
+* sposób konfiguracji sekretów zostanie doprecyzowany przy implementacji pierwszego konektora providera.
 
 ### 10. Minimalny interfejs Data Engine
 
-Minimalny publiczny interfejs Data Engine v0.2.0 obejmuje:
+Docelowy minimalny publiczny interfejs Data Engine v0.2.0 obejmuje:
 
 ```text
 create_dataset
@@ -276,6 +333,27 @@ load_metadata
 load_validation_report
 load_normalized_candles
 ```
+
+Stan implementacji:
+
+Obecny eksportowany interfejs jest mniejszy i obejmuje przede wszystkim:
+
+```text
+create_dataset
+generate_dataset_id
+modele danych Data Engine
+```
+
+Funkcje:
+
+```text
+validate_dataset
+load_metadata
+load_validation_report
+load_normalized_candles
+```
+
+nie są jeszcze gotowym publicznym interfejsem Data Engine. Powinny zostać wdrożone albo świadomie oznaczone jako odłożone w kolejnych mikro-krokach.
 
 Data Engine v0.2.0 nie posiada jeszcze funkcji:
 
@@ -296,7 +374,7 @@ Szczegóły providera powinny być ukryte w konektorach.
 
 ### 11. Minimalna struktura modułów
 
-Minimalna struktura kodu Data Engine:
+Docelowa minimalna struktura kodu Data Engine może obejmować:
 
 ```text
 src/tradinglab/data_engine/
@@ -312,7 +390,26 @@ src/tradinglab/data_engine/
     polygon_forex.py
 ```
 
-Struktura ma być minimalna, ale rozszerzalna.
+Stan implementacji:
+
+Obecna struktura jest inna i obejmuje między innymi:
+
+```text
+src/tradinglab/data_engine/
+  __init__.py
+  dataset_builder.py
+  dataset_id.py
+  data_file.py
+  metadata.py
+  models.py
+  ohlcv_validation.py
+  sample_dataset.py
+  status.py
+  storage.py
+  validation_report.py
+```
+
+Różnica między strukturą docelową a obecną nie jest błędem. Obecny kod został rozbity na mniejsze moduły w trakcie implementacji i testowania.
 
 Nie tworzymy na zapas modułów strategii, backtestingu, agentów AI, rankingu źródeł, brokerów ani live tradingu.
 
@@ -366,13 +463,14 @@ Jeżeli w przyszłości konieczna będzie zmiana niekompatybilna wstecznie, musi
 ### Pozytywne
 
 * Data Engine v0.2.0 ma jasny, ograniczony zakres.
-* Projekt zaczyna od jednego prostego źródła danych.
+* Projekt zaczyna od jednego prostego kierunku źródła danych.
 * Dane są od początku wersjonowane.
 * Raw data są chronione przed modyfikacją.
 * Testy offline chronią projekt przed niestabilnością zewnętrznego API.
 * Architektura nie zamyka drogi do kolejnych providerów.
 * Dataset jest projektowany jako obiekt możliwy do odtworzenia i audytu.
 * Przyszły rozwój ma odbywać się bez rozwalania wcześniejszych, działających wersji.
+* ADR odróżnia decyzje docelowe od obecnego stanu implementacji.
 
 ### Negatywne
 
@@ -382,6 +480,7 @@ Jeżeli w przyszłości konieczna będzie zmiana niekompatybilna wstecznie, musi
 * v0.2.0 nie zawiera jeszcze backtestingu ani strategii.
 * CSV jest prosty, ale nie jest najlepszym formatem dla dużych datasetów.
 * Brak katalogu `latest` wymaga jawnego wskazywania wersji datasetu.
+* Część decyzji architektonicznych nadal wymaga osobnych mikro-kroków implementacyjnych.
 
 ### Ryzyka
 
@@ -389,6 +488,7 @@ Jeżeli w przyszłości konieczna będzie zmiana niekompatybilna wstecznie, musi
 * Dane Forex mogą różnić się między providerami.
 * Pole `volume` w danych Forex może mieć różne znaczenie zależnie od źródła.
 * Rozbudowa Data Engine może wymagać nowych formatów zapisu, dokładniejszej walidacji i katalogu datasetów.
+* Przedwczesne uznanie decyzji docelowych za gotowy kod może prowadzić do błędnych założeń w dalszych pracach.
 
 ## Alternatywy rozważane
 
