@@ -1520,35 +1520,50 @@ Status wyniku walidacji jest zapisywany w `validation_report.json`.
 
 Docelowe statusy życia datasetu:
 
-```text
-RAW
-VALIDATED
-ACCEPTED
-QUARANTINED
-REJECTED
-DEPRECATED
-```
+| Status | Znaczenie |
+| --- | --- |
+| `RAW` | Dataset został utworzony i zawiera artefakty startowe albo dane źródłowe. |
+| `VALIDATED` | Dataset przeszedł proces walidacji i może być dalej rozpatrywany. |
+| `ACCEPTED` | Dataset został zaakceptowany do dalszego użycia. |
+| `QUARANTINED` | Dataset wymaga uwagi, ale nie musi być od razu odrzucony. |
+| `REJECTED` | Dataset nie powinien być używany. |
+| `DEPRECATED` | Dataset został zastąpiony albo uznany za przestarzały. |
 
-Docelowe statusy walidacji:
+Docelowe statusy wyniku walidacji:
 
-```text
-not_validated
-valid
-valid_with_warnings
-invalid
-```
+| Status | Znaczenie |
+| --- | --- |
+| `not_validated` | Raport walidacji istnieje technicznie, ale właściwa walidacja nie została jeszcze wykonana. |
+| `valid` | Dane przeszły walidację bez błędów. |
+| `valid_with_warnings` | Dane są technicznie używalne, ale mają ostrzeżenia. |
+| `invalid` | Dane nie przeszły walidacji technicznej. |
 
-Tymczasowe stare statusy implementacyjne:
+Obecna implementacja posiada już rozdzielone stałe docelowe dla statusów życia datasetu i statusów walidacji, ale nadal utrzymuje tymczasowe statusy legacy:
 
-```text
-created
-validated
-invalid
-```
+| Legacy status | Obecne użycie | Docelowy kierunek migracji |
+| --- | --- | --- |
+| `created` | Początkowy status datasetu po `create_dataset` | Zastąpić przez `RAW`. |
+| `validated` | Status datasetu po udanej walidacji sample datasetu | Zastąpić przez `VALIDATED`. |
+| `invalid` | Tymczasowy legacy status datasetu | Nie traktować jako docelowego statusu życia datasetu; `invalid` ma pozostać statusem walidacji. |
 
-Stare statusy implementacyjne pozostają tylko jako `legacy`, żeby refaktor można było wykonać mikro-krokami bez jednorazowego przepinania buildera, walidatora, modeli i testów.
+Decyzja projektowa dla migracji:
 
-Nie wolno traktować ich jako docelowego modelu statusów.
+1. `metadata.status` ma używać wyłącznie statusów życia datasetu.
+2. `DatasetBuildResult.status` ma używać wyłącznie statusów życia datasetu.
+3. `validation_report.status` ma używać wyłącznie statusów walidacji.
+4. Status `invalid` nie powinien być używany jako status życia datasetu.
+5. Legacy stałe `DATASET_STATUS_CREATED`, `DATASET_STATUS_VALIDATED`, `DATASET_STATUS_INVALID` mogą zostać usunięte dopiero po przepięciu kodu i testów.
+6. Nie mieszamy migracji statusów z przebudową schematu `metadata.json`, przebudową `validation_report.json`, publicznym API ani konektorami providera.
+
+Plan migracji statusów legacy:
+
+| Mikro-krok | Zakres | Cel |
+| --- | --- | --- |
+| 71M | Dokumentacja | Zaprojektować mapowanie legacy statusów na docelowe statusy życia datasetu. |
+| 71N | Kod i testy buildera | Przepiąć `create_dataset` z `created` na `RAW`. |
+| 71O | Kod i testy sample datasetu | Przepiąć status datasetu po udanej walidacji z `validated` na `VALIDATED`. |
+| 71P | Kod i testy statusów | Usunąć albo ostatecznie wygasić legacy stałe, jeśli nie są już używane. |
+| 71Q | Dokumentacja końcowa | Oznaczyć obszar statusów jako domknięty dla zakresu v0.2.0, jeśli testy to potwierdzą. |
 
 Macierz scenariuszy dla statusów Data Engine:
 
@@ -1559,22 +1574,26 @@ Macierz scenariuszy dla statusów Data Engine:
 | STATUS-003 | Statusy życia datasetu są unikalne | Lista `DATASET_LIFECYCLE_STATUSES` nie zawiera duplikatów | pokryte testem |
 | STATUS-004 | Statusy walidacji są unikalne | Lista `VALIDATION_STATUSES` nie zawiera duplikatów | pokryte testem |
 | STATUS-005 | Statusy życia datasetu i statusy walidacji nie mieszają się | Zbiory `DATASET_LIFECYCLE_STATUSES` i `VALIDATION_STATUSES` są rozłączne | pokryte testem |
-| STATUS-006 | Stare statusy implementacyjne pozostają tymczasowo dostępne | `created`, `validated`, `invalid` są dostępne jako legacy | pokryte testem |
+| STATUS-006 | Stare statusy implementacyjne pozostają tymczasowo dostępne | `created`, `validated`, `invalid` są dostępne jako legacy do czasu migracji | pokryte testem |
 | STATUS-007 | `metadata.status` używa statusu życia datasetu | `metadata.json` korzysta z `RAW`, `VALIDATED`, `ACCEPTED`, `QUARANTINED`, `REJECTED` albo `DEPRECATED` | do przepięcia |
 | STATUS-008 | `validation_report.status` używa statusu walidacji | `validation_report.json` korzysta z `not_validated`, `valid`, `valid_with_warnings` albo `invalid` | pokryte testem |
-| STATUS-009 | `DatasetBuildResult.status` oznacza status życia datasetu | Wynik budowania datasetu nie używa statusu walidacji jako statusu datasetu | pokryte testem |
+| STATUS-009 | `DatasetBuildResult.status` oznacza status życia datasetu | Wynik budowania datasetu nie używa statusu walidacji jako statusu datasetu | do doprecyzowania testami po migracji |
 | STATUS-010 | Legacy statusy zostają usunięte albo jawnie utrzymane czasowo | Po przepięciu modeli, walidatora i buildera stare stałe nie są używane jako model docelowy | do domknięcia |
+| STATUS-011 | Początkowy dataset po `create_dataset` otrzymuje status życia `RAW` | `DatasetBuildResult.status` i `metadata.status` po utworzeniu datasetu wskazują `RAW` | planowane w 71N |
+| STATUS-012 | Dataset po udanej walidacji otrzymuje status życia `VALIDATED` | `DatasetBuildResult.status` i `metadata.status` po udanej walidacji sample datasetu wskazują `VALIDATED` | planowane w 71O |
+| STATUS-013 | Nieudana walidacja nie używa `invalid` jako statusu życia datasetu | `invalid` pozostaje statusem `validation_report.status`, a status życia datasetu jest rozstrzygany osobną decyzją | do zaprojektowania później |
 
 Po mikro-krokach 68 i 69 status raportu walidacji jest już oddzielony od statusu datasetu.
 
-Obszar statusów nie jest jeszcze domknięty, ponieważ `metadata.status` nadal korzysta z tymczasowych statusów legacy, a stare stałe nie zostały jeszcze usunięte.
-
-Za domknięty można go uznać dopiero wtedy, gdy:
+Obszar statusów nie jest jeszcze domknięty, ponieważ `metadata.status` i `DatasetBuildResult.status` nadal korzystają z tymczasowych statusów legacy w części obecnej implementacji. Za domknięty można go uznać dopiero wtedy, gdy:
 
 1. kod używa rozdzielonych statusów we właściwych miejscach,
-2. stare legacy stałe zostaną usunięte albo jawnie oznaczone jako pozostawione czasowo,
-3. testy pokrywają osobno statusy datasetu i statusy walidacji,
-4. dokumentacja opisuje finalny stan.
+2. `create_dataset` używa `RAW` jako początkowego statusu życia datasetu,
+3. sample dataset po udanej walidacji używa `VALIDATED` jako statusu życia datasetu,
+4. `validation_report.status` nadal używa wyłącznie statusów walidacji,
+5. stare legacy stałe zostaną usunięte albo jawnie oznaczone jako pozostawione czasowo,
+6. testy pokrywają osobno statusy datasetu i statusy walidacji,
+7. dokumentacja opisuje finalny stan.
 
 ## 26. Proponowana struktura testów
 
