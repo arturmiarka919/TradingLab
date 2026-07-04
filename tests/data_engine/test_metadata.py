@@ -13,7 +13,7 @@ from tradinglab.data_engine.metadata import (
     write_metadata,
 )
 from tradinglab.data_engine.models import DatasetMetadata
-
+from tradinglab.data_engine.status import DATASET_LIFECYCLE_STATUS_RAW
 
 EXPECTED_METADATA_DICT = {
     "dataset_id": (
@@ -29,9 +29,8 @@ EXPECTED_METADATA_DICT = {
     "interval": "1d",
     "requested_start": "2024-01-01",
     "requested_end": "2024-12-31",
-    "status": "created",
+    "status": DATASET_LIFECYCLE_STATUS_RAW,
 }
-
 
 EXPECTED_METADATA = DatasetMetadata(
     dataset_id=(
@@ -47,7 +46,7 @@ EXPECTED_METADATA = DatasetMetadata(
     interval="1d",
     requested_start=date(2024, 1, 1),
     requested_end=date(2024, 12, 31),
-    status="created",
+    status=DATASET_LIFECYCLE_STATUS_RAW,
 )
 
 
@@ -69,10 +68,14 @@ def test_write_metadata_writes_metadata_json(tmp_path: Path) -> None:
     write_metadata(metadata_path, EXPECTED_METADATA)
 
     assert metadata_path.exists()
-    assert json.loads(metadata_path.read_text(encoding="utf-8")) == EXPECTED_METADATA_DICT
+    assert json.loads(metadata_path.read_text(encoding="utf-8")) == (
+        EXPECTED_METADATA_DICT
+    )
 
 
-def test_write_metadata_can_be_read_back_as_dataset_metadata(tmp_path: Path) -> None:
+def test_write_metadata_can_be_read_back_as_dataset_metadata(
+    tmp_path: Path,
+) -> None:
     metadata_path = tmp_path / "metadata.json"
 
     write_metadata(metadata_path, EXPECTED_METADATA)
@@ -91,6 +94,8 @@ def test_load_metadata_reads_metadata_json(tmp_path: Path) -> None:
     loaded_metadata = load_metadata(metadata_path)
 
     assert loaded_metadata == EXPECTED_METADATA
+
+
 def test_metadata_from_dict_raises_for_missing_required_field() -> None:
     metadata_dict = dict(EXPECTED_METADATA_DICT)
     del metadata_dict["dataset_id"]
@@ -170,7 +175,7 @@ def test_write_metadata_preserves_non_ascii_characters(tmp_path: Path) -> None:
         interval="1d",
         requested_start=date(2024, 1, 1),
         requested_end=date(2024, 12, 31),
-        status="created",
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
     write_metadata(metadata_path, metadata)

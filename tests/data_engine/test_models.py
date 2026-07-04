@@ -6,6 +6,10 @@ from datetime import date
 import pytest
 
 from tradinglab.data_engine.models import DatasetMetadata
+from tradinglab.data_engine.status import (
+    DATASET_LIFECYCLE_STATUS_RAW,
+    DATASET_LIFECYCLE_STATUS_VALIDATED,
+)
 
 
 def test_dataset_metadata_can_describe_eurusd_dataset_version() -> None:
@@ -23,7 +27,7 @@ def test_dataset_metadata_can_describe_eurusd_dataset_version() -> None:
         interval="1d",
         requested_start=date(2024, 1, 1),
         requested_end=date(2024, 12, 31),
-        status="created",
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
     assert metadata.dataset_id == (
@@ -33,7 +37,8 @@ def test_dataset_metadata_can_describe_eurusd_dataset_version() -> None:
     assert metadata.version == "v001"
     assert metadata.provider == "polygon_massive"
     assert metadata.symbol == "EUR/USD"
-    assert metadata.status == "created"
+    assert metadata.status == DATASET_LIFECYCLE_STATUS_RAW
+
 
 def test_dataset_metadata_is_immutable() -> None:
     metadata = DatasetMetadata(
@@ -50,8 +55,8 @@ def test_dataset_metadata_is_immutable() -> None:
         interval="1d",
         requested_start=date(2024, 1, 1),
         requested_end=date(2024, 12, 31),
-        status="created",
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
     with pytest.raises(FrozenInstanceError):
-        metadata.status = "validated"  # type: ignore[misc]
+        metadata.status = DATASET_LIFECYCLE_STATUS_VALIDATED  # type: ignore[misc]
