@@ -8,13 +8,19 @@ Szczegółowy projekt implementacji Data Engine v0.2.0 znajduje się w dokumenci
 
 ## Status dokumentu
 
-Dokument architektoniczny dla etapu:
-
-**v0.2.0 — Data Engine**
+Dokument architektoniczny dla etapu: **v0.2.0 — Data Engine**
 
 Ten dokument opisuje cel, odpowiedzialności, granice i kierunek rozwoju modułu Data Engine w projekcie TradingLab.
 
-Dokument nie opisuje jeszcze szczegółowej implementacji kodu. Implementacja powinna wynikać z ustaleń architektonicznych zapisanych w tym dokumencie.
+Dokument ma charakter architektoniczny i strategiczny. Oznacza to, że część opisów przedstawia docelowy kierunek rozwoju, a niekoniecznie aktualnie zaimplementowany kod.
+
+Szczegółowy stan implementacji, wykonane mikro-kroki, aktualne pliki kodu, testy i decyzje techniczne są opisane w dokumencie:
+
+- [DATA_ENGINE_IMPLEMENTACJA_V0_2.md](DATA_ENGINE_IMPLEMENTACJA_V0_2.md)
+
+Jeżeli ten dokument opisuje wymaganie, którego nie ma jeszcze w kodzie, należy traktować je jako kierunek projektowy albo element dalszej implementacji, a nie jako gotową funkcję systemu.
+
+Implementacja powinna wynikać z ustaleń architektonicznych zapisanych w tym dokumencie, ale bieżący zakres kodu musi być zawsze weryfikowany z dokumentem implementacyjnym i testami.
 
 ---
 
@@ -72,18 +78,44 @@ Pierwsza implementacja może być prosta, ale decyzje architektoniczne nie powin
 
 Wersja v0.2.0 obejmuje minimalny, ale solidny fundament Data Engine.
 
-Zakres v0.2.0:
+Zakres architektoniczny v0.2.0:
 
 * zaprojektowanie modułu Data Engine,
 * obsługa historycznych danych świecowych OHLCV,
-* pobieranie danych z pierwszego źródła danych,
+* przygotowanie struktury pod pierwsze źródło danych,
 * zapis danych surowych,
+* zapis danych znormalizowanych,
 * zapis metadanych datasetu,
 * podstawowa walidacja jakości danych,
 * zapis raportu walidacji,
+* rozdzielenie statusu życia datasetu od statusu wyniku walidacji,
 * nadanie statusu datasetu,
 * możliwość odtworzenia źródła danych,
 * przygotowanie struktury pod dalszy rozwój.
+
+Aktualny stan implementacji v0.2.0 jest mniejszy niż pełna wizja architektoniczna. Na obecnym etapie zaimplementowane są przede wszystkim:
+
+* modele danych Data Engine,
+* generowanie `dataset_id`,
+* budowanie katalogu wersji datasetu,
+* zapis `metadata.json`,
+* zapis `validation_report.json`,
+* zapis pustego albo przykładowego `normalized/candles.csv`,
+* zapis przykładowego `raw/response.json` dla sample datasetu,
+* walidacja lokalnych plików OHLCV CSV,
+* sample dataset,
+* podstawowe statusy życia datasetu,
+* podstawowe statusy walidacji,
+* testy jednostkowe dla obecnego zakresu.
+
+Na obecnym etapie nie są jeszcze zaimplementowane:
+
+* prawdziwy konektor do zewnętrznego providera,
+* pobieranie danych z API providera,
+* publiczne funkcje `validate_dataset`, `load_metadata`, `load_validation_report` i `load_normalized_candles` jako docelowy interfejs Data Engine,
+* pełny docelowy schemat metadanych,
+* pełny docelowy schemat raportu walidacji,
+* automatyczne dopuszczanie datasetu do użycia w badaniach.
 
 Poza zakresem v0.2.0 pozostają:
 
@@ -388,11 +420,9 @@ Nie oznacza to jednak, że Data Engine jest projektowany pod jedno konkretne źr
 
 ## 11. Minimalne metadane datasetu
 
-Każdy dataset musi posiadać minimalny zestaw metadanych.
+Każdy dataset musi posiadać minimalny zestaw metadanych. Minimalne metadane są wymaganym fundamentem, a nie zamkniętą listą na zawsze.
 
-Minimalne metadane są wymaganym fundamentem, a nie zamkniętą listą na zawsze.
-
-Minimalny zestaw metadanych dla v0.2.0:
+Docelowy minimalny zestaw metadanych dla architektury Data Engine może obejmować:
 
 ```text
 dataset_id
@@ -410,7 +440,7 @@ raw_path
 dataset_status
 ```
 
-Znaczenie pól:
+Znaczenie pól docelowych:
 
 * `dataset_id` — unikalny identyfikator datasetu,
 * `source` — źródło danych,
@@ -425,6 +455,24 @@ Znaczenie pól:
 * `data_version` — wersja datasetu,
 * `raw_path` — lokalizacja danych surowych,
 * `dataset_status` — status życia datasetu.
+
+Aktualna implementacja v0.2.0 używa prostszego modelu `DatasetMetadata`:
+
+```text
+dataset_id
+version
+provider
+asset_class
+symbol
+data_type
+price_type
+interval
+requested_start
+requested_end
+status
+```
+
+Ten prostszy model jest świadomym etapem przejściowym. Pozwala utrzymać testowalny fundament Data Engine bez przedwczesnego rozbudowywania schematu metadanych.
 
 Status wyniku walidacji nie jest polem metadanych datasetu. Status wyniku walidacji powinien znajdować się w `validation_report.json`.
 
@@ -642,9 +690,33 @@ Architektura nie powinna jednak zamykać możliwości przejścia w przyszłości
 
 ---
 
-## 20. Proponowana struktura katalogów danych
+## 20. Struktura katalogów danych
 
-Przykładowa struktura katalogów:
+Fizyczna struktura katalogów danych jest szczegółem implementacyjnym Data Engine, ale musi umożliwiać identyfikację datasetu, wersji, metadanych, raportu walidacji oraz artefaktów danych.
+
+Aktualna implementacja v0.2.0 używa struktury:
+
+```text
+data/
+  datasets/
+    {dataset_id}/
+      {version}/
+        metadata.json
+        validation_report.json
+        raw/
+          response.json
+        normalized/
+          candles.csv
+```
+
+Znaczenie podstawowych artefaktów:
+
+* `metadata.json` — metadane wersji datasetu,
+* `validation_report.json` — raport walidacji,
+* `raw/response.json` — surowa albo technicznie najbliższa surowej odpowiedź źródła danych,
+* `normalized/candles.csv` — znormalizowane dane OHLCV w formacie CSV.
+
+Starsza ogólna koncepcja katalogów typu:
 
 ```text
 data/
@@ -655,30 +727,15 @@ data/
   validation_reports/
 ```
 
-Bardziej szczegółowa struktura może w przyszłości uwzględniać źródło, symbol, interwał i wersję datasetu.
+nie opisuje aktualnej implementacji v0.2.0. Może być traktowana wyłącznie jako historyczny szkic kierunkowy, a nie jako obowiązująca struktura zapisu datasetów.
 
-Przykład:
+Obowiązującym kierunkiem dla obecnego etapu jest struktura oparta o:
 
 ```text
-data/
-  raw/
-    source_name/
-      symbol/
-        timeframe/
-          dataset_version/
-  metadata/
-    source_name/
-      symbol/
-        timeframe/
-          dataset_version/
-  validation_reports/
-    source_name/
-      symbol/
-        timeframe/
-          dataset_version/
+data/datasets/{dataset_id}/{version}/
 ```
 
-Struktura katalogów może zostać doprecyzowana na etapie implementacji, ale musi zachować możliwość identyfikacji i odtworzenia datasetu.
+Ta struktura zachowuje możliwość identyfikacji i odtworzenia datasetu, a jednocześnie nie blokuje przyszłego przejścia na inny format fizycznego przechowywania danych.
 
 ---
 
@@ -842,20 +899,33 @@ Na potrzeby v0.2.0 przyjmuje się następujące decyzje:
 
 ## 29. Otwarte decyzje na etap implementacji
 
-Ten dokument nie rozstrzyga jeszcze wszystkich decyzji technicznych.
+Ten dokument nie rozstrzyga wszystkich decyzji technicznych.
 
-Do ustalenia na etapie projektowania implementacji pozostają między innymi:
+Część decyzji została już doprecyzowana w dokumencie implementacyjnym v0.2.0 i w obecnym kodzie, między innymi:
 
-* pierwsze źródło danych,
-* pierwszy format zapisu danych,
-* dokładna struktura katalogów,
-* format pliku metadanych,
-* format raportu walidacji,
+* podstawowy format zapisu danych znormalizowanych jako CSV,
+* aktualna struktura katalogu datasetu,
+* format `metadata.json` dla obecnego zakresu,
+* format `validation_report.json` dla obecnego zakresu,
 * sposób generowania `dataset_id`,
 * sposób oznaczania wersji datasetu,
-* sposób uruchamiania pobierania danych,
-* sposób uruchamiania walidacji,
-* minimalny interfejs Data Engine dla innych modułów.
+* rozdzielenie statusów życia datasetu i statusów walidacji,
+* ścieżka do `raw/response.json`,
+* ścieżka do `normalized/candles.csv`,
+* obecny zakres sample datasetu.
+
+Nadal otwarte albo odłożone na dalsze mikro-kroki pozostają między innymi:
+
+* pierwsze prawdziwe źródło danych,
+* pierwszy konektor providera,
+* sposób przechowywania sekretów i kluczy API,
+* publiczna funkcja `validate_dataset`,
+* publiczne funkcje odczytu metadanych, raportu walidacji i danych znormalizowanych,
+* pełniejszy schemat metadanych,
+* pełniejszy schemat raportu walidacji,
+* obsługa nieudanej walidacji na poziomie statusu życia datasetu,
+* decyzja, kiedy dataset może otrzymać status `ACCEPTED`,
+* przyszłe formaty przechowywania inne niż CSV.
 
 Te decyzje powinny wynikać z architektury opisanej w tym dokumencie i nie powinny naruszać zasad Data Engine.
 
