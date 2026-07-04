@@ -14,7 +14,7 @@ from tradinglab.data_engine import (
 )
 from tradinglab.data_engine.metadata import load_metadata
 from tradinglab.data_engine.status import (
-    DATASET_STATUS_CREATED,
+    DATASET_LIFECYCLE_STATUS_RAW,
     VALIDATION_STATUS_NOT_VALIDATED,
 )
 from tradinglab.data_engine.validation_report import load_validation_report
@@ -49,7 +49,7 @@ def test_create_dataset_returns_dataset_build_result_and_creates_directory(
         result.validation_report_path
         == expected_dataset_path / "validation_report.json"
     )
-    assert result.status == DATASET_STATUS_CREATED
+    assert result.status == DATASET_LIFECYCLE_STATUS_RAW
 
     assert result.dataset_path.is_dir()
     assert (expected_dataset_path / "raw").is_dir()
@@ -255,8 +255,8 @@ def test_create_dataset_keeps_initial_statuses_separated_across_artifacts(
     loaded_metadata = load_metadata(result.metadata_path)
     loaded_report = load_validation_report(result.validation_report_path)
 
-    assert result.status == DATASET_STATUS_CREATED
-    assert loaded_metadata.status == DATASET_STATUS_CREATED
+    assert result.status == DATASET_LIFECYCLE_STATUS_RAW
+    assert loaded_metadata.status == DATASET_LIFECYCLE_STATUS_RAW
     assert loaded_report.status == VALIDATION_STATUS_NOT_VALIDATED
 
 
@@ -285,7 +285,7 @@ def _build_expected_metadata() -> DatasetMetadata:
         interval="1d",
         requested_start=date(2024, 1, 1),
         requested_end=date(2024, 12, 31),
-        status=DATASET_STATUS_CREATED,
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
 

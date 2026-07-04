@@ -12,7 +12,7 @@ from tradinglab.data_engine.models import (
     ValidationReport,
 )
 from tradinglab.data_engine.status import (
-    DATASET_STATUS_CREATED,
+    DATASET_LIFECYCLE_STATUS_RAW,
     VALIDATION_STATUS_NOT_VALIDATED,
 )
 from tradinglab.data_engine.storage import (
@@ -62,7 +62,7 @@ def create_dataset(
         interval=request.interval,
         requested_start=request.requested_start,
         requested_end=request.requested_end,
-        status=DATASET_STATUS_CREATED,
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
 
     validation_report = ValidationReport(
@@ -87,5 +87,5 @@ def create_dataset(
         data_path=normalized_candles_path,
         metadata_path=metadata_path,
         validation_report_path=validation_report_path,
-        status=DATASET_STATUS_CREATED,
+        status=DATASET_LIFECYCLE_STATUS_RAW,
     )
