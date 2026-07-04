@@ -1,4 +1,4 @@
-"""Public Data Engine read interface."""
+"""Public Data Engine interface."""
 
 from pathlib import Path
 
@@ -7,6 +7,7 @@ from tradinglab.data_engine.metadata import (
     load_metadata as _load_metadata_from_path,
 )
 from tradinglab.data_engine.models import DatasetMetadata, OhlcvBar, ValidationReport
+from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
 from tradinglab.data_engine.storage import (
     build_dataset_version_path,
     build_metadata_path,
@@ -15,6 +16,7 @@ from tradinglab.data_engine.storage import (
 )
 from tradinglab.data_engine.validation_report import (
     load_validation_report as _load_validation_report_from_path,
+    write_validation_report,
 )
 
 
@@ -67,3 +69,28 @@ def load_normalized_candles(
     normalized_candles_path = build_normalized_candles_path(dataset_path)
 
     return read_ohlcv_csv(normalized_candles_path)
+
+
+def validate_dataset(
+    *,
+    base_data_dir: Path,
+    dataset_id: str,
+    version: str,
+) -> ValidationReport:
+    """Validate normalized OHLCV candles for a dataset version."""
+    dataset_path = build_dataset_version_path(
+        base_data_dir=base_data_dir,
+        dataset_id=dataset_id,
+        version=version,
+    )
+    normalized_candles_path = build_normalized_candles_path(dataset_path)
+    validation_report_path = build_validation_report_path(dataset_path)
+
+    validation_report = validate_ohlcv_csv(
+        data_path=normalized_candles_path,
+        dataset_id=dataset_id,
+        version=version,
+    )
+    write_validation_report(validation_report_path, validation_report)
+
+    return validation_report

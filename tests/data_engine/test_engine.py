@@ -1,4 +1,4 @@
-"""Tests for public Data Engine read interface."""
+"""Tests for public Data Engine interface."""
 
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -13,11 +13,14 @@ from tradinglab.data_engine import (
     load_metadata,
     load_normalized_candles,
     load_validation_report,
+    validate_dataset,
 )
 from tradinglab.data_engine.data_file import write_ohlcv_csv
 from tradinglab.data_engine.metadata import write_metadata
 from tradinglab.data_engine.status import (
+    DATASET_LIFECYCLE_STATUS_RAW,
     DATASET_LIFECYCLE_STATUS_VALIDATED,
+    VALIDATION_STATUS_INVALID,
     VALIDATION_STATUS_VALID,
 )
 from tradinglab.data_engine.storage import (
@@ -131,10 +134,86 @@ def test_public_load_normalized_candles_raises_for_missing_dataset_version(
         )
 
 
+def test_public_validate_dataset_writes_valid_validation_report(
+    tmp_path: Path,
+) -> None:
+    _write_dataset_artifacts(
+        base_data_dir=tmp_path,
+        validation_report=_build_invalid_validation_report(),
+    )
+
+    validation_report = validate_dataset(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    assert validation_report == _build_validation_report()
+    assert (
+        load_validation_report(
+            base_data_dir=tmp_path,
+            dataset_id=DATASET_ID,
+            version="v001",
+        )
+        == validation_report
+    )
+
+
+def test_public_validate_dataset_writes_invalid_validation_report(
+    tmp_path: Path,
+) -> None:
+    _write_dataset_artifacts(
+        base_data_dir=tmp_path,
+        bars=_build_invalid_bars(),
+    )
+
+    validation_report = validate_dataset(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    assert validation_report == _build_invalid_validation_report()
+    assert (
+        load_validation_report(
+            base_data_dir=tmp_path,
+            dataset_id=DATASET_ID,
+            version="v001",
+        )
+        == validation_report
+    )
+
+
+def test_public_validate_dataset_does_not_update_lifecycle_status_metadata(
+    tmp_path: Path,
+) -> None:
+    _write_dataset_artifacts(
+        base_data_dir=tmp_path,
+        metadata_status=DATASET_LIFECYCLE_STATUS_RAW,
+    )
+
+    validate_dataset(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    metadata = load_metadata(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    assert metadata.status == DATASET_LIFECYCLE_STATUS_RAW
+
+
 def _write_dataset_artifacts(
     *,
     base_data_dir: Path,
     version: str = "v001",
+    bars: tuple[OhlcvBar, ...] | None = None,
+    metadata_status: str = DATASET_LIFECYCLE_STATUS_VALIDATED,
+    validation_report: ValidationReport | None = None,
 ) -> None:
     dataset_path = build_dataset_version_path(
         base_data_dir=base_data_dir,
@@ -144,21 +223,30 @@ def _write_dataset_artifacts(
     normalized_dir_path = build_normalized_dir_path(dataset_path)
     normalized_dir_path.mkdir(parents=True)
 
+    if bars is None:
+        bars = _build_bars()
+
+    if validation_report is None:
+        validation_report = _build_validation_report(version=version)
+
     write_metadata(
         build_metadata_path(dataset_path),
-        _build_metadata(version=version),
+        _build_metadata(version=version, status=metadata_status),
     )
     write_validation_report(
         build_validation_report_path(dataset_path),
-        _build_validation_report(version=version),
+        validation_report,
     )
     write_ohlcv_csv(
         build_normalized_candles_path(dataset_path),
-        _build_bars(),
+        bars,
     )
 
 
-def _build_metadata(version: str = "v001") -> DatasetMetadata:
+def _build_metadata(
+    version: str = "v001",
+    status: str = DATASET_LIFECYCLE_STATUS_VALIDATED,
+) -> DatasetMetadata:
     return DatasetMetadata(
         dataset_id=DATASET_ID,
         version=version,
@@ -170,7 +258,7 @@ def _build_metadata(version: str = "v001") -> DatasetMetadata:
         interval="1d",
         requested_start=date(2024, 1, 1),
         requested_end=date(2024, 12, 31),
-        status=DATASET_LIFECYCLE_STATUS_VALIDATED,
+        status=status,
     )
 
 
@@ -184,6 +272,19 @@ def _build_validation_report(version: str = "v001") -> ValidationReport:
         checked_rows=2,
         valid_rows=2,
         invalid_rows=0,
+    )
+
+
+def _build_invalid_validation_report(version: str = "v001") -> ValidationReport:
+    return ValidationReport(
+        dataset_id=DATASET_ID,
+        version=version,
+        status=VALIDATION_STATUS_INVALID,
+        errors=("Row 2: high must be greater than or equal to open.",),
+        warnings=(),
+        checked_rows=1,
+        valid_rows=0,
+        invalid_rows=1,
     )
 
 
@@ -204,5 +305,18 @@ def _build_bars() -> tuple[OhlcvBar, OhlcvBar]:
             low=Decimal("1.1000"),
             close=Decimal("1.1250"),
             volume=Decimal("23456.78"),
+        ),
+    )
+
+
+def _build_invalid_bars() -> tuple[OhlcvBar]:
+    return (
+        OhlcvBar(
+            timestamp=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
+            open=Decimal("1.1000"),
+            high=Decimal("1.0900"),
+            low=Decimal("1.0800"),
+            close=Decimal("1.0850"),
+            volume=Decimal("12345.67"),
         ),
     )

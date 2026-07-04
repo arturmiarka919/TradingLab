@@ -6,6 +6,7 @@ from tradinglab.data_engine.engine import (
     load_metadata,
     load_normalized_candles,
     load_validation_report,
+    validate_dataset,
 )
 from tradinglab.data_engine.models import (
     DatasetBuildResult,
@@ -26,4 +27,5 @@ __all__ = [
     "load_metadata",
     "load_normalized_candles",
     "load_validation_report",
+    "validate_dataset",
 ]
