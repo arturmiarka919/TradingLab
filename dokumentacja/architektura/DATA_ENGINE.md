@@ -111,6 +111,7 @@ Aktualny stan implementacji v0.2.0 jest mniejszy niż pełna wizja architektonic
 * publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
 * publiczna walidacja datasetu przez `validate_dataset`,
 * aktualizacja statusu życia datasetu po `validate_dataset`,
+* sample dataset korzystający z publicznego `validate_dataset`,
 * testy jednostkowe dla obecnego zakresu.
 
 Na obecnym etapie nie są jeszcze zaimplementowane:
@@ -921,7 +922,8 @@ Część decyzji została już doprecyzowana w dokumencie implementacyjnym v0.2.
 * publiczny odczyt raportu walidacji przez `load_validation_report`,
 * publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
 * publiczna walidacja datasetu przez `validate_dataset`,
-* mapowanie wyniku `validate_dataset` na `metadata.status`.
+* mapowanie wyniku `validate_dataset` na `metadata.status`,
+* użycie publicznego `validate_dataset` w sample dataset.
 
 Nadal otwarte albo odłożone na dalsze mikro-kroki pozostają między innymi:
 

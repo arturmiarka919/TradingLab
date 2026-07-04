@@ -1542,13 +1542,16 @@ Ten obszar odpowiada za:
 * utworzenie datasetu przez `create_dataset`,
 * zapis przejściowej surowej odpowiedzi do `raw/response.json`,
 * zapis przykładowych świec do `normalized/candles.csv`,
-* walidację zapisanego pliku OHLCV,
-* zapis finalnego `validation_report.json`,
-* aktualizację `metadata.json` statusem walidacji,
-* zwrócenie `DatasetBuildResult` ze statusem po walidacji,
+* uruchomienie publicznego `validate_dataset`,
+* zapis finalnego `validation_report.json` przez publiczny przepływ walidacji,
+* aktualizację `metadata.status` przez publiczny przepływ walidacji,
+* odczyt aktualnego statusu datasetu przez publiczne `load_metadata`,
+* zwrócenie `DatasetBuildResult` ze statusem zgodnym z `metadata.status`,
 * opcjonalne usunięcie istniejącej wersji datasetu przy `overwrite=True`.
 
 Warstwa sample datasetu nie tworzy już przejściowego pliku `data.csv`. Przykładowe świece są zapisywane do docelowego pliku `normalized/candles.csv`.
+
+Po mikro-kroku 74A.1 warstwa sample datasetu nie powiela ręcznie logiki walidacji i aktualizacji metadanych. Po zapisaniu przykładowych świec korzysta z publicznego `validate_dataset`, a status zwracanego `DatasetBuildResult` ustala na podstawie `metadata.status` odczytanego przez publiczne `load_metadata`.
 
 Macierz scenariuszy dla przykładowego datasetu:
 
@@ -1556,7 +1559,7 @@ Macierz scenariuszy dla przykładowego datasetu:
 | ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
 | SAMPLE_DATASET-001 | Utworzenie przykładowego datasetu OHLCV | Katalog wersji zawiera `metadata.json`, `validation_report.json`, `raw/` i `normalized/` | pokryte testem |
 | SAMPLE_DATASET-002 | Zapis znormalizowanych świec OHLCV | Odczyt `normalized/candles.csv` zwraca dokładnie świece z `build_sample_ohlcv_bars` | pokryte testem |
-| SAMPLE_DATASET-003 | Zapis metadata i raportu walidacji po walidacji | Metadata i wynik datasetu mają status `VALIDATED`, a raport walidacji ma status `valid` | pokryte testem |
+| SAMPLE_DATASET-003 | Walidacja sample datasetu przez publiczny przepływ walidacji | Metadata i wynik datasetu mają status `VALIDATED`, a raport walidacji ma status `valid` | pokryte testem |
 | SAMPLE_DATASET-004 | Raport walidacji dla przykładowych świec | Raport ma 2 sprawdzone wiersze, 2 poprawne wiersze, 0 błędnych wierszy oraz brak błędów i ostrzeżeń | pokryte testem |
 | SAMPLE_DATASET-005 | Uruchomienie skryptu `scripts/create_sample_dataset.py` | Skrypt kończy się sukcesem, wypisuje ścieżki artefaktów i tworzy katalog `data/datasets` | pokryte testem |
 | SAMPLE_DATASET-006 | Deterministyczny `DatasetRequest` przykładowego datasetu | Request ma oczekiwane pola providera, instrumentu, typu danych, interwału i zakresu dat | pokryte testem |
@@ -1566,7 +1569,7 @@ Macierz scenariuszy dla przykładowego datasetu:
 | SAMPLE_DATASET-010 | Próba ponownego utworzenia datasetu bez `overwrite` | Funkcja kończy się błędem istniejącej wersji i nie nadpisuje danych | pokryte testem |
 | SAMPLE_DATASET-011 | Ponowne utworzenie datasetu z `overwrite=True` | Istniejąca wersja datasetu zostaje usunięta i odtworzona z poprawnymi artefaktami | pokryte testem |
 | SAMPLE_DATASET-012 | Spójność pól metadata z przykładowym requestem | `metadata.json` zachowuje pola z `build_sample_dataset_request` i status po walidacji | pokryte testem |
-| SAMPLE_DATASET-013 | Spójność ścieżek i statusów wyniku | `DatasetBuildResult` wskazuje `normalized/candles.csv`, ma status datasetu `VALIDATED`, a raport walidacji ma status `valid` | pokryte testem |
+| SAMPLE_DATASET-013 | Spójność ścieżek i statusów wyniku | `DatasetBuildResult` wskazuje `normalized/candles.csv`, ma status zgodny z `metadata.status`, a raport walidacji ma status `valid` | pokryte testem |
 | SAMPLE_DATASET-014 | Zapis przejściowego `raw/response.json` | Plik `raw/response.json` istnieje i zawiera wynik `build_sample_raw_response` | pokryte testem |
 | SAMPLE_DATASET-015 | Zapis `normalized/candles.csv` w sample dataset | Plik `normalized/candles.csv` istnieje i zawiera przykładowe świece OHLCV | pokryte testem |
 | SAMPLE_DATASET-016 | Brak przejściowego `data.csv` w sample dataset | Katalog wersji sample datasetu nie zawiera już pliku `data.csv` | pokryte testem |
@@ -1692,7 +1695,7 @@ Decyzja projektowa po migracji statusów:
 4. Status `invalid` nie jest statusem życia datasetu.
 5. Legacy stałe `DATASET_STATUS_CREATED`, `DATASET_STATUS_VALIDATED`, `DATASET_STATUS_INVALID` oraz `LEGACY_DATASET_STATUSES` zostały usunięte po mikro-kroku 71P.
 6. Status początkowy datasetu po `create_dataset` to `RAW`.
-7. Status sample datasetu po udanej walidacji to `VALIDATED`.
+7. Status sample datasetu po udanej walidacji to `VALIDATED`, nadawany przez publiczny przepływ `validate_dataset`.
 8. Migracja statusów nie obejmowała przebudowy schematu `metadata.json`, przebudowy `validation_report.json`, publicznego API ani konektorów providera.
 
 Mapowanie wykonanej migracji:
@@ -1737,7 +1740,7 @@ Po mikro-krokach 71M–71P usunięto tymczasowe statusy legacy i przepięto obec
 Obszar statusów można uznać za domknięty dla obecnego zakresu v0.2.0 pod warunkiem, że:
 
 1. `create_dataset` nadal używa `RAW` jako początkowego statusu życia datasetu,
-2. sample dataset po udanej walidacji nadal używa `VALIDATED` jako statusu życia datasetu,
+2. sample dataset po udanej walidacji nadal używa `VALIDATED` jako statusu życia datasetu i pobiera ten status z `metadata.status`,
 3. `validation_report.status` nadal używa wyłącznie statusów walidacji,
 4. legacy statusy nie wracają bez osobnej decyzji projektowej,
 5. przyszłe scenariusze nieudanej walidacji datasetu zostaną zaprojektowane osobno przed implementacją.

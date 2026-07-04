@@ -199,7 +199,7 @@ Status datasetu nie zastępuje raportu walidacji.
 Stan implementacji:
 
 * `create_dataset` nadaje datasetowi status życia `RAW`,
-* sample dataset po udanej walidacji otrzymuje status życia `VALIDATED`,
+* sample dataset korzysta z publicznego `validate_dataset` i po udanej walidacji otrzymuje status życia `VALIDATED`,
 * początkowy raport walidacji używa statusu `not_validated`,
 * walidator OHLCV używa statusów walidacji, między innymi `valid` i `invalid`,
 * legacy statusy `created`, `validated` i `invalid` nie są już statusami życia datasetu.
