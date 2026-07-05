@@ -521,6 +521,117 @@ Po mikro-kroku 74E.6 normalizator posiada czytelne błędy dla nieobsługiwanego
 
 Ten krok nadal nie wykonuje połączeń sieciowych, nie wymaga API key, nie zapisuje plików, nie tworzy katalogu `data/datasets/`, nie uruchamia `validate_dataset`, nie uruchamia `load_dataset` i nie nadaje statusów datasetu.
 
+### 4.5. Plan offline zapisu znormalizowanych świec providera do datasetu
+
+Po mikro-krokach 74E.4-74E.6 projekt ma już bezpieczny offline normalizator odpowiedzi Polygon/Massive Forex do listy `OhlcvBar`.
+
+Następny etap nie powinien jeszcze pobierać danych z internetu.
+
+Najpierw projekt powinien umieć przeprowadzić pełny przepływ datasetu na lokalnym, testowym payloadzie providera.
+
+Planowany przepływ offline:
+
+```text
+ProviderRawResponse
+-> normalize_polygon_forex_ohlcv_response(raw_response)
+-> list[OhlcvBar]
+-> zapis raw/response.json
+-> zapis normalized/candles.csv
+-> validate_dataset
+-> load_dataset
+```
+
+Celem tego etapu jest sprawdzenie, czy dane znormalizowane z formatu providera mogą wejść do tego samego przepływu datasetu, który jest już używany dla danych przykładowych.
+
+Ten etap powinien korzystać z istniejących elementów Data Engine wszędzie tam, gdzie to możliwe.
+
+Nie powinien tworzyć równoległego systemu zapisu danych.
+
+#### Granica etapu 74F
+
+Etap 74F nadal pozostaje etapem offline.
+
+W tym etapie nie wolno jeszcze:
+
+* wykonywać połączeń sieciowych,
+* wymagać API key,
+* pobierać danych z realnego Polygon/Massive API,
+* obsługiwać paginacji,
+* obsługiwać `next_url`,
+* obsługiwać retry,
+* obsługiwać timeoutów,
+* budować pełnej produkcyjnej obsługi błędów API,
+* uruchamiać automatycznego harmonogramu pobierania danych,
+* mieszać danych testowych z realnymi danymi pobranymi z internetu.
+
+Dane wejściowe w 74F powinny pochodzić z lokalnego, kontrolowanego payloadu testowego.
+
+#### Zakładany minimalny efekt po etapie 74F
+
+Po zakończeniu etapu 74F projekt powinien umieć utworzyć dataset z payloadu providera offline.
+
+Minimalny widoczny efekt:
+
+```text
+data/datasets/<dataset_id>/
+├── metadata.json
+├── raw/
+│   └── response.json
+├── normalized/
+│   └── candles.csv
+└── validation/
+    └── report.json
+```
+
+Po utworzeniu datasetu powinno być możliwe użycie publicznego loadera:
+
+```text
+load_dataset(dataset_id)
+```
+
+Oczekiwany wynik:
+
+```text
+status datasetu: VALIDATED
+status walidacji: valid
+liczba świec: zgodna z payloadem testowym
+```
+
+#### Zasady bezpieczeństwa zapisu
+
+Zapis datasetu powinien nastąpić dopiero po poprawnym zakończeniu normalizacji.
+
+Jeżeli normalizator zgłosi `PolygonForexPayloadError`, etap zapisu nie powinien tworzyć częściowego datasetu.
+
+W szczególności błędny payload nie powinien tworzyć:
+
+* częściowego `normalized/candles.csv`,
+* częściowego `metadata.json`,
+* częściowego `validation/report.json`,
+* datasetu oznaczonego jako poprawny.
+
+Najważniejsza zasada:
+
+```text
+najpierw pełna poprawna normalizacja,
+dopiero potem zapis datasetu
+```
+
+#### Plan mikro-kroków dla 74F
+
+Etap 74F powinien być podzielony na małe kroki:
+
+```text
+74F.0-DOC  -> plan offline zapisu znormalizowanych świec do datasetu
+74F.1-AUDIT -> sprawdzenie istniejących funkcji zapisu datasetu i sample flow
+74F.2-CODE -> test offline dla przepływu: payload providera -> dataset
+74F.3-CODE -> implementacja minimalnego zapisu znormalizowanych świec przez istniejący mechanizm datasetu
+74F.4-CODE -> mały skrypt/manualny przykład tworzący dataset z payloadu providera offline
+74F.5-AUDIT -> audyt pełnego offline przepływu providera
+```
+
+Kolejny krok po 74F.0 powinien być audytem istniejącego kodu zapisu datasetu, żeby nie dublować logiki i nie tworzyć drugiego systemu zapisu danych.
+
 ## 5. Format zapisu danych
 
 W v0.2.0 dane są zapisywane w czterech podstawowych elementach:
