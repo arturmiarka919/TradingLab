@@ -108,6 +108,86 @@ Data Engine powinien więc umożliwiać ocenę datasetu w kontekście:
 
 W v0.2.0 ranking źródeł nie jest implementowany. Architektura powinna jednak nie zamykać tej możliwości.
 
+### 4.1. Plan przejścia do pierwszego realnego pobrania danych po publicznym loaderze
+
+Po mikro-krokach 74B.1 i 74D.1 Data Engine posiada już mały publiczny przepływ pracy z datasetem:
+
+```text
+create_dataset
+    -> validate_dataset
+    -> load_dataset
+```
+
+Oznacza to, że przed rozpoczęciem pracy nad pierwszym prawdziwym providerem istnieje już stabilny fundament:
+
+* deterministyczne `dataset_id`,
+* wersjonowanie datasetów,
+* docelowa struktura katalogów `raw/` i `normalized/`,
+* zapis `metadata.json`,
+* zapis `validation_report.json`,
+* walidacja `normalized/candles.csv`,
+* publiczny odczyt pełnej wersji datasetu przez `load_dataset`,
+* widoczny przepływ demonstracyjny w `scripts/create_sample_dataset.py`.
+
+Kolejny etap po publicznym loaderze powinien prowadzić do pierwszego realnego pobrania danych z providera, ale nadal mikro-krokami.
+
+Docelowym pierwszym providerem dla tego etapu pozostaje:
+
+```text
+Polygon/Massive Forex API
+```
+
+Docelowym pierwszym instrumentem pozostaje:
+
+```text
+EUR/USD
+```
+
+Docelowym pierwszym typem danych pozostają:
+
+```text
+historyczne świece OHLCV
+```
+
+Przejście do prawdziwego providera powinno zostać podzielone na małe kroki:
+
+1. zaprojektować minimalny kontrakt konektora providera,
+2. dodać minimalną strukturę katalogu `connectors/`,
+3. dodać testy offline dla kontraktu konektora,
+4. przygotować normalizację przykładowej odpowiedzi providera do `OhlcvBar`,
+5. testować parser i normalizator na lokalnym fixture albo danych wpisanych w testach,
+6. dopiero później dodać ręczny skrypt pobrania małego zakresu danych z Polygon/Massive,
+7. zapisać prawdziwą odpowiedź providera do `raw/response.json`,
+8. zapisać znormalizowane świece do `normalized/candles.csv`,
+9. uruchomić `validate_dataset`,
+10. odczytać wynik przez `load_dataset`,
+11. wypisać krótkie podsumowanie pobranego datasetu w terminalu.
+
+Testy automatyczne dla konektora i normalizacji nie powinny wymagać:
+
+* prawdziwego API key,
+* internetu,
+* dostępności Polygon/Massive,
+* limitów API,
+* lokalnego katalogu `data/datasets/`.
+
+Prawdziwe pobranie danych powinno pozostać operacją ręczną, uruchamianą świadomie przez skrypt i zależną od lokalnej konfiguracji albo zmiennej środowiskowej z API key.
+
+Mikro-kroki przejścia do providera nie powinny jeszcze wprowadzać:
+
+* wielu providerów,
+* rankingu źródeł danych,
+* wyboru najlepszego datasetu,
+* katalogu `latest`,
+* statusów `ACCEPTED` ani `REJECTED`,
+* backtestingu,
+* strategii,
+* live tradingu,
+* agentów AI,
+* automatycznego pobierania danych podczas testów.
+
+Celem najbliższych kroków po 74E.0 nie jest jeszcze pełny konektor produkcyjny, tylko bezpieczna ścieżka do pierwszego małego, kontrolowanego i możliwego do zweryfikowania datasetu pobranego z prawdziwego źródła.
+
 ## 5. Format zapisu danych
 
 W v0.2.0 dane są zapisywane w czterech podstawowych elementach:
