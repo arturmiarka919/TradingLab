@@ -398,14 +398,19 @@ Testy offline następnego kroku kodowego powinny potwierdzać, że:
 * normalizator nie wymaga API key,
 * normalizator nie wykonuje połączeń sieciowych.
 
-Robocze elementy przyszłej implementacji po 74E.3:
+
+Elementy normalizacji po 74E.4:
 
 ```text
-src/tradinglab/data_engine/connectors/polygon_forex.py
-tests/data_engine/test_polygon_forex_normalization.py
+src/tradinglab/data_engine/connectors/polygon_forex.py          -> zaimplementowane po 74E.4
+tests/data_engine/test_polygon_forex_normalization.py           -> zaimplementowane po 74E.4
 ```
 
-Mikro-krok 74E.3 nie zmienia jeszcze kodu. Następny krok kodowy powinien dodać wyłącznie offline'owy normalizator przykładowej odpowiedzi Polygon/Massive do `OhlcvBar` oraz testy tego mapowania.
+Po mikro-kroku 74E.4 offline'owy normalizator przykładowej odpowiedzi Polygon/Massive do `OhlcvBar` został zaimplementowany jako `normalize_polygon_forex_ohlcv_response`.
+
+Ten krok nadal nie wykonuje połączeń sieciowych, nie wymaga API key, nie zapisuje plików, nie tworzy katalogu `data/datasets/`, nie uruchamia `validate_dataset`, nie uruchamia `load_dataset` i nie nadaje statusów datasetu.
+
+Następny krok powinien pozostać mały: audyt po 74E.4, a dopiero później decyzja, czy iść w zapis znormalizowanych świec do istniejącego przepływu datasetu, czy najpierw doprecyzować obsługę błędnych payloadów providera.
 
 ## 5. Format zapisu danych
 
