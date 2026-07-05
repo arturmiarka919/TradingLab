@@ -285,6 +285,128 @@ Ten krok nadal nie implementuje prawdziwego konektora Polygon/Massive, normaliza
 
 Następny krok kodowy powinien dotyczyć provider-specific normalizacji przykładowej odpowiedzi Polygon/Massive do `OhlcvBar`, nadal bez API key i bez internetu.
 
+### 4.3. Projekt normalizacji przykładowej odpowiedzi Polygon/Massive do `OhlcvBar`
+
+Po mikro-kroku 74E.3 normalizacja odpowiedzi Polygon/Massive jest zaprojektowana jako osobna warstwa między `ProviderRawResponse` a istniejącym modelem `OhlcvBar`.
+
+Ten krok nie implementuje jeszcze normalizatora. Dokumentuje jedynie mały, offline'owy zakres następnego kroku kodowego.
+
+Pierwszy normalizator powinien dotyczyć wyłącznie odpowiedzi typu Forex Custom Bars dla:
+
+```text
+provider: Polygon/Massive Forex API
+instrument: EUR/USD
+ticker providera: C:EURUSD
+data_type: OHLCV
+tryb: historyczne świece
+```
+
+Roboczy payload testowy powinien być lokalny i wpisany w teście albo fixture. Nie powinien pochodzić z prawdziwego połączenia sieciowego.
+
+Minimalny przykład roboczego payloadu:
+
+```text
+{
+    "adjusted": true,
+    "queryCount": 2,
+    "request_id": "offline-test-request",
+    "results": [
+        {
+            "c": 1.17721,
+            "h": 1.18305,
+            "l": 1.17560,
+            "n": 125329,
+            "o": 1.17921,
+            "t": 1626912000000,
+            "v": 125329,
+            "vw": 1.17890
+        },
+        {
+            "c": 1.18010,
+            "h": 1.18400,
+            "l": 1.17650,
+            "n": 125330,
+            "o": 1.17721,
+            "t": 1626998400000,
+            "v": 125330,
+            "vw": 1.18000
+        }
+    ],
+    "resultsCount": 2,
+    "status": "OK",
+    "ticker": "C:EURUSD"
+}
+```
+
+Mapowanie pól z payloadu providera do `OhlcvBar` powinno być jawne:
+
+```text
+t -> timestamp
+o -> open
+h -> high
+l -> low
+c -> close
+v -> volume
+```
+
+Pola `n`, `vw`, `adjusted`, `queryCount`, `request_id`, `resultsCount`, `status` i `ticker` nie powinny być na tym etapie mapowane do `OhlcvBar`. Mogą pozostać w `ProviderRawResponse.raw_payload`, ponieważ surowa odpowiedź providera ma być zachowana bez ukrywania payloadu.
+
+Pierwszy normalizator powinien przyjąć `ProviderRawResponse` i zwrócić listę `OhlcvBar`.
+
+Roboczy kontrakt logiczny:
+
+```text
+normalize_polygon_forex_ohlcv_response(raw_response) -> list[OhlcvBar]
+```
+
+Normalizator powinien:
+
+* sprawdzić, czy `raw_response.provider` odpowiada providerowi Polygon/Massive,
+* odczytać listę świec z pola `results`,
+* dla każdej świecy odczytać pola `t`, `o`, `h`, `l`, `c`, `v`,
+* zamienić timestamp providera z milisekund Unix na `datetime`,
+* utworzyć listę `OhlcvBar`,
+* zachować kolejność świec z payloadu,
+* nie wykonywać połączeń sieciowych,
+* nie wymagać API key,
+* nie zapisywać plików,
+* nie tworzyć katalogu `data/datasets/`,
+* nie uruchamiać `validate_dataset`,
+* nie uruchamiać `load_dataset`,
+* nie nadawać statusów datasetu.
+
+Na tym etapie normalizator nie powinien jeszcze obsługiwać:
+
+* innych providerów,
+* innych klas aktywów,
+* wielu formatów odpowiedzi,
+* paginacji,
+* `next_url`,
+* retry,
+* limitów API,
+* autoryzacji,
+* walidacji kompletności całego datasetu,
+* korekt stref czasowych poza jawną konwersją timestampu z payloadu.
+
+Testy offline następnego kroku kodowego powinny potwierdzać, że:
+
+* przykładowy payload `C:EURUSD` zwraca listę dwóch `OhlcvBar`,
+* pola OHLCV są mapowane bez zmiany wartości,
+* timestamp w milisekundach Unix jest zamieniany na `datetime`,
+* wynik zachowuje kolejność świec,
+* normalizator nie tworzy plików ani katalogu `data/datasets/`,
+* normalizator nie wymaga API key,
+* normalizator nie wykonuje połączeń sieciowych.
+
+Robocze elementy przyszłej implementacji po 74E.3:
+
+```text
+src/tradinglab/data_engine/connectors/polygon_forex.py
+tests/data_engine/test_polygon_forex_normalization.py
+```
+
+Mikro-krok 74E.3 nie zmienia jeszcze kodu. Następny krok kodowy powinien dodać wyłącznie offline'owy normalizator przykładowej odpowiedzi Polygon/Massive do `OhlcvBar` oraz testy tego mapowania.
+
 ## 5. Format zapisu danych
 
 W v0.2.0 dane są zapisywane w czterech podstawowych elementach:
