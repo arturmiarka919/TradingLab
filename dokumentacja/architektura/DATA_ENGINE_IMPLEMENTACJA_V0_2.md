@@ -230,13 +230,14 @@ Planowana odpowiedzialność normalizatora odpowiedzi providera:
 * nie walidować całego datasetu,
 * pozostawić walidację świec istniejącemu przepływowi Data Engine.
 
-Robocze elementy przyszłej implementacji:
+
+Elementy kontraktu po 74E.2 i robocze elementy przyszłej implementacji:
 
 ```text
-src/tradinglab/data_engine/connectors/base.py
-src/tradinglab/data_engine/connectors/polygon_forex.py
-tests/data_engine/test_provider_connector_contract.py
-tests/data_engine/test_polygon_forex_normalization.py
+src/tradinglab/data_engine/connectors/base.py                 -> zaimplementowane po 74E.2
+tests/data_engine/test_provider_connector_contract.py          -> zaimplementowane po 74E.2
+src/tradinglab/data_engine/connectors/polygon_forex.py         -> przyszły krok
+tests/data_engine/test_polygon_forex_normalization.py          -> przyszły krok
 ```
 
 Roboczy kontrakt logiczny konektora:
@@ -278,9 +279,11 @@ data_type: OHLCV
 tryb: historyczne świece
 ```
 
-Mikro-krok 74E.1 nie implementuje jeszcze konektora. Dokumentuje jedynie minimalny kontrakt, żeby kolejny krok kodowy mógł być mały, testowalny i bezpieczny.
+Po mikro-kroku 74E.2 bazowy kontrakt konektora został zaimplementowany w `src/tradinglab/data_engine/connectors/base.py` jako `ProviderRawResponse` oraz `ProviderOhlcvConnector`.
 
-Następny krok kodowy po tym dokumencie powinien ograniczyć się do dodania bazowego kontraktu i testów offline, bez pobierania danych z internetu.
+Ten krok nadal nie implementuje prawdziwego konektora Polygon/Massive, normalizacji odpowiedzi providera ani pobierania danych z internetu. Testy pozostają offline i potwierdzają tylko stabilny kształt kontraktu oraz możliwość reprezentowania surowej odpowiedzi providera bez zapisu datasetu na dysku.
+
+Następny krok kodowy powinien dotyczyć provider-specific normalizacji przykładowej odpowiedzi Polygon/Massive do `OhlcvBar`, nadal bez API key i bez internetu.
 
 ## 5. Format zapisu danych
 
