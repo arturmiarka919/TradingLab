@@ -1612,6 +1612,44 @@ Warstwa sample datasetu nie tworzy już przejściowego pliku `data.csv`. Przykł
 
 Po mikro-kroku 74A.1 warstwa sample datasetu nie powiela ręcznie logiki walidacji i aktualizacji metadanych. Po zapisaniu przykładowych świec korzysta z publicznego `validate_dataset`, a status zwracanego `DatasetBuildResult` ustala na podstawie `metadata.status` odczytanego przez publiczne `load_metadata`.
 
+Po mikro-kroku 74D.0 zaplanowano pierwsze praktyczne użycie publicznego `load_dataset` poza testami publicznego interfejsu Data Engine.
+
+Pierwszym miejscem użycia będzie skrypt:
+
+```text
+scripts/create_sample_dataset.py
+```
+
+Celem tego użycia jest pokazanie pełnego, małego przepływu demonstracyjnego:
+
+```text
+create_sample_ohlcv_dataset
+    -> validate_dataset
+    -> load_dataset
+    -> krótkie podsumowanie załadowanego datasetu w terminalu
+```
+
+Ten przepływ ma potwierdzać, że utworzony i zwalidowany dataset może zostać odczytany przez publiczne API jako spójny `DatasetLoadResult`, bez ręcznego składania metadanych, raportu walidacji i znormalizowanych świec przez użytkownika skryptu.
+
+Zakres 74D.1 powinien pozostać mały:
+
+* użyć `load_dataset` w `scripts/create_sample_dataset.py`,
+* wypisać status życia datasetu z `DatasetLoadResult.status`,
+* wypisać status walidacji z `DatasetLoadResult.validation_report.status`,
+* wypisać liczbę świec z `DatasetLoadResult.normalized_candles`,
+* zaktualizować test skryptu, aby potwierdzał nowe linie wyjścia.
+
+Mikro-krok 74D.1 nie powinien wprowadzać:
+
+* modułu research,
+* modułu backtestingu,
+* modułu strategii,
+* wyboru najnowszej wersji datasetu,
+* statusów `ACCEPTED` ani `REJECTED`,
+* konektora providera,
+* pobierania danych z internetu,
+* zmian w formacie datasetu.
+
 Macierz scenariuszy dla przykładowego datasetu:
 
 | ID | Scenariusz | Oczekiwany wynik | Status |
@@ -1632,8 +1670,9 @@ Macierz scenariuszy dla przykładowego datasetu:
 | SAMPLE_DATASET-014 | Zapis przejściowego `raw/response.json` | Plik `raw/response.json` istnieje i zawiera wynik `build_sample_raw_response` | pokryte testem |
 | SAMPLE_DATASET-015 | Zapis `normalized/candles.csv` w sample dataset | Plik `normalized/candles.csv` istnieje i zawiera przykładowe świece OHLCV | pokryte testem |
 | SAMPLE_DATASET-016 | Brak przejściowego `data.csv` w sample dataset | Katalog wersji sample datasetu nie zawiera już pliku `data.csv` | pokryte testem |
+| SAMPLE_DATASET-017 | Użycie publicznego `load_dataset` w skrypcie przykładowego datasetu | Skrypt po utworzeniu datasetu ładuje go przez publiczne `load_dataset` i wypisuje status datasetu, status walidacji oraz liczbę świec | planowane po 74D.0 |
 
-Na obecnym etapie obszar przykładowego datasetu można uznać za domknięty dla zakresu v0.2.0.
+Po mikro-kroku 74D.0 obszar przykładowego datasetu pozostaje domknięty dla dotychczas zaimplementowanego zakresu v0.2.0, ale posiada zaplanowany mały krok demonstracyjny `SAMPLE_DATASET-017`, który pokaże użycie publicznego `load_dataset` w skrypcie przykładowego datasetu.
 
 Przyszłe rozszerzenia mogą obejmować większe sample datasety, różne klasy aktywów, różne interwały, scenariusze celowo niepoprawnych danych demonstracyjnych oraz osobne komendy CLI dla generowania danych przykładowych. Nie należą one jednak do obecnego mikro-kroku domykania istniejącej warstwy przykładowego datasetu.
 
