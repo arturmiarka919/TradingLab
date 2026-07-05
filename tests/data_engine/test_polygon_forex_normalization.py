@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from tradinglab.data_engine.connectors import (
+    PolygonForexPayloadError,
     ProviderRawResponse,
     normalize_polygon_forex_ohlcv_response,
 )
@@ -66,7 +67,125 @@ def test_normalize_polygon_forex_ohlcv_response_rejects_wrong_provider() -> None
         raw_payload=_build_payload(),
     )
 
-    with pytest.raises(ValueError, match="polygon_massive"):
+    with pytest.raises(PolygonForexPayloadError, match="expected provider"):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_non_mapping_payload() -> None:
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload=["not", "a", "mapping"],
+    )
+
+    with pytest.raises(PolygonForexPayloadError, match="raw_payload must be a mapping"):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_missing_results() -> None:
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload={"status": "OK"},
+    )
+
+    with pytest.raises(PolygonForexPayloadError, match="missing required field 'results'"):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_results_not_list() -> None:
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload={"status": "OK", "results": "not-a-list"},
+    )
+
+    with pytest.raises(PolygonForexPayloadError, match="'results' must be a list"):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_non_mapping_result() -> None:
+    raw_payload = _build_payload()
+    raw_payload["results"] = ["not-a-mapping"]
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload=raw_payload,
+    )
+
+    with pytest.raises(PolygonForexPayloadError, match="index 0 must be a mapping"):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_missing_result_field() -> None:
+    raw_payload = _build_payload()
+    first_result = raw_payload["results"][0]
+    assert isinstance(first_result, dict)
+    del first_result["o"]
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload=raw_payload,
+    )
+
+    with pytest.raises(
+        PolygonForexPayloadError,
+        match="index 0 is missing required field 'o'",
+    ):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_invalid_timestamp() -> None:
+    raw_payload = _build_payload()
+    first_result = raw_payload["results"][0]
+    assert isinstance(first_result, dict)
+    first_result["t"] = "not-a-timestamp"
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload=raw_payload,
+    )
+
+    with pytest.raises(
+        PolygonForexPayloadError,
+        match="field 't' must be Unix milliseconds",
+    ):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_invalid_decimal() -> None:
+    raw_payload = _build_payload()
+    first_result = raw_payload["results"][0]
+    assert isinstance(first_result, dict)
+    first_result["c"] = "not-a-decimal"
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload=raw_payload,
+    )
+
+    with pytest.raises(
+        PolygonForexPayloadError,
+        match="field 'c' must be convertible to Decimal",
+    ):
+        normalize_polygon_forex_ohlcv_response(raw_response)
+
+
+def test_normalize_polygon_forex_ohlcv_response_rejects_non_finite_decimal() -> None:
+    raw_payload = _build_payload()
+    first_result = raw_payload["results"][0]
+    assert isinstance(first_result, dict)
+    first_result["v"] = "NaN"
+    raw_response = ProviderRawResponse(
+        provider="polygon_massive",
+        request=_build_request(),
+        raw_payload=raw_payload,
+    )
+
+    with pytest.raises(
+        PolygonForexPayloadError,
+        match="field 'v' must be a finite Decimal",
+    ):
         normalize_polygon_forex_ohlcv_response(raw_response)
 
 

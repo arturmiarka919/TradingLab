@@ -517,7 +517,9 @@ minimalne zabezpieczenia przed zapisem datasetu teraz,
 pełna obsługa produkcyjnego API później
 ```
 
-Następny krok kodowy powinien dodać czytelne błędy normalizatora dla brakujących pól, złych typów i błędnych konwersji, nadal bez API key, bez internetu i bez zapisu datasetu.
+Po mikro-kroku 74E.6 normalizator posiada czytelne błędy dla nieobsługiwanego providera, niepoprawnego typu payloadu, braku pola `results`, niepoprawnego typu `results`, niepoprawnego typu pojedynczej świecy, brakujących pól `t`, `o`, `h`, `l`, `c`, `v`, błędnej konwersji timestampu oraz błędnej konwersji wartości OHLCV do `Decimal`.
+
+Ten krok nadal nie wykonuje połączeń sieciowych, nie wymaga API key, nie zapisuje plików, nie tworzy katalogu `data/datasets/`, nie uruchamia `validate_dataset`, nie uruchamia `load_dataset` i nie nadaje statusów datasetu.
 
 ## 5. Format zapisu danych
 
