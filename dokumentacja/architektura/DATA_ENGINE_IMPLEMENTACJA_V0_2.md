@@ -631,6 +631,136 @@ Etap 74F powinien być podzielony na małe kroki:
 
 Kolejny krok po 74F.0 powinien być audytem istniejącego kodu zapisu datasetu, żeby nie dublować logiki i nie tworzyć drugiego systemu zapisu danych.
 
+### 4.6. Minimalny kontrakt offline buildera datasetu providera
+
+Po audycie 74F.1 projekt ma już istniejące elementy potrzebne do utworzenia datasetu providera offline.
+
+Nie należy tworzyć drugiego systemu zapisu datasetu.
+
+Nowy kod powinien używać istniejących elementów:
+
+```text
+create_dataset
+build_raw_response_path
+build_normalized_candles_path
+write_ohlcv_csv
+validate_dataset
+load_metadata
+```
+
+Minimalny builder offline dla Polygon/Massive Forex powinien powstać jako osobny moduł:
+
+```text
+src/tradinglab/data_engine/provider_dataset.py
+```
+
+Minimalna funkcja dla pierwszego providera:
+
+```text
+create_polygon_forex_ohlcv_dataset(
+    raw_response: ProviderRawResponse,
+    base_data_dir: Path,
+    version: str,
+    overwrite: bool = False,
+) -> DatasetBuildResult
+```
+
+Na tym etapie funkcja powinna być wąska i provider-specific.
+
+Nie powinna jeszcze obsługiwać wielu providerów, wielu typów danych, harmonogramów, pobierania z internetu ani automatycznego wyboru najnowszej wersji datasetu.
+
+#### Kolejność operacji
+
+Najważniejsza zasada dla tego buildera:
+
+```text
+normalizacja przed jakimkolwiek zapisem datasetu
+```
+
+Minimalny przepływ:
+
+```text
+raw_response
+-> normalize_polygon_forex_ohlcv_response(raw_response)
+
+jeżeli normalizacja przejdzie poprawnie:
+    -> create_dataset(...)
+    -> zapis raw_response.raw_payload do raw/response.json
+    -> write_ohlcv_csv(..., bars)
+    -> validate_dataset(...)
+    -> load_metadata(...)
+    -> zwrot DatasetBuildResult ze statusem z metadata
+
+jeżeli normalizacja zgłosi PolygonForexPayloadError:
+    -> nie wywołuj create_dataset(...)
+    -> nie zapisuj raw/response.json
+    -> nie zapisuj normalized/candles.csv
+    -> nie zapisuj metadata.json
+    -> nie zapisuj validation_report.json
+```
+
+Dzięki temu błędny payload providera nie powinien tworzyć częściowego datasetu.
+
+#### Zachowanie overwrite
+
+Parametr `overwrite` powinien działać podobnie jak w sample dataset, ale z jedną ważną różnicą bezpieczeństwa.
+
+W przypadku providera ewentualne usunięcie istniejącej wersji datasetu powinno nastąpić dopiero po poprawnej normalizacji payloadu.
+
+Kolejność powinna być następująca:
+
+```text
+1. normalizuj payload,
+2. jeżeli normalizacja się nie uda, zakończ błędem i niczego nie usuwaj,
+3. jeżeli normalizacja się uda i overwrite=True, usuń istniejącą wersję datasetu,
+4. utwórz dataset od nowa.
+```
+
+To zabezpiecza istniejący dataset przed usunięciem przez błędny payload wejściowy.
+
+#### Zwracany wynik
+
+Funkcja powinna zwracać `DatasetBuildResult`, tak jak `create_sample_ohlcv_dataset`.
+
+Końcowy status powinien być odczytany z `metadata.json` po `validate_dataset`.
+
+Na tym etapie funkcja nie musi zwracać `DatasetLoadResult`.
+
+Pełny odczyt datasetu powinien pozostać zadaniem publicznej funkcji:
+
+```text
+load_dataset(...)
+```
+
+#### Granice tego kroku
+
+Ten kontrakt nadal nie oznacza jeszcze połączenia z realnym API.
+
+W tym etapie nadal nie wolno:
+
+* wykonywać połączeń sieciowych,
+* wymagać API key,
+* pobierać danych z realnego Polygon/Massive API,
+* obsługiwać paginacji,
+* obsługiwać `next_url`,
+* obsługiwać retry,
+* obsługiwać timeoutów,
+* dodawać harmonogramu pobierania danych,
+* mieszać danych testowych z realnymi danymi z internetu.
+
+Pierwszy test kodowy po tym doprecyzowaniu powinien sprawdzić przepływ offline:
+
+```text
+ProviderRawResponse z lokalnym payloadem testowym
+-> create_polygon_forex_ohlcv_dataset(...)
+-> raw/response.json
+-> normalized/candles.csv
+-> validation_report.json
+-> metadata.status = VALIDATED
+```
+
+Osobny test powinien sprawdzić, że błędny payload zgłaszający `PolygonForexPayloadError` nie tworzy katalogu datasetu.
+
 ## 5. Format zapisu danych
 
 W v0.2.0 dane są zapisywane w czterech podstawowych elementach:
