@@ -188,6 +188,100 @@ Mikro-kroki przejścia do providera nie powinny jeszcze wprowadzać:
 
 Celem najbliższych kroków po 74E.0 nie jest jeszcze pełny konektor produkcyjny, tylko bezpieczna ścieżka do pierwszego małego, kontrolowanego i możliwego do zweryfikowania datasetu pobranego z prawdziwego źródła.
 
+### 4.2. Minimalny kontrakt konektora providera
+
+Po mikro-kroku 74E.1 minimalny kontrakt konektora providera jest traktowany jako warstwa przejściowa między zewnętrznym źródłem danych a istniejącym przepływem Data Engine.
+
+Konektor providera nie powinien zastępować istniejących elementów Data Engine. Jego zadaniem nie jest walidacja datasetu, zapis plików ani wybór wersji danych. Konektor ma jedynie dostarczyć surową odpowiedź providera albo umożliwić jej kontrolowane przetworzenie do wspólnego modelu świec OHLCV.
+
+Minimalny planowany przepływ wygląda następująco:
+
+```text
+DatasetRequest
+    -> ProviderOhlcvConnector
+    -> ProviderRawResponse
+    -> normalizer odpowiedzi providera
+    -> list[OhlcvBar]
+    -> zapis raw/response.json i normalized/candles.csv
+    -> validate_dataset
+    -> load_dataset
+```
+
+Minimalny kontrakt konektora powinien być ograniczony do danych OHLCV.
+
+Planowana odpowiedzialność konektora:
+
+* przyjąć request opisujący providera, instrument, interwał i zakres dat,
+* pobrać albo zwrócić surową odpowiedź providera,
+* zachować informację, z jakiego providera pochodzi odpowiedź,
+* nie ukrywać surowego payloadu,
+* nie podejmować decyzji o jakości datasetu,
+* nie zapisywać datasetu na dysku,
+* nie uruchamiać walidacji datasetu,
+* nie nadawać statusów `VALIDATED`, `ACCEPTED` ani `REJECTED`.
+
+Planowana odpowiedzialność normalizatora odpowiedzi providera:
+
+* przyjąć surowy payload providera,
+* odczytać z niego świece OHLCV,
+* zamienić dane na listę `OhlcvBar`,
+* nie zapisywać plików,
+* nie wykonywać połączeń sieciowych,
+* nie walidować całego datasetu,
+* pozostawić walidację świec istniejącemu przepływowi Data Engine.
+
+Robocze elementy przyszłej implementacji:
+
+```text
+src/tradinglab/data_engine/connectors/base.py
+src/tradinglab/data_engine/connectors/polygon_forex.py
+tests/data_engine/test_provider_connector_contract.py
+tests/data_engine/test_polygon_forex_normalization.py
+```
+
+Roboczy kontrakt logiczny konektora:
+
+```text
+ProviderOhlcvConnector.fetch_ohlcv(request) -> ProviderRawResponse
+```
+
+Roboczy kontrakt logiczny normalizatora:
+
+```text
+normalize_provider_ohlcv_response(raw_response) -> list[OhlcvBar]
+```
+
+`ProviderRawResponse` powinien być minimalnym obiektem opisującym odpowiedź providera. Na tym etapie wystarczające pola to:
+
+* nazwa providera,
+* request, dla którego pobrano dane,
+* surowy payload providera.
+
+W testach automatycznych konektor nie powinien wykonywać prawdziwych połączeń sieciowych. Testy powinny opierać się na lokalnym fixture, słowniku Python albo ręcznie zdefiniowanym przykładzie odpowiedzi providera.
+
+Testy kontraktu i normalizacji powinny potwierdzać, że:
+
+* konektor ma stabilny publiczny kształt,
+* odpowiedź providera można reprezentować bez zapisu na dysku,
+* normalizator potrafi zamienić przykładowy payload na `OhlcvBar`,
+* wynik normalizacji można później zapisać jako `normalized/candles.csv`,
+* testy nie wymagają API key,
+* testy nie wymagają internetu,
+* testy nie zapisują prawdziwego datasetu w `data/datasets/`.
+
+Pierwszy prawdziwy konektor powinien dotyczyć tylko jednego zakresu:
+
+```text
+provider: Polygon/Massive Forex API
+instrument: EUR/USD
+data_type: OHLCV
+tryb: historyczne świece
+```
+
+Mikro-krok 74E.1 nie implementuje jeszcze konektora. Dokumentuje jedynie minimalny kontrakt, żeby kolejny krok kodowy mógł być mały, testowalny i bezpieczny.
+
+Następny krok kodowy po tym dokumencie powinien ograniczyć się do dodania bazowego kontraktu i testów offline, bez pobierania danych z internetu.
+
 ## 5. Format zapisu danych
 
 W v0.2.0 dane są zapisywane w czterech podstawowych elementach:
