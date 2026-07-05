@@ -8,9 +8,11 @@ import pytest
 
 import tradinglab.data_engine.engine as engine_module
 from tradinglab.data_engine import (
+    DatasetLoadResult,
     DatasetMetadata,
     OhlcvBar,
     ValidationReport,
+    load_dataset,
     load_metadata,
     load_normalized_candles,
     load_validation_report,
@@ -83,6 +85,37 @@ def test_public_load_normalized_candles_reads_dataset_candles(
     assert candles == _build_bars()
 
 
+def test_public_load_dataset_reads_complete_dataset_version(
+    tmp_path: Path,
+) -> None:
+    _write_dataset_artifacts(base_data_dir=tmp_path)
+
+    dataset = load_dataset(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    dataset_path = build_dataset_version_path(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v001",
+    )
+
+    assert dataset == DatasetLoadResult(
+        dataset_id=DATASET_ID,
+        version="v001",
+        dataset_path=dataset_path,
+        data_path=build_normalized_candles_path(dataset_path),
+        metadata_path=build_metadata_path(dataset_path),
+        validation_report_path=build_validation_report_path(dataset_path),
+        metadata=_build_metadata(),
+        validation_report=_build_validation_report(),
+        normalized_candles=_build_bars(),
+        status=DATASET_LIFECYCLE_STATUS_VALIDATED,
+    )
+
+
 def test_public_read_functions_use_requested_dataset_version(
     tmp_path: Path,
 ) -> None:
@@ -102,6 +135,24 @@ def test_public_read_functions_use_requested_dataset_version(
 
     assert first_metadata.version == "v001"
     assert second_metadata.version == "v002"
+
+
+def test_public_load_dataset_uses_requested_dataset_version(
+    tmp_path: Path,
+) -> None:
+    _write_dataset_artifacts(base_data_dir=tmp_path, version="v001")
+    _write_dataset_artifacts(base_data_dir=tmp_path, version="v002")
+
+    dataset = load_dataset(
+        base_data_dir=tmp_path,
+        dataset_id=DATASET_ID,
+        version="v002",
+    )
+
+    assert dataset.version == "v002"
+    assert dataset.dataset_path.name == "v002"
+    assert dataset.metadata.version == "v002"
+    assert dataset.validation_report.version == "v002"
 
 
 def test_public_load_metadata_raises_for_missing_dataset_version(
@@ -131,6 +182,17 @@ def test_public_load_normalized_candles_raises_for_missing_dataset_version(
 ) -> None:
     with pytest.raises(FileNotFoundError):
         load_normalized_candles(
+            base_data_dir=tmp_path,
+            dataset_id=DATASET_ID,
+            version="v001",
+        )
+
+
+def test_public_load_dataset_raises_for_missing_dataset_version(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(FileNotFoundError):
+        load_dataset(
             base_data_dir=tmp_path,
             dataset_id=DATASET_ID,
             version="v001",

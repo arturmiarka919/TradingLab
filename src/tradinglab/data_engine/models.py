@@ -74,3 +74,19 @@ class DatasetBuildResult:
     metadata_path: Path
     validation_report_path: Path
     status: str
+
+
+@dataclass(frozen=True)
+class DatasetLoadResult:
+    """Result describing loaded dataset version artifacts and data."""
+
+    dataset_id: str
+    version: str
+    dataset_path: Path
+    data_path: Path
+    metadata_path: Path
+    validation_report_path: Path
+    metadata: DatasetMetadata
+    validation_report: ValidationReport
+    normalized_candles: tuple[OhlcvBar, ...]
+    status: str

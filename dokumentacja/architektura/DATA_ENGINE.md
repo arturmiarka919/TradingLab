@@ -109,6 +109,7 @@ Aktualny stan implementacji v0.2.0 jest mniejszy niż pełna wizja architektonic
 * publiczny odczyt metadanych przez `load_metadata`,
 * publiczny odczyt raportu walidacji przez `load_validation_report`,
 * publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
+* publiczny zbiorczy odczyt datasetu przez `load_dataset`,
 * publiczna walidacja datasetu przez `validate_dataset`,
 * aktualizacja statusu życia datasetu po `validate_dataset`,
 * sample dataset korzystający z publicznego `validate_dataset`,
@@ -921,6 +922,7 @@ Część decyzji została już doprecyzowana w dokumencie implementacyjnym v0.2.
 * publiczny odczyt metadanych przez `load_metadata`,
 * publiczny odczyt raportu walidacji przez `load_validation_report`,
 * publiczny odczyt znormalizowanych świec przez `load_normalized_candles`,
+* publiczny zbiorczy odczyt datasetu przez `load_dataset`,
 * publiczna walidacja datasetu przez `validate_dataset`,
 * mapowanie wyniku `validate_dataset` na `metadata.status`,
 * użycie publicznego `validate_dataset` w sample dataset.

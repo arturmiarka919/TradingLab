@@ -329,6 +329,7 @@ Docelowy minimalny publiczny interfejs Data Engine v0.2.0 obejmuje:
 ```text
 create_dataset
 validate_dataset
+load_dataset
 load_metadata
 load_validation_report
 load_normalized_candles
@@ -342,6 +343,7 @@ Obecny eksportowany interfejs obejmuje przede wszystkim:
 create_dataset
 generate_dataset_id
 validate_dataset
+load_dataset
 load_metadata
 load_validation_report
 load_normalized_candles
@@ -352,6 +354,7 @@ Funkcje publicznego interfejsu:
 
 ```text
 validate_dataset
+load_dataset
 load_metadata
 load_validation_report
 load_normalized_candles
@@ -368,6 +371,17 @@ version
 ```
 
 a nie przez ręczne podawanie ścieżek do wewnętrznych plików datasetu.
+
+Obecne `load_dataset`:
+
+* odczytuje `metadata.json`,
+* odczytuje `validation_report.json`,
+* odczytuje `normalized/candles.csv`,
+* zwraca `DatasetLoadResult`,
+* nie waliduje datasetu,
+* nie zmienia metadanych,
+* nie zapisuje plików,
+* nie wybiera najnowszej wersji datasetu.
 
 Obecne `validate_dataset`:
 
@@ -438,6 +452,7 @@ src/tradinglab/data_engine/
   dataset_builder.py
   dataset_id.py
   data_file.py
+  engine.py
   metadata.py
   models.py
   ohlcv_validation.py

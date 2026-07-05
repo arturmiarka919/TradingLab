@@ -3,6 +3,7 @@
 from tradinglab.data_engine.dataset_builder import create_dataset
 from tradinglab.data_engine.dataset_id import generate_dataset_id
 from tradinglab.data_engine.engine import (
+    load_dataset,
     load_metadata,
     load_normalized_candles,
     load_validation_report,
@@ -10,6 +11,7 @@ from tradinglab.data_engine.engine import (
 )
 from tradinglab.data_engine.models import (
     DatasetBuildResult,
+    DatasetLoadResult,
     DatasetMetadata,
     DatasetRequest,
     OhlcvBar,
@@ -18,12 +20,14 @@ from tradinglab.data_engine.models import (
 
 __all__ = [
     "DatasetBuildResult",
+    "DatasetLoadResult",
     "DatasetMetadata",
     "DatasetRequest",
     "OhlcvBar",
     "ValidationReport",
     "create_dataset",
     "generate_dataset_id",
+    "load_dataset",
     "load_metadata",
     "load_normalized_candles",
     "load_validation_report",

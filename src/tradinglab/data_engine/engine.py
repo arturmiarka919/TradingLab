@@ -8,7 +8,12 @@ from tradinglab.data_engine.metadata import (
     load_metadata as _load_metadata_from_path,
     write_metadata,
 )
-from tradinglab.data_engine.models import DatasetMetadata, OhlcvBar, ValidationReport
+from tradinglab.data_engine.models import (
+    DatasetLoadResult,
+    DatasetMetadata,
+    OhlcvBar,
+    ValidationReport,
+)
 from tradinglab.data_engine.ohlcv_validation import validate_ohlcv_csv
 from tradinglab.data_engine.status import (
     DATASET_LIFECYCLE_STATUS_QUARANTINED,
@@ -78,6 +83,40 @@ def load_normalized_candles(
     normalized_candles_path = build_normalized_candles_path(dataset_path)
 
     return read_ohlcv_csv(normalized_candles_path)
+
+
+def load_dataset(
+    *,
+    base_data_dir: Path,
+    dataset_id: str,
+    version: str,
+) -> DatasetLoadResult:
+    """Load dataset version metadata, validation report and normalized candles."""
+    dataset_path = build_dataset_version_path(
+        base_data_dir=base_data_dir,
+        dataset_id=dataset_id,
+        version=version,
+    )
+    metadata_path = build_metadata_path(dataset_path)
+    validation_report_path = build_validation_report_path(dataset_path)
+    normalized_candles_path = build_normalized_candles_path(dataset_path)
+
+    metadata = _load_metadata_from_path(metadata_path)
+    validation_report = _load_validation_report_from_path(validation_report_path)
+    normalized_candles = read_ohlcv_csv(normalized_candles_path)
+
+    return DatasetLoadResult(
+        dataset_id=dataset_id,
+        version=version,
+        dataset_path=dataset_path,
+        data_path=normalized_candles_path,
+        metadata_path=metadata_path,
+        validation_report_path=validation_report_path,
+        metadata=metadata,
+        validation_report=validation_report,
+        normalized_candles=normalized_candles,
+        status=metadata.status,
+    )
 
 
 def validate_dataset(
