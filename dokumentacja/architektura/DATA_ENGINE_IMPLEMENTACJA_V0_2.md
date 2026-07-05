@@ -412,6 +412,113 @@ Ten krok nadal nie wykonuje połączeń sieciowych, nie wymaga API key, nie zapi
 
 Następny krok powinien pozostać mały: audyt po 74E.4, a dopiero później decyzja, czy iść w zapis znormalizowanych świec do istniejącego przepływu datasetu, czy najpierw doprecyzować obsługę błędnych payloadów providera.
 
+### 4.4. Polityka błędnych payloadów providera i granica zabezpieczeń
+
+Po mikro-kroku 74E.5 projekt rozróżnia dwie warstwy zabezpieczeń dla danych pochodzących od providera:
+
+```text
+warstwa 1: minimalna bramka bezpieczeństwa przed zapisem datasetu
+warstwa 2: przyszła pełna obsługa produkcyjnego API providera
+```
+
+To rozróżnienie jest ważne, ponieważ obecny normalizator Polygon/Massive ma być bezpiecznym elementem offline, ale nie jest jeszcze pełnym produkcyjnym konektorem API.
+
+Zabezpieczenia minimalne mają chronić przed przekazaniem ewidentnie błędnego payloadu dalej do zapisu datasetu.
+
+Nie oznaczają jeszcze pełnej obsługi wszystkich problemów, które mogą wystąpić przy prawdziwym pobieraniu danych z internetu.
+
+#### Warstwa 1 — minimalna bramka bezpieczeństwa przed zapisem datasetu
+
+Minimalna bramka bezpieczeństwa dotyczy normalizatora:
+
+```text
+normalize_polygon_forex_ohlcv_response(raw_response) -> list[OhlcvBar]
+```
+
+Jej celem jest upewnienie się, że z surowej odpowiedzi providera można bezpiecznie utworzyć listę `OhlcvBar`.
+
+Na tym etapie normalizator powinien sprawdzać tylko podstawowy kształt payloadu i podstawową możliwość konwersji danych.
+
+Minimalne zabezpieczenia powinny obejmować:
+
+* `raw_response.provider` musi wskazywać obsługiwanego providera, czyli `polygon_massive`,
+* `raw_response.raw_payload` musi być słownikiem albo obiektem typu mapping,
+* payload musi zawierać pole `results`,
+* `results` musi być listą,
+* każdy element `results` musi być słownikiem albo obiektem typu mapping,
+* każda świeca musi zawierać pola `t`, `o`, `h`, `l`, `c`, `v`,
+* pole `t` musi dać się zamienić z milisekund Unix na `datetime` UTC,
+* pola `o`, `h`, `l`, `c`, `v` muszą dać się zamienić na `Decimal`.
+
+Zasada błędu w tej warstwie:
+
+```text
+błędny payload = przerwać normalizację jasno i głośno
+```
+
+Normalizator nie powinien:
+
+* pomijać błędnych świec po cichu,
+* zwracać częściowej listy świec, jeśli jedna świeca jest błędna,
+* poprawiać danych providera na podstawie domysłów,
+* zapisywać częściowych danych na dysku,
+* tworzyć katalogu `data/datasets/`,
+* uruchamiać `validate_dataset`,
+* uruchamiać `load_dataset`,
+* nadawać statusów datasetu.
+
+Jeżeli jedna świeca w payloadzie jest błędna, cała normalizacja powinna zostać przerwana.
+
+To podejście jest bezpieczniejsze na obecnym etapie niż ciche pomijanie błędnych rekordów, ponieważ projekt nie ma jeszcze warstwy raportowania jakości odpowiedzi providera.
+
+#### Warstwa 2 — przyszła pełna obsługa produkcyjnego API providera
+
+Pełna obsługa produkcyjnego API nie należy jeszcze do mikro-kroków 74E.5 ani 74E.6.
+
+Ta warstwa będzie potrzebna dopiero wtedy, gdy projekt przejdzie od offline normalizacji do prawdziwego pobierania danych z Polygon/Massive.
+
+Przyszła pełna obsługa produkcyjna powinna objąć osobne decyzje i testy dla takich tematów jak:
+
+* status odpowiedzi API,
+* błędy autoryzacji,
+* brak albo niepoprawny API key,
+* limity API,
+* timeouty,
+* retry,
+* paginacja,
+* `next_url`,
+* puste odpowiedzi,
+* niepełny zakres dat,
+* duplikaty świec,
+* luki w danych,
+* różnice stref czasowych,
+* kontrola kompletności datasetu,
+* raportowanie jakości odpowiedzi providera,
+* decyzja, czy pusty wynik jest błędem, czy poprawną odpowiedzią bez danych,
+* decyzja, czy częściowo poprawna odpowiedź może być zapisana do `raw/response.json`,
+* decyzja, czy częściowo poprawna odpowiedź może tworzyć `normalized/candles.csv`.
+
+Te tematy nie powinny być mieszane z minimalnym offline normalizatorem.
+
+#### Granica odpowiedzialności obecnego etapu
+
+Mikro-krok 74E.5 nie zmienia kodu.
+
+Mikro-krok 74E.6 powinien wdrożyć tylko minimalną bramkę bezpieczeństwa dla błędnych payloadów providera.
+
+Po 74E.6 normalizator powinien być wystarczająco bezpieczny, żeby nie przepuścić ewidentnie błędnych danych do kolejnego etapu projektu.
+
+Nie powinien być jednak opisywany jako pełna produkcyjna obsługa API Polygon/Massive.
+
+Najważniejsza zasada tego etapu:
+
+```text
+minimalne zabezpieczenia przed zapisem datasetu teraz,
+pełna obsługa produkcyjnego API później
+```
+
+Następny krok kodowy powinien dodać czytelne błędy normalizatora dla brakujących pól, złych typów i błędnych konwersji, nadal bez API key, bez internetu i bez zapisu datasetu.
+
 ## 5. Format zapisu danych
 
 W v0.2.0 dane są zapisywane w czterech podstawowych elementach:
