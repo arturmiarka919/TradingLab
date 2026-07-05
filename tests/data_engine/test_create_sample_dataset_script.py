@@ -24,4 +24,7 @@ def test_create_sample_dataset_script_runs_from_command_line(
     assert "Metadata path:" in result.stdout
     assert "Validation report path:" in result.stdout
     assert "Data path:" in result.stdout
+    assert "Loaded dataset status: VALIDATED" in result.stdout
+    assert "Loaded validation status: valid" in result.stdout
+    assert "Loaded candles rows: 2" in result.stdout
     assert (tmp_path / "data" / "datasets").is_dir()
