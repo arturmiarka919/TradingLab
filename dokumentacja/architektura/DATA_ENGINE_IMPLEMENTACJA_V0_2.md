@@ -573,14 +573,13 @@ Po zakończeniu etapu 74F projekt powinien umieć utworzyć dataset z payloadu p
 Minimalny widoczny efekt:
 
 ```text
-data/datasets/<dataset_id>/
+data/datasets/<dataset_id>/<version>/
 ├── metadata.json
+├── validation_report.json
 ├── raw/
 │   └── response.json
-├── normalized/
-│   └── candles.csv
-└── validation/
-    └── report.json
+└── normalized/
+    └── candles.csv
 ```
 
 Po utworzeniu datasetu powinno być możliwe użycie publicznego loadera:
@@ -607,7 +606,7 @@ W szczególności błędny payload nie powinien tworzyć:
 
 * częściowego `normalized/candles.csv`,
 * częściowego `metadata.json`,
-* częściowego `validation/report.json`,
+* częściowego `validation_report.json`,
 * datasetu oznaczonego jako poprawny.
 
 Najważniejsza zasada:
