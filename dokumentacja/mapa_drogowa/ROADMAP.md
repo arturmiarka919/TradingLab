@@ -16,6 +16,30 @@ Każda wersja powinna dostarczać konkretną wartość i pozostawiać projekt w 
 
 Nie przechodzimy do kolejnego etapu, jeżeli fundament poprzedniego etapu nie jest wystarczająco stabilny.
 
+### Zasada minimalnych, weryfikowalnych modułów
+
+TradingLab nie jest rozwijany przez budowanie od razu maksymalnie rozbudowanej wersji jednego modułu.
+
+Najpierw powstają minimalne, działające i weryfikowalne wersje kolejnych modułów. Każdy taki moduł powinien mieć jasno określony zakres odpowiedzialności, wejścia, wyjścia, testy oraz sposób oceny poprawności działania.
+
+Minimalna wersja modułu nie oznacza wersji prowizorycznej. Oznacza mały zakres funkcjonalny wykonany w sposób stabilny, możliwy do przetestowania, odtworzenia i porównania z oczekiwanym zachowaniem.
+
+Po zbudowaniu pierwszego pionowego przepływu systemu moduły mogą być rozwijane iteracyjnie. Oznacza to, że projekt może wracać do wcześniejszych modułów, gdy kolejne części systemu pokażą realne potrzeby, ograniczenia lub brakujące funkcjonalności.
+
+Preferowany kierunek rozwoju to:
+
+```text
+Data Engine
+-> Strategy Engine
+-> Backtesting Engine
+-> Analytics Engine
+-> Research Workflow
+-> Validation Engine
+-> Trading Engine
+```
+
+Każdy etap powinien dostarczać działający fragment systemu, który można sprawdzić, uruchomić i rozwijać dalej bez utraty kontroli nad jakością danych, wyników i decyzji projektowych.
+
 ---
 
 # Etap I — Laboratorium
