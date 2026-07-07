@@ -42,6 +42,8 @@ def evaluate_repository_state(
     local_head: str | None,
     origin_main: str | None,
     git_diff: str | None = None,
+    git_diff_cached: str | None = None,
+    allowed_paths: tuple[str, ...] | None = None,
 ) -> DevAgentDecision:
     """Evaluate supplied Git state and return the next procedural decision."""
     normalized_status = git_status.strip()
@@ -76,12 +78,9 @@ def evaluate_repository_state(
         return _evaluate_untracked_files(git_diff=git_diff)
 
     if has_staged_changes:
-        return DevAgentDecision(
-            decision_type=DevAgentDecisionType.NEXT_STEP,
-            repository_state=RepositoryState.STAGED_CHANGES,
-            procedure="NEW_POLISH_DOCUMENTATION_FILE",
-            next_step="review_cached_diff",
-            reason="staged_changes_require_cached_diff_review",
+        return _evaluate_staged_changes(
+            git_diff_cached=git_diff_cached,
+            allowed_paths=allowed_paths,
         )
 
     if has_unstaged_changes:
@@ -158,6 +157,84 @@ def _evaluate_untracked_files(*, git_diff: str | None) -> DevAgentDecision:
         next_step="stage_untracked_documentation_file",
         reason=reason,
     )
+
+
+def _evaluate_staged_changes(
+    *,
+    git_diff_cached: str | None,
+    allowed_paths: tuple[str, ...] | None,
+) -> DevAgentDecision:
+    if git_diff_cached is None or allowed_paths is None:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.NEXT_STEP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="review_cached_diff",
+            reason="staged_changes_require_cached_diff_review",
+        )
+
+    diff_paths = _extract_cached_diff_paths(git_diff_cached=git_diff_cached)
+    normalized_allowed_paths = {
+        _normalize_repo_path(path)
+        for path in allowed_paths
+    }
+
+    if not diff_paths:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="staged_diff_has_no_paths",
+        )
+
+    if not diff_paths.issubset(normalized_allowed_paths):
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="staged_diff_outside_allowed_scope",
+        )
+
+    return DevAgentDecision(
+        decision_type=DevAgentDecisionType.NEXT_STEP,
+        repository_state=RepositoryState.STAGED_CHANGES,
+        procedure="NEW_POLISH_DOCUMENTATION_FILE",
+        next_step="run_diff_check",
+        reason="staged_diff_matches_allowed_scope",
+    )
+
+
+def _extract_cached_diff_paths(*, git_diff_cached: str) -> set[str]:
+    paths: set[str] = set()
+
+    for line in git_diff_cached.splitlines():
+        if not line.startswith("diff --git "):
+            continue
+
+        parts = line.split()
+        if len(parts) < 4:
+            continue
+
+        new_path = parts[3]
+        paths.add(_strip_diff_prefix(new_path))
+
+    return paths
+
+
+def _strip_diff_prefix(path: str) -> str:
+    normalized_path = _normalize_repo_path(path)
+
+    if normalized_path.startswith("b/"):
+        return normalized_path[2:]
+
+    if normalized_path.startswith("a/"):
+        return normalized_path[2:]
+
+    return normalized_path
+
+
+def _normalize_repo_path(path: str) -> str:
+    return path.replace("\\", "/").strip()
 
 
 def _is_unknown_git_status(normalized_status_lower: str) -> bool:

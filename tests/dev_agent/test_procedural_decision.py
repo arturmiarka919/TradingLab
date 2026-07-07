@@ -105,6 +105,62 @@ def test_staged_changes_require_cached_diff_review() -> None:
     assert decision.next_step == "review_cached_diff"
 
 
+def test_staged_cached_diff_with_only_allowed_path_requests_diff_check() -> None:
+    decision = evaluate_repository_state(
+        git_status=(
+            "On branch main\n"
+            "Your branch is up to date with 'origin/main'.\n"
+            "\n"
+            "Changes to be committed:\n"
+            '  (use "git restore --staged <file>..." to unstage)\n'
+            "        new file:   dokumentacja/architektura/DEV_AGENT_CONTRACT.md\n"
+        ),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=(
+            "diff --git a/dokumentacja/architektura/DEV_AGENT_CONTRACT.md "
+            "b/dokumentacja/architektura/DEV_AGENT_CONTRACT.md\n"
+            "new file mode 100644\n"
+        ),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.NEXT_STEP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.next_step == "run_diff_check"
+    assert decision.reason == "staged_diff_matches_allowed_scope"
+
+
+def test_staged_cached_diff_outside_allowed_scope_returns_stop() -> None:
+    decision = evaluate_repository_state(
+        git_status=(
+            "On branch main\n"
+            "Your branch is up to date with 'origin/main'.\n"
+            "\n"
+            "Changes to be committed:\n"
+            '  (use "git restore --staged <file>..." to unstage)\n'
+            "        new file:   dokumentacja/architektura/DEV_AGENT_CONTRACT.md\n"
+            "        modified:   README.md\n"
+        ),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=(
+            "diff --git a/dokumentacja/architektura/DEV_AGENT_CONTRACT.md "
+            "b/dokumentacja/architektura/DEV_AGENT_CONTRACT.md\n"
+            "new file mode 100644\n"
+            "diff --git a/README.md b/README.md\n"
+            "index 1111111..2222222 100644\n"
+        ),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.STOP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.reason == "staged_diff_outside_allowed_scope"
+
+
 def test_unknown_repository_state_returns_stop() -> None:
     decision = evaluate_repository_state(
         git_status="fatal: not a git repository\n",
