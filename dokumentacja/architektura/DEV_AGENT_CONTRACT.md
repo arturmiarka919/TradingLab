@@ -1,8 +1,8 @@
 # Dev Agent — minimalny kontrakt proceduralny
 
 Status: roboczy
-Krok: 75A.2-CONTRACT
-Zakres: minimalny kontrakt proceduralny pierwszej wersji Dev Agenta
+Krok: 75A.8A-DOC
+Zakres: minimalny kontrakt proceduralny Dev Agenta, przenośność i autonomia pakietowa
 
 ## 1. Cel dokumentu
 
@@ -15,7 +15,10 @@ Kontrakt określa:
 * jakie decyzje zwraca,
 * kiedy wykonuje STOP,
 * jaki format ma odpowiedź agenta,
-* jakich działań pierwsza wersja Dev Agenta NIE MOŻE wykonywać.
+* jakich działań pierwsza wersja Dev Agenta NIE MOŻE wykonywać,
+* dlaczego Dev Agent ma być docelowo przenośny między projektami,
+* jak Dev Agent ma docelowo wykonywać zatwierdzone pakiety małych kroków,
+* jak Dev Agent ma pracować na pełnej treści pliku dostarczonej przez człowieka.
 
 Ten dokument nie opisuje jeszcze pełnej implementacji Dev Agenta.
 
@@ -47,6 +50,181 @@ Dev Agent NIE MOŻE samodzielnie rozszerzać zakresu kroku.
 
 Dev Agent NIE MOŻE samodzielnie uznać nieopisanego przypadku za dozwolony.
 
+### 3.1. Zasada przenośności Dev Agenta
+
+Dev Agent NIE MOŻE być projektowany jako narzędzie trwale przywiązane wyłącznie do TradingLab.
+
+TradingLab jest pierwszym projektem referencyjnym i poligonem testowym Dev Agenta.
+
+Docelowo Dev Agent ma być możliwy do użycia także w innych projektach programistycznych.
+
+Dlatego architektura Dev Agenta MUSI rozdzielać:
+
+* uniwersalny rdzeń proceduralny,
+* konfigurację konkretnego projektu,
+* adapter konkretnego projektu,
+* lokalnego runnera wykonującego dozwolone komendy,
+* opcjonalną warstwę AI odpowiedzialną za język, planowanie i generowanie propozycji.
+
+Uniwersalny rdzeń Dev Agenta MUSI zawierać logikę niezależną od konkretnego projektu.
+
+Do uniwersalnego rdzenia należą między innymi:
+
+* rozpoznawanie stanu repozytorium,
+* rozpoznawanie `clean`, `untracked`, `unstaged`, `staged` i `unknown`,
+* kontrola zgodności `HEAD` z `origin/main`,
+* kontrola zakresu zmian względem `allowed_paths`,
+* obsługa decyzji `NEXT_STEP`,
+* obsługa decyzji `STOP`,
+* obsługa decyzji `READY_FOR_HUMAN_APPROVAL`,
+* obsługa decyzji `DONE`,
+* wymuszanie jawnej akceptacji człowieka przy działaniach wymagających zgody,
+* wymuszanie STOP przy braku danych, nieznanym stanie albo przekroczeniu zakresu.
+
+Konfiguracja projektu MUSI zawierać informacje zależne od konkretnego repozytorium.
+
+Do konfiguracji projektu należą między innymi:
+
+* nazwa projektu,
+* ścieżka repozytorium,
+* domyślna gałąź,
+* komenda testów,
+* komenda lintowania,
+* komenda formatowania, jeżeli istnieje,
+* lista wymaganych kontroli jakości,
+* lista chronionych ścieżek,
+* reguły językowe dokumentacji,
+* reguły językowe kodu,
+* reguły commitów,
+* profile uprawnień agenta.
+
+Komendy specyficzne dla TradingLab, takie jak `uv run pytest` albo `uv run ruff check .`, NIE MOGĄ być na stałe zaszyte w uniwersalnym rdzeniu Dev Agenta.
+
+Dev Agent Core MUSI oczekiwać logicznych wyników kontroli.
+
+Project Adapter albo Project Config MUSI określać, jak te wyniki mają zostać uzyskane w konkretnym projekcie.
+
+### 3.2. Zasada autonomii pakietowej bez utraty kontroli
+
+Docelowo Dev Agent ma przyspieszać pracę przez wykonywanie zatwierdzonych pakietów małych kroków.
+
+Dev Agent NIE MA zastępować człowieka jako właściciela kierunku projektu.
+
+Człowiek nadal decyduje:
+
+* co ma zostać zbudowane,
+* jaki pakiet kroków wolno wykonać,
+* jakie pliki wolno zmieniać,
+* jakie komendy wolno uruchamiać,
+* jakie są warunki STOP,
+* jaki poziom autonomii agent otrzymuje.
+
+Dev Agent może docelowo samodzielnie wykonywać serię małych kroków tylko w granicach zatwierdzonego planu wykonania.
+
+Plan wykonania MUSI określać co najmniej:
+
+* identyfikator pakietu pracy,
+* listę kroków do wykonania,
+* dozwolone pliki albo katalogi,
+* wymagane kontrole jakości,
+* dozwolone akcje Git,
+* warunki STOP,
+* oczekiwany raport końcowy.
+
+Dev Agent NIE MOŻE samodzielnie rozszerzyć pakietu pracy.
+
+Dev Agent NIE MOŻE samodzielnie zmienić decyzji architektonicznej.
+
+Dev Agent NIE MOŻE kontynuować pracy, jeżeli wykonanie kroku wymaga decyzji człowieka.
+
+Docelowy model pracy pakietowej:
+
+```text
+Człowiek zatwierdza kierunek i granice pakietu.
+Dev Agent wykonuje powtarzalną procedurę małych kroków.
+Dev Agent wykonuje kontrole jakości.
+Dev Agent tworzy commity zgodne z pakietem.
+Dev Agent pushuje zmiany tylko wtedy, gdy profil i procedura na to pozwalają.
+Dev Agent generuje raport audytowy.
+Człowiek audytuje raport i podejmuje decyzje wyższego poziomu.
+```
+
+Raport audytowy pakietu MUSI zawierać co najmniej:
+
+* identyfikator pakietu,
+* listę wykonanych kroków,
+* listę commitów,
+* skróty commitów,
+* listę zmienionych plików,
+* wyniki kontroli jakości,
+* końcowy stan repozytorium,
+* informację, czy `HEAD` jest równy `origin/main`,
+* listę sytuacji STOP, jeżeli wystąpiły,
+* listę ryzyk albo decyzji wymagających człowieka.
+
+Dev Agent ma mieć autonomię operacyjną w granicach zatwierdzonego pakietu.
+
+Dev Agent NIE MA mieć autonomii decyzyjnej nad kierunkiem projektu.
+
+### 3.3. Procedura pracy na pełnej treści pliku
+
+Dev Agent MUSI obsługiwać tryb pracy, w którym człowiek wkleja pełną aktualną treść pliku.
+
+Ten tryb jest szczególnie ważny przy pracy nad dokumentacją i pojedynczymi plikami kodu.
+
+Jeżeli człowiek dostarcza pełną aktualną treść pliku, Dev Agent MUSI traktować tę treść jako aktualny punkt odniesienia dla danego kroku.
+
+Dev Agent NIE MOŻE zakładać, że zna aktualny stan pliku lepiej niż treść dostarczona przez człowieka.
+
+W tym trybie Dev Agent MOŻE zwrócić tylko jeden z jawnych trybów zmiany:
+
+* `WHOLE_FILE_REPLACEMENT`,
+* `FULL_SECTION_REPLACEMENT`,
+* `FULL_FUNCTION_REPLACEMENT`,
+* `INSERT_BLOCK_BEFORE`,
+* `INSERT_BLOCK_AFTER`.
+
+Dla dokumentacji po polsku Dev Agent POWINIEN preferować `WHOLE_FILE_REPLACEMENT`, jeżeli zmiana dotyczy większej części dokumentu albo wielu sekcji jednocześnie.
+
+Dev Agent NIE MOŻE zwracać niejednoznacznych instrukcji typu „dopisz coś podobnego” albo „zmień odpowiedni fragment”.
+
+Dev Agent MUSI jasno wskazać:
+
+* który plik jest edytowany,
+* jaki tryb zmiany jest używany,
+* czy człowiek ma podmienić cały plik, sekcję, funkcję czy blok,
+* od którego nagłówka albo fragmentu zaczyna się podmiana,
+* przed którym nagłówkiem albo fragmentem kończy się podmiana,
+* jakie kontrole należy uruchomić po zapisaniu pliku.
+
+Jeżeli Dev Agent zwraca blok do kopiuj/wklej, blok MUSI być kompletny.
+
+Kompletny blok oznacza, że:
+
+* ma jednoznaczny początek,
+* ma jednoznaczny koniec,
+* nie jest podzielony na kilka niezależnych fragmentów bez wyraźnej procedury,
+* nie zawiera dwóch alternatywnych wersji tej samej zmiany,
+* nie miesza treści pliku z instrukcjami poza treścią pliku,
+* nie zawiera niedomkniętych bloków markdown,
+* nie wymaga domyślania się brakującej końcówki.
+
+Jeżeli Dev Agent nie jest w stanie wygenerować kompletnego bloku, MUSI wykonać STOP i poprosić o zawężenie zakresu zmiany.
+
+Jeżeli zmiana dotyczy polskiej dokumentacji, Dev Agent NIE MOŻE używać PowerShell do zapisu treści pliku.
+
+Dla polskiej dokumentacji Dev Agent MUSI preferować:
+
+* otwarcie pliku w VS Code,
+* ręczne wklejenie pełnego bloku,
+* zapisanie pliku przez człowieka,
+* kontrolę `git diff`,
+* kontrolę `git diff --check`.
+
+Celem tej procedury jest ograniczenie ręcznego łatania plików linia po linii.
+
+Dev Agent ma prowadzić człowieka przez pełne, sprawdzalne bloki zmian.
+
 ## 4. Zakres pierwszej wersji
 
 Pierwsza wersja Dev Agenta ma być wyłącznie proceduralnym analizatorem stanu i wyborem następnego kroku.
@@ -76,7 +254,7 @@ Pierwsza wersja Dev Agenta NIE MOŻE:
 
 ## 5. Dane wejściowe
 
-Minimalne wejście Dev Agenta składa się z opisu aktualnego kroku oraz wyników komend dostarczonych przez człowieka.
+Minimalne wejście Dev Agenta składa się z opisu aktualnego kroku oraz wyników komend dostarczonych przez człowieka albo przez przyszłego lokalnego runnera.
 
 Dev Agent MUSI przyjmować następujące dane logiczne:
 
@@ -90,8 +268,18 @@ Dev Agent MUSI przyjmować następujące dane logiczne:
 * wynik `git diff`,
 * wynik `git diff --cached`,
 * wynik `git diff --check`,
-* wynik `ruff`,
-* wynik `pytest`.
+* wynik lintowania,
+* wynik testów.
+
+Dla TradingLab aktualne kontrole jakości to:
+
+* `git diff --check`,
+* `uv run ruff check .`,
+* `uv run pytest`.
+
+Te komendy są szczegółem projektu TradingLab.
+
+Uniwersalny rdzeń Dev Agenta NIE MOŻE zakładać, że każdy projekt używa `uv`, `ruff` albo `pytest`.
 
 Nie każde wejście musi być dostępne w każdym momencie procedury.
 
@@ -275,26 +463,26 @@ Jeżeli lokalny `HEAD` różni się od `origin/main`, Dev Agent zwraca decyzję 
 
 ## 9. Procedura NEW_POLISH_DOCUMENTATION_FILE
 
-Ta procedura dotyczy dodania nowego pliku dokumentacji w języku polskim.
+Ta procedura dotyczy dodania albo aktualizacji pliku dokumentacji w języku polskim.
 
 Wymagane warunki startowe:
 
 * procedura `PREFLIGHT_REPOSITORY_CHECK` zakończona pozytywnie,
-* zakres kroku obejmuje dokładnie jeden nowy plik dokumentacji,
+* zakres kroku obejmuje jawnie wskazany plik dokumentacji,
 * plik należy do katalogu `dokumentacja`.
 
 Kroki procedury:
 
 1. Dev Agent MUSI wskazać otwarcie pliku w VS Code.
-2. Dev Agent MUSI dostarczyć jeden pełny blok dokumentu do ręcznego wklejenia.
+2. Dev Agent MUSI dostarczyć jeden pełny blok dokumentu albo jeden precyzyjny blok sekcji do ręcznego wklejenia.
 3. Dev Agent NIE MOŻE użyć PowerShell do zapisu dokumentacji.
 4. Po zapisaniu pliku Dev Agent MUSI wymagać `git status`.
 5. Jeżeli plik jest `untracked`, Dev Agent MUSI wskazać `git add` dla tego pliku.
 6. Po `git add` Dev Agent MUSI wymagać `git diff --cached`.
-7. Dev Agent MUSI sprawdzić, czy staged diff obejmuje tylko dozwolony plik.
+7. Dev Agent MUSI sprawdzić, czy staged diff obejmuje tylko dozwolony zakres.
 8. Dev Agent MUSI wymagać `git diff --check`.
-9. Dev Agent MUSI wymagać `ruff`.
-10. Dev Agent MUSI wymagać `pytest`.
+9. Dev Agent MUSI wymagać lintowania właściwego dla projektu.
+10. Dev Agent MUSI wymagać testów właściwych dla projektu.
 11. Jeżeli kontrole są poprawne, Dev Agent zwraca `READY_FOR_HUMAN_APPROVAL` dla commita.
 12. Po commicie Dev Agent MUSI wymagać `git push`.
 13. Po pushu Dev Agent MUSI wymagać końcowego `git status`, lokalnego hash `HEAD` i hash `origin/main`.
@@ -305,8 +493,8 @@ Warunki STOP:
 * plik nie znajduje się w katalogu `dokumentacja`,
 * staged diff obejmuje więcej plików niż zakres kroku,
 * `git diff --check` zgłasza błąd,
-* `ruff` zgłasza błąd,
-* `pytest` zgłasza błąd,
+* lintowanie zgłasza błąd,
+* testy zgłaszają błąd,
 * człowiek nie zaakceptował commita,
 * człowiek nie zaakceptował pusha.
 
@@ -344,7 +532,12 @@ Minimalne przypadki testowe:
 4. untracked file przy pustym `git diff` nie jest traktowany jako brak zmian,
 5. staged new documentation file wymaga `git diff --cached`,
 6. staged diff poza zakresem kroku zwraca `STOP`,
-7. nieznany stan repozytorium zwraca `STOP`.
+7. nieznany stan repozytorium zwraca `STOP`,
+8. czysty `git diff --check` pozwala przejść do kontroli lintowania,
+9. błąd `git diff --check` zwraca `STOP`,
+10. błąd lintowania zwraca `STOP`,
+11. błąd testów zwraca `STOP`,
+12. komplet poprawnych kontroli zwraca `READY_FOR_HUMAN_APPROVAL`.
 
 ## 12. Granice bezpieczeństwa
 
@@ -362,20 +555,22 @@ Dev Agent NIE MOŻE ukrywać lub pomijać błędów.
 
 Dev Agent NIE MOŻE interpretować braku danych jako sukcesu.
 
+Dev Agent NIE MOŻE traktować komend specyficznych dla TradingLab jako uniwersalnych zasad rdzenia.
+
 ## 13. Następny krok
 
-Po dodaniu tego kontraktu następnym krokiem jest pierwszy test Dev Agenta.
+Po aktualizacji kontraktu najbliższym krokiem technicznym jest obsługa etapu po `READY_FOR_HUMAN_APPROVAL`.
 
 Proponowany krok:
 
-**75A.3-TEST — Test minimal Dev Agent procedural decision**
+**75A.9-TEST — Add Dev Agent human approval and completion flow**
 
 Zakres testu:
 
-* bez edycji plików przez agenta,
-* bez uruchamiania komend przez agenta,
-* tylko analiza dostarczonych danych wejściowych,
-* rozpoznanie `CLEAN_SYNCED`,
-* rozpoznanie `UNTRACKED_FILES`,
-* rozpoznanie `STAGED_CHANGES`,
-* STOP dla przypadku nieznanego.
+* przyjęcie decyzji człowieka dotyczącej commita,
+* STOP, gdy człowiek odrzuci commit,
+* NEXT_STEP, gdy człowiek zaakceptuje commit,
+* żądanie końcowego `git status`, `HEAD` i `origin/main`,
+* STOP przy końcowym nieczystym working tree,
+* STOP przy końcowej różnicy `HEAD` i `origin/main`,
+* `DONE` przy końcowym clean working tree i `HEAD == origin/main`.
