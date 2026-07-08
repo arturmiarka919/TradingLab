@@ -44,6 +44,9 @@ def evaluate_repository_state(
     git_diff: str | None = None,
     git_diff_cached: str | None = None,
     allowed_paths: tuple[str, ...] | None = None,
+    git_diff_check: str | None = None,
+    ruff_result: str | None = None,
+    pytest_result: str | None = None,
 ) -> DevAgentDecision:
     """Evaluate supplied Git state and return the next procedural decision."""
     normalized_status = git_status.strip()
@@ -81,6 +84,9 @@ def evaluate_repository_state(
         return _evaluate_staged_changes(
             git_diff_cached=git_diff_cached,
             allowed_paths=allowed_paths,
+            git_diff_check=git_diff_check,
+            ruff_result=ruff_result,
+            pytest_result=pytest_result,
         )
 
     if has_unstaged_changes:
@@ -163,6 +169,9 @@ def _evaluate_staged_changes(
     *,
     git_diff_cached: str | None,
     allowed_paths: tuple[str, ...] | None,
+    git_diff_check: str | None,
+    ruff_result: str | None,
+    pytest_result: str | None,
 ) -> DevAgentDecision:
     if git_diff_cached is None or allowed_paths is None:
         return DevAgentDecision(
@@ -173,6 +182,26 @@ def _evaluate_staged_changes(
             reason="staged_changes_require_cached_diff_review",
         )
 
+    scope_decision = _evaluate_staged_diff_scope(
+        git_diff_cached=git_diff_cached,
+        allowed_paths=allowed_paths,
+    )
+
+    if scope_decision is not None:
+        return scope_decision
+
+    return _evaluate_quality_checks(
+        git_diff_check=git_diff_check,
+        ruff_result=ruff_result,
+        pytest_result=pytest_result,
+    )
+
+
+def _evaluate_staged_diff_scope(
+    *,
+    git_diff_cached: str,
+    allowed_paths: tuple[str, ...],
+) -> DevAgentDecision | None:
     diff_paths = _extract_cached_diff_paths(git_diff_cached=git_diff_cached)
     normalized_allowed_paths = {
         _normalize_repo_path(path)
@@ -195,12 +224,72 @@ def _evaluate_staged_changes(
             reason="staged_diff_outside_allowed_scope",
         )
 
+    return None
+
+
+def _evaluate_quality_checks(
+    *,
+    git_diff_check: str | None,
+    ruff_result: str | None,
+    pytest_result: str | None,
+) -> DevAgentDecision:
+    if git_diff_check is None:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.NEXT_STEP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="run_diff_check",
+            reason="staged_diff_matches_allowed_scope",
+        )
+
+    if git_diff_check.strip():
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="diff_check_failed",
+        )
+
+    if ruff_result is None:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.NEXT_STEP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="provide_ruff_result",
+            reason="diff_check_passed",
+        )
+
+    if not _ruff_passed(ruff_result=ruff_result):
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="ruff_failed",
+        )
+
+    if pytest_result is None:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.NEXT_STEP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="provide_pytest_result",
+            reason="ruff_passed",
+        )
+
+    if not _pytest_passed(pytest_result=pytest_result):
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="pytest_failed",
+        )
+
     return DevAgentDecision(
-        decision_type=DevAgentDecisionType.NEXT_STEP,
+        decision_type=DevAgentDecisionType.READY_FOR_HUMAN_APPROVAL,
         repository_state=RepositoryState.STAGED_CHANGES,
         procedure="NEW_POLISH_DOCUMENTATION_FILE",
-        next_step="run_diff_check",
-        reason="staged_diff_matches_allowed_scope",
+        next_step="request_commit_approval",
+        reason="all_required_checks_passed",
     )
 
 
@@ -235,6 +324,26 @@ def _strip_diff_prefix(path: str) -> str:
 
 def _normalize_repo_path(path: str) -> str:
     return path.replace("\\", "/").strip()
+
+
+def _ruff_passed(*, ruff_result: str) -> bool:
+    normalized_result = ruff_result.lower()
+
+    return (
+        "all checks passed" in normalized_result
+        and "failed" not in normalized_result
+        and "error" not in normalized_result
+    )
+
+
+def _pytest_passed(*, pytest_result: str) -> bool:
+    normalized_result = pytest_result.lower()
+
+    return (
+        " passed" in normalized_result
+        and "failed" not in normalized_result
+        and "error" not in normalized_result
+    )
 
 
 def _is_unknown_git_status(normalized_status_lower: str) -> bool:
