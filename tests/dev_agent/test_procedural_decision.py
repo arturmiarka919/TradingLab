@@ -266,6 +266,160 @@ def test_all_checks_passed_returns_ready_for_human_approval() -> None:
     assert decision.reason == "all_required_checks_passed"
 
 
+def test_rejected_commit_approval_returns_stop() -> None:
+    decision = evaluate_repository_state(
+        git_status=_staged_documentation_status(),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=_allowed_documentation_cached_diff(),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+        git_diff_check="",
+        ruff_result="All checks passed!\n",
+        pytest_result="157 passed in 1.05s\n",
+        approval_decision="rejected",
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.STOP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.reason == "commit_rejected_by_human"
+
+
+def test_approved_commit_without_commit_result_requests_run_commit() -> None:
+    decision = evaluate_repository_state(
+        git_status=_staged_documentation_status(),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=_allowed_documentation_cached_diff(),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+        git_diff_check="",
+        ruff_result="All checks passed!\n",
+        pytest_result="157 passed in 1.05s\n",
+        approval_decision="approved",
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.NEXT_STEP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.next_step == "run_commit"
+    assert decision.reason == "commit_approved"
+
+
+def test_completed_commit_without_push_result_requests_run_push() -> None:
+    decision = evaluate_repository_state(
+        git_status=_staged_documentation_status(),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=_allowed_documentation_cached_diff(),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+        git_diff_check="",
+        ruff_result="All checks passed!\n",
+        pytest_result="157 passed in 1.05s\n",
+        approval_decision="approved",
+        commit_result="[main abc123] Add documentation\n",
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.NEXT_STEP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.next_step == "run_push"
+    assert decision.reason == "commit_completed"
+
+
+def test_completed_push_without_final_state_requests_final_repository_state() -> None:
+    decision = evaluate_repository_state(
+        git_status=_staged_documentation_status(),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=_allowed_documentation_cached_diff(),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+        git_diff_check="",
+        ruff_result="All checks passed!\n",
+        pytest_result="157 passed in 1.05s\n",
+        approval_decision="approved",
+        commit_result="[main abc123] Add documentation\n",
+        push_result="main -> main\n",
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.NEXT_STEP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.next_step == "provide_final_repository_state"
+    assert decision.reason == "missing_final_repository_state"
+
+
+def test_final_dirty_working_tree_after_push_returns_stop() -> None:
+    decision = evaluate_repository_state(
+        git_status=_staged_documentation_status(),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=_allowed_documentation_cached_diff(),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+        git_diff_check="",
+        ruff_result="All checks passed!\n",
+        pytest_result="157 passed in 1.05s\n",
+        approval_decision="approved",
+        commit_result="[main abc123] Add documentation\n",
+        push_result="main -> main\n",
+        final_git_status=_dirty_final_status(),
+        final_local_head="abc123",
+        final_origin_main="abc123",
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.STOP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.reason == "final_working_tree_not_clean"
+
+
+def test_final_head_difference_after_push_returns_stop() -> None:
+    decision = evaluate_repository_state(
+        git_status=_staged_documentation_status(),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=_allowed_documentation_cached_diff(),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+        git_diff_check="",
+        ruff_result="All checks passed!\n",
+        pytest_result="157 passed in 1.05s\n",
+        approval_decision="approved",
+        commit_result="[main abc123] Add documentation\n",
+        push_result="main -> main\n",
+        final_git_status=_clean_final_status(),
+        final_local_head="local123",
+        final_origin_main="remote456",
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.STOP
+    assert decision.repository_state == RepositoryState.STAGED_CHANGES
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.reason == "final_head_differs_from_origin_main"
+
+
+def test_final_clean_synced_state_after_push_returns_done() -> None:
+    decision = evaluate_repository_state(
+        git_status=_staged_documentation_status(),
+        local_head="abc123",
+        origin_main="abc123",
+        git_diff_cached=_allowed_documentation_cached_diff(),
+        allowed_paths=("dokumentacja/architektura/DEV_AGENT_CONTRACT.md",),
+        git_diff_check="",
+        ruff_result="All checks passed!\n",
+        pytest_result="157 passed in 1.05s\n",
+        approval_decision="approved",
+        commit_result="[main abc123] Add documentation\n",
+        push_result="main -> main\n",
+        final_git_status=_clean_final_status(),
+        final_local_head="abc123",
+        final_origin_main="abc123",
+    )
+
+    assert decision.decision_type == DevAgentDecisionType.DONE
+    assert decision.repository_state == RepositoryState.CLEAN_SYNCED
+    assert decision.procedure == "NEW_POLISH_DOCUMENTATION_FILE"
+    assert decision.reason == "procedure_completed_and_synced"
+
+
 def test_unknown_repository_state_returns_stop() -> None:
     decision = evaluate_repository_state(
         git_status="fatal: not a git repository\n",
@@ -295,4 +449,24 @@ def _allowed_documentation_cached_diff() -> str:
         "diff --git a/dokumentacja/architektura/DEV_AGENT_CONTRACT.md "
         "b/dokumentacja/architektura/DEV_AGENT_CONTRACT.md\n"
         "new file mode 100644\n"
+    )
+
+
+def _clean_final_status() -> str:
+    return (
+        "On branch main\n"
+        "Your branch is up to date with 'origin/main'.\n"
+        "\n"
+        "nothing to commit, working tree clean\n"
+    )
+
+
+def _dirty_final_status() -> str:
+    return (
+        "On branch main\n"
+        "Your branch is up to date with 'origin/main'.\n"
+        "\n"
+        "Changes not staged for commit:\n"
+        '  (use "git add <file>..." to update what will be committed)\n'
+        "        modified:   README.md\n"
     )

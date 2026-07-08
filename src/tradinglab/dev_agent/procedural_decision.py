@@ -47,6 +47,12 @@ def evaluate_repository_state(
     git_diff_check: str | None = None,
     ruff_result: str | None = None,
     pytest_result: str | None = None,
+    approval_decision: str | None = None,
+    commit_result: str | None = None,
+    push_result: str | None = None,
+    final_git_status: str | None = None,
+    final_local_head: str | None = None,
+    final_origin_main: str | None = None,
 ) -> DevAgentDecision:
     """Evaluate supplied Git state and return the next procedural decision."""
     normalized_status = git_status.strip()
@@ -87,6 +93,12 @@ def evaluate_repository_state(
             git_diff_check=git_diff_check,
             ruff_result=ruff_result,
             pytest_result=pytest_result,
+            approval_decision=approval_decision,
+            commit_result=commit_result,
+            push_result=push_result,
+            final_git_status=final_git_status,
+            final_local_head=final_local_head,
+            final_origin_main=final_origin_main,
         )
 
     if has_unstaged_changes:
@@ -172,6 +184,12 @@ def _evaluate_staged_changes(
     git_diff_check: str | None,
     ruff_result: str | None,
     pytest_result: str | None,
+    approval_decision: str | None,
+    commit_result: str | None,
+    push_result: str | None,
+    final_git_status: str | None,
+    final_local_head: str | None,
+    final_origin_main: str | None,
 ) -> DevAgentDecision:
     if git_diff_cached is None or allowed_paths is None:
         return DevAgentDecision(
@@ -194,6 +212,12 @@ def _evaluate_staged_changes(
         git_diff_check=git_diff_check,
         ruff_result=ruff_result,
         pytest_result=pytest_result,
+        approval_decision=approval_decision,
+        commit_result=commit_result,
+        push_result=push_result,
+        final_git_status=final_git_status,
+        final_local_head=final_local_head,
+        final_origin_main=final_origin_main,
     )
 
 
@@ -203,10 +227,7 @@ def _evaluate_staged_diff_scope(
     allowed_paths: tuple[str, ...],
 ) -> DevAgentDecision | None:
     diff_paths = _extract_cached_diff_paths(git_diff_cached=git_diff_cached)
-    normalized_allowed_paths = {
-        _normalize_repo_path(path)
-        for path in allowed_paths
-    }
+    normalized_allowed_paths = {_normalize_repo_path(path) for path in allowed_paths}
 
     if not diff_paths:
         return DevAgentDecision(
@@ -232,6 +253,12 @@ def _evaluate_quality_checks(
     git_diff_check: str | None,
     ruff_result: str | None,
     pytest_result: str | None,
+    approval_decision: str | None,
+    commit_result: str | None,
+    push_result: str | None,
+    final_git_status: str | None,
+    final_local_head: str | None,
+    final_origin_main: str | None,
 ) -> DevAgentDecision:
     if git_diff_check is None:
         return DevAgentDecision(
@@ -284,12 +311,117 @@ def _evaluate_quality_checks(
             reason="pytest_failed",
         )
 
+    return _evaluate_approval_and_completion_flow(
+        approval_decision=approval_decision,
+        commit_result=commit_result,
+        push_result=push_result,
+        final_git_status=final_git_status,
+        final_local_head=final_local_head,
+        final_origin_main=final_origin_main,
+    )
+
+
+def _evaluate_approval_and_completion_flow(
+    *,
+    approval_decision: str | None,
+    commit_result: str | None,
+    push_result: str | None,
+    final_git_status: str | None,
+    final_local_head: str | None,
+    final_origin_main: str | None,
+) -> DevAgentDecision:
+    if approval_decision is None:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.READY_FOR_HUMAN_APPROVAL,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="request_commit_approval",
+            reason="all_required_checks_passed",
+        )
+
+    normalized_approval = approval_decision.strip().lower()
+
+    if normalized_approval == "rejected":
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="commit_rejected_by_human",
+        )
+
+    if normalized_approval != "approved":
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="unknown_approval_decision",
+        )
+
+    if commit_result is None:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.NEXT_STEP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="run_commit",
+            reason="commit_approved",
+        )
+
+    if push_result is None:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.NEXT_STEP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="run_push",
+            reason="commit_completed",
+        )
+
+    return _evaluate_final_repository_state(
+        final_git_status=final_git_status,
+        final_local_head=final_local_head,
+        final_origin_main=final_origin_main,
+    )
+
+
+def _evaluate_final_repository_state(
+    *,
+    final_git_status: str | None,
+    final_local_head: str | None,
+    final_origin_main: str | None,
+) -> DevAgentDecision:
+    if (
+        final_git_status is None
+        or final_local_head is None
+        or final_origin_main is None
+    ):
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.NEXT_STEP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            next_step="provide_final_repository_state",
+            reason="missing_final_repository_state",
+        )
+
+    if "nothing to commit, working tree clean" not in final_git_status.strip():
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="final_working_tree_not_clean",
+        )
+
+    if final_local_head != final_origin_main:
+        return DevAgentDecision(
+            decision_type=DevAgentDecisionType.STOP,
+            repository_state=RepositoryState.STAGED_CHANGES,
+            procedure="NEW_POLISH_DOCUMENTATION_FILE",
+            reason="final_head_differs_from_origin_main",
+        )
+
     return DevAgentDecision(
-        decision_type=DevAgentDecisionType.READY_FOR_HUMAN_APPROVAL,
-        repository_state=RepositoryState.STAGED_CHANGES,
+        decision_type=DevAgentDecisionType.DONE,
+        repository_state=RepositoryState.CLEAN_SYNCED,
         procedure="NEW_POLISH_DOCUMENTATION_FILE",
-        next_step="request_commit_approval",
-        reason="all_required_checks_passed",
+        reason="procedure_completed_and_synced",
     )
 
 
